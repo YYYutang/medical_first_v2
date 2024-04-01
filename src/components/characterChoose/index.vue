@@ -17,6 +17,7 @@
             :props="defaultProps"
             node-key="id"
             default-expand-all
+            :default-checked-keys="defaultCheckedKeys"
             @check="handleCheck" 
             >
           </el-tree>
@@ -85,11 +86,11 @@
             <div class="consistencyAnalyze" v-if="curentAnalyzeStep==3">
                <h3 style="text-align: center; font-size: 24px">选择作为分组依据特征</h3>
                <div class="contain6">
-                <div class="block" v-for="(feat,index) in featureData" :key="index">
-                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
+                <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat.featureDataType!=3 && feat.missRate<30">  <!--只显示数据类型为数值的字段-->
+                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeConsis(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
                     <el-progress :percentage="Math.round(100 - feat.missRate)" :format="format" :color="getProgressStatus(feat.missRate)" style="width: 100px;"></el-progress>
                 </div>
-                <div class="block invisible" v-for="n in (5 - featureData.length % 5) % 5" :key="n.id"></div>
+                <div class="block invisible" v-for="n in (5 - getConsistencyAnalyzeLength() % 5) % 5" :key="n.id"></div>
               </div>
             </div>
           </div>
@@ -102,9 +103,10 @@ import { treeData } from "../tab/treeData";
 /*特征选择页面*/
 export default ({
     name:'characterChoose',
-    props:['active','type', 'label','step','analyzeStep','describeAna'],
+    props:['active','type', 'label','step','analyzeStep','describeAna','selectTreeNode','featureDataFromParent','observeFeatFromParent','groupFeatFromParent','curentAnalyzeStep'],
     data(){
         return{
+          defaultCheckedKeys: [],
           isDescribe: false,
           nodedata: {},
           selectedNode: [],
@@ -127,7 +129,7 @@ export default ({
         groupFeature: {},
         observeFeaure: {},
         allFeatures: [],
-        curentAnalyzeStep: 1,
+        // curentAnalyzeStep: 1,
         checkedFeats: [],
         tableName: '',
         peopleFeatures: [],
@@ -165,44 +167,67 @@ export default ({
       }
     },
     created(){
+      console.log("分组依据：",this.observeFeatFromParent)
       this.isDescribe=this.describeAna==true?true:false;
       this.groupFeature= {};
       this.observeFeaure={};
       this.tableName = this.label;
       this.getIndicatorCategory();
-      if(this.analyzeStep!=null){
-        
-        this.curentAnalyzeStep = this.analyzeStep;
+
+    // 缺失值补齐和描述性分析选择记忆功能
+      this.defaultCheckedKeys = [];
+      this.defaultCheckedKeys = this.selectTreeNode
+      if(this.featureDataFromParent.length>0) {
+        this.checkedFeats = [];
+        for(let i=0; i<this.featureDataFromParent.length; i++){
+          if(this.featureDataFromParent[i].cheack) this.checkedFeats.push(this.featureDataFromParent[i]);
+        }
+        this.featureData = this.featureDataFromParent;
       }
+      // 单因素分析选择记忆功能
+      if(this.observeFeatFromParent!=null) {
+        console.log("分组依据2：",this.observeFeatFromParent)
+        this.observeFeaure = this.observeFeatFromParent;
+      }
+      if(this.groupFeatFromParent!=null) this.groupFeature = this.groupFeatFromParent;
+
+      // if(this.analyzeStep!=null){
+      //   this.curentAnalyzeStep = this.analyzeStep;
+      // }
       
     },
     methods:{
-
+      getConsistencyAnalyzeLength(){
+        var len = this.featureData.length;
+        for(let i=0; i<this.featureData.length; i++){
+          if(this.featureData[i].featureDataType==3 || this.featureData[i].missingRate>=30) len -=1 ;
+        }
+        return len;
+      },
       getProgressStatus(missingRate) {
-      if (missingRate < 30) {
-        return '#25bef5';
-      } else if (missingRate < 70) {
-        return '#e6a23c';
-      } else {
-        return '#ff0000';
-      }
+        if (missingRate < 30) {
+          return '#25bef5';
+        } else if (missingRate < 70) {
+          return '#e6a23c';
+        } else {
+          return '#ff0000';
+        }
+      },
+      format(percentage) {
+        return percentage === 100 ? '满' : `${percentage}%`;
+      },
 
-    },
-    format(percentage) {
-      return percentage === 100 ? '满' : `${percentage}%`;
-    },
-
-    getProgressColor(percentage) {
-    if (percentage == 0 || percentage < 20) {
-      return '#00cc66'; // 绿色
-    } else if (percentage >= 20 && percentage < 50) {
-      return '#3399ff'; // 蓝色
-    } else if (percentage >= 50 && percentage < 80) {
-      return '#ff6666'; // 红色
-    } else {
-      return '#cc0000'; // 深红色
-    }
-  },
+      getProgressColor(percentage) {
+        if (percentage == 0 || percentage < 20) {
+          return '#00cc66'; // 绿色
+        } else if (percentage >= 20 && percentage < 50) {
+          return '#3399ff'; // 蓝色
+        } else if (percentage >= 50 && percentage < 80) {
+          return '#ff6666'; // 红色
+        } else {
+          return '#cc0000'; // 深红色
+        }
+      },
       getGroupFeatLength(){
         let count = 2;
         for(let i=0; i<this.featureData.length; i++) {
@@ -212,7 +237,7 @@ export default ({
           return count-1;
         }else {
           return count;
-         }
+          }
       },
       getObserveFeatLength(){
         var len = this.featureData.length;
@@ -223,6 +248,7 @@ export default ({
         return len;
       },
       handleCheckboxChangeGroup(feat){
+         this.$emit("sendFeatueData",this.featureData);
         if(feat.cheack) { // 其他都设置为非选中状态
           this.groupFeature = feat;
           // 发送给父组件
@@ -235,6 +261,7 @@ export default ({
         }
       },
       handleCheckboxChangeObserve(feat){
+        this.$emit("sendFeatueData",this.featureData);
         if(feat.cheack){
           // 发送给父组件
           this.observeFeaure = feat;
@@ -246,10 +273,31 @@ export default ({
           this.observeFeaure = {};
         }
       },
+      handleCheckboxChangeConsis(feat){
+        this.$emit("sendFeatueData",this.featureData);
+        // 选中了其他就取消选中
+        this.checkedFeats = [];
+        if(feat.cheack){
+               this.checkedFeats.length = 0;
+               this.checkedFeats.push(feat);
+              for(let i=0; i<this.featureData.length; i++) {
+                if(this.featureData[i].cheack==true && this.featureData[i]!=feat) this.featureData[i].cheack=false;
+              }
+            }else{
+              this.checkedFeats.length = 0;
+              for(let i=0; i<this.featureData.length; i++) {
+                this.featureData[i].cheack=false;
+              }
+            }
+         // 传递给父组件
+        this.$emit("send_feat",this.checkedFeats)
+      },
       countVisibleFeatures(val) {
         return this.featureData.filter(feat => feat.featureDataType == val).length;
       },
       handleCheckboxChange(feat){
+        // 发送给父组件
+        this.$emit("sendFeatueData",this.featureData);
        if(this.isDescribe==false){ //  描述性分析只能选择一个复选框
           if(this.checkedFeats.includes(feat)){  // 包含
             if(!feat.cheack) { // 非选中状态
@@ -261,8 +309,6 @@ export default ({
             }
           }
         }else{
-            console.log("描述性分析")
-            console.log("当前节点：",feat.cheack)
             if(feat.cheack){
                this.checkedFeats.length = 0;
                this.checkedFeats.push(feat);
@@ -291,22 +337,22 @@ export default ({
       },
       handleCheck(data,node){
         this.selectedNode.length = 0;
+        this.defaultCheckedKeys = [];
         for(let i=0; i<node.checkedNodes.length; i++){
           this.selectedNode.push(node.checkedNodes[i].label);
+          this.defaultCheckedKeys.push(node.checkedNodes[i].id)
         }
+        // 将选中的树节点传递给父节点
+        this.$emit("sendTreeNode",this.defaultCheckedKeys)
         this.getIndicatorsFromBackEnd(this.selectedNode.join(","));
       },
-      // handleNodeClick(item,node,self){ //自己定义的editCheckId，防止单选出现混乱
-      //   this.nodedata = node.data;
-      //   this.editCheckId=item.id;
-      //   this.$refs.tree.setCheckedKeys([item.id])
-      // },
       getIndicatorCategory(){
         getRequest("/api/indicatorCategory").then(response=>{
           this.treeData = response.data;
         })
       }
     },
+
     mounted(){
     }
 
@@ -349,7 +395,7 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
-
+    overflow-y: auto;
   }
    .contain2 {
     display: flex;
@@ -363,6 +409,7 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
+    overflow-y: auto;
   }
    .contain3 {
     display: flex;
@@ -377,6 +424,7 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
+    overflow-y: auto;
   }
 
   .contain4 {
@@ -384,8 +432,6 @@ export default ({
     width: 100%;
     flex-direction: row; /* 按列排版 */
     height: calc(40% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
-    // margin-top: 15px;
-    // margin-bottom: 5px;
     overflow-y: auto;
     flex-wrap: wrap; /* 每行换行 */
     padding: 20px;
@@ -423,6 +469,7 @@ export default ({
     flex-wrap: wrap;
     border: #0066cc 2px solid;
     padding: 20px;
+    overflow-y: auto;
   }
 
 .step{

@@ -3,8 +3,9 @@
     <el-container >
         <div class="outcontainer">
           <datasetChoose v-if="active == 1" class="con_datasetChoose" :active='active' :type="3" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
-          <characterChoose v-if="active == 2" :active='active' :analyzeStep="3" :type="2" :label="label" @send_feat="getCheackedFeats"></characterChoose>
-          <conssitencyOutcome v-if="active == 3" :active='active' :label="label" :checkedFeats="checkedFeats"></conssitencyOutcome>
+          <characterChoose v-if="active == 2" :active='active' :analyzeStep="3" :type="2" :label="label" @send_feat="getCheackedFeats" :curentAnalyzeStep="3" 
+          @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
+          <conssitencyOutcome v-if="active == 3" :active='active' :label="label" :checkedFeats="checkedFeats" ref="childComponentRef"></conssitencyOutcome>
         <div class="stepbutton">
           <el-button size="small" v-if="active != 1" @click="stepBack(active)"
             >上一步</el-button
@@ -20,7 +21,7 @@
             size="small"
             type="primary"
             v-if="active == 3"
-            @click="stepNext(active)"
+            @click="exportContent()"
             >导出</el-button
           >
         </div>
@@ -31,8 +32,8 @@
 <script>
 import characterChoose from "@/components/characterChoose/index.vue";
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
-// import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue";
 import conssitencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
+import html2canvas from "html2canvas";
 /*描述性统计分析页面*/
 export default {
   name: "outcome",
@@ -44,12 +45,35 @@ export default {
   },
   data() {
     return {
+      featureDataFromParent: [],
+      selectTreeNode: [],
       label: '',
       active: 1,
       checkedFeats: [],
     };
   },
   methods: {
+     getFeatureData(data){
+      this.featureDataFromParent = data;
+    },
+    getSelectTreeNode(data){
+      console.log("选中的树节点：",data)
+      this.selectTreeNode = data;
+    },
+    async exportContent() {
+      try {
+        const divToCapture =
+          this.$refs.childComponentRef.$el.querySelector(".result");
+        const canvas = await html2canvas(divToCapture);
+        const imageUrl = canvas.toDataURL();
+        const link = document.createElement("a");
+        link.href = imageUrl;
+        link.download = "image.png";
+        link.click();
+      } catch (error) {
+        console.error("Error capturing image:", error);
+      }
+    },
     getCheackedFeats(data){
       this.checkedFeats = data;
       console.log("收到子组件传来的值")
@@ -61,6 +85,11 @@ export default {
     },
     stepBack(active) {
       this.active--;
+      if(active === 2) {
+        // 将 this.selectTreeNode 传递给子组件 characterChoose
+        this.$refs.characterChoose.selectTreeNode = this.selectTreeNode;
+        this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
+      }
     },
     stepNext(active) {
       this.active++;

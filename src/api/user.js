@@ -71,3 +71,15 @@ export function getSingleAnalyze(url, tableName, colNames) {
     }
   });
 }
+
+
+export function singleFactorAnalyze(url, tableName, featureName) {
+  return request({
+    method: "get",
+    url,
+    params: {
+      tableName: tableName,
+      featureName: featureName
+    }
+  });
+}

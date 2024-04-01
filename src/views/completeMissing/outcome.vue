@@ -45,7 +45,6 @@ export default ({
         }
     },
     created(){
-      console.log("参数有：",this.missCompleteMehtod)
       this.fillData();
     },
     methods:{
@@ -56,8 +55,6 @@ export default ({
         };
         postRequest("/api/fillData",dataFillMethodVo).then(response=>{
           this.tableData = response.data;
-          console.log("返回数据：")
-          console.log(this.tableData)
         }).catch(error=>{
           console.log(error);
         })

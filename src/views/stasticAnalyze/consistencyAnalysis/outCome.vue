@@ -29,13 +29,13 @@
             label="类型">
         </el-table-column>
         <el-table-column
-            prop="ICC"
+            prop="icc"
             align="center"
             sortable
             label="ICC">
         </el-table-column>
             <el-table-column
-            prop="F"
+            prop="f"
             align="center"
             sortable
             label="F">
@@ -66,7 +66,7 @@
                 显著性水平的选择通常是0.05。如果p值小于显著性水平，我们可能会拒绝零假设，认为观测值之间的一致性是显著的。
             </p>
         </div>
-        <div>
+        <!-- <div>
             <h3 style="font-size: 20px; margin-left:100px; margin-top: 30px">Bland-Altman</h3>
             <h3 style="font-size: 20px; margin-left:150px; margin-top: 30px">统计结果</h3>
             <el-table
@@ -115,7 +115,7 @@
                     label="t">
                 </el-table-column>
             </el-table>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
@@ -124,13 +124,13 @@
 <script>
 import { defineComponent } from 'vue';
 import { postRequest, getRequest } from '@/utils/api';
+import { singleFactorAnalyze } from "@/api/user"
 export default defineComponent({
   name: 'outcome2',
   props: ['active', 'label', 'checkedFeats'],
   data() {
     return {
          allData: [],
-
          tableData1: [
             {
                 method: 'ICC1:one-way random-effects model',
@@ -163,13 +163,19 @@ export default defineComponent({
     };
   },
   created() {
-    
+    console.log("表名：",this.label)
+    console.log(this.checkedFeats)
+    this.getAllData();
   },
   methods: {
     
     getAllData(){
-        postRequest("/api/singleFactorAnalyze",this.label, this.checkedFeats).then(response=>{ // 传递表名、分组列名、观察列名
-            this.allData = response.data // TODO 分析数据
+        let tableName = this.label;
+        let featureName = this.checkedFeats[0].featureName;
+        singleFactorAnalyze("/api/consistencyAnalyze",tableName,featureName).then(response=>{ // 传递表名、分组列名、观察列名
+       
+            this.tableData1 = response.data.iccanalyzeResult;
+            console.log("返回数据：",response.data)
         })
     },
   }
@@ -180,7 +186,7 @@ export default defineComponent({
 .container {
   display: flex;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .right_step {
@@ -204,7 +210,7 @@ export default defineComponent({
 
 .result {
     display: flex;
-    height: 800px;
+    height: 600px;
     width: 1500px;
     margin-right: 80px;
     flex-direction: column;

@@ -17,8 +17,11 @@
           :label="label"
           @send_feat="getCheackedFeats"
           :analyzeStep="2"
+          :curentAnalyzeStep="2"
           @send_observe_feature="getObserveFeat"
           @send_group_feature="getGroupFeat"
+          @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" :observeFeatFromParent="observeFeatFromParent" :groupFeatFromParent="groupFeatFromParent"
+          @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"
         ></characterChoose>
         <singleOutCome
           v-if="active == 3"
@@ -67,6 +70,10 @@ export default {
   },
   data() {
     return {
+      selectTreeNode: [],
+      featureDataFromParent: [],
+      observeFeatFromParent:{},
+      groupFeatFromParent:{},
       label: "",
       active: 1,
       checkedFeats: [],
@@ -75,6 +82,12 @@ export default {
     };
   },
   methods: {
+     getFeatureData(data){
+      this.featureDataFromParent = data;
+    },
+    getSelectTreeNode(data){
+      this.selectTreeNode = data;
+    },
     async exportContent() {
       try {
         const divToCapture =
@@ -90,24 +103,28 @@ export default {
       }
     },
     getGroupFeat(feat) {
-      console.log("父：groupFeat ", feat);
       this.groupFeat = feat;
+      this.groupFeatFromParent = feat;
     },
     getObserveFeat(feat) {
-      console.log("observeFeat ", feat);
       this.observeFeat = feat;
+      this.observeFeatFromParent = feat;
     },
     getCheackedFeats(data) {
       this.checkedFeats = data;
-      console.log("收到子组件传来的值");
-      console.log(this.checkedFeats);
     },
     handleDataFromChild(label) {
-      console.log("收到参数:", label);
       this.label = label;
     },
     stepBack(active) {
       this.active--;
+       if(active === 2) {
+        // 将 this.selectTreeNode 传递给子组件 characterChoose
+        this.$refs.characterChoose.selectTreeNode = this.selectTreeNode;
+        this.$refs.characterChoose.observeFeatFromParent = this.observeFeatFromParent;
+        this.$refs.characterChoose.groupFeatFromParent = this.groupFeatFromParent;
+        this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
+      }
     },
     stepNext(active) {
       this.active++;
@@ -123,11 +140,6 @@ export default {
   height: auto;
   flex-direction: column;
 }
-/* .stepcontainer {
-  display: flex;
-  width: 100%;
-  height: 100%;
-} */
 .stepbutton3 {
   display: flex;
   justify-content: center; /* 水平居中 */

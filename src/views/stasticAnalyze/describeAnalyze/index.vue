@@ -16,8 +16,10 @@
           :type="2"
           :step="2"
           :label="label"
+          :curentAnalyzeStep="1"
           @send_feat="getCheackedFeats"
           :describeAna="true"
+           @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"
         ></characterChoose>
         <describeOutcome
           v-if="active == 3"
@@ -66,12 +68,21 @@ export default {
   },
   data() {
     return {
+      featureDataFromParent: [],
+      selectTreeNode: [],
       label: "",
       active: 1,
       checkedFeats: [],
     };
   },
   methods: {
+     getFeatureData(data){
+      this.featureDataFromParent = data;
+    },
+    getSelectTreeNode(data){
+      console.log("选中的树节点：",data)
+      this.selectTreeNode = data;
+    },
     getCheackedFeats(data) {
       this.checkedFeats = data;
       console.log("收到子组件传来的值");
@@ -83,6 +94,11 @@ export default {
     },
     stepBack(active) {
       this.active--;
+      if(active === 2) {
+        // 将 this.selectTreeNode 传递给子组件 characterChoose
+        this.$refs.characterChoose.selectTreeNode = this.selectTreeNode;
+        this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
+      }
     },
     stepNext(active) {
       this.active++;
