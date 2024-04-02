@@ -20,6 +20,7 @@ import describeAnalyze from "@/views/stasticAnalyze/describeAnalyze/index.vue"
 import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue"
 import columnManage2 from "@/views/tableManage.vue"
 import dataManagePublic from "@/views/dataManagePublic.vue"
+import taskManage from "@/views/taskManage.vue"
 Vue.use(VueRouter)
 
 const routes = [
@@ -56,6 +57,11 @@ const routes = [
       path: '/dataManagePublic',
       name: 'dataManagePublic',
       component: dataManagePublic,
+    },
+    {
+      path: '/taskManage',
+      name: 'taskManage',
+      component: taskManage,
     },
     {
       path: '/introduce',

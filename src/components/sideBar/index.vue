@@ -45,6 +45,10 @@
               <i class="el-icon-s-data"></i>
               数据管理</el-menu-item
             >
+            <el-menu-item index="/taskManage">
+              <i class="el-icon-s-data"></i>
+              任务管理</el-menu-item
+            >
             <el-menu-item index="/columnManage2">
               <i class="el-icon-connection"></i>
               字段管理</el-menu-item
