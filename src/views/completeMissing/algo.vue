@@ -94,11 +94,8 @@ export default ({
     },
     created(){
       if(this.isback==false) {
-        console.log("前进：")
         this.getCheckedIndicatorInfo();
-      }
-      else{
-        console.log("回退：")
+      }else{
         if(this.tableData1FromParent.length>0) this.tableData1 = this.tableData1FromParent;
         if(this.tableData2FromParent.length>0) this.tableData2 = this.tableData2FromParent;
         if(this.tableData3FromParent.length>0) this.tableData3 = this.tableData3FromParent;
@@ -121,12 +118,16 @@ export default ({
           }
           this.$emit("send_method",tableData) // 向父组件传值
         },
+        sendTablesDatatoParent(){
+          this.$emit("send_table_a",this.tableData1);
+          this.$emit("send_table_b",this.tableData2);
+          this.$emit("send_table_c",this.tableData3);
+        },
        handleSelectChange(row) {
+        console.log("开始发送给父组件....")
         this.sendDataToParent();
         // 向父组件发送table1，table2,table3的数据，用于回显
-        this.$emit("send_table1",this.tableData1);
-        this.$emit("send_table2",this.tableData2);
-        this.$emit("send_table3",this.tableData3);
+        this.sendTablesDatatoParent();
       },
       getCheckedIndicatorInfo(){
         let indicatorsMissDataVos1 = {
@@ -136,7 +137,9 @@ export default ({
         if(indicatorsMissDataVos1.checkedFeats.length>0){
           postRequest("/api/getIndicatorsInfo",indicatorsMissDataVos1).then(response=>{
             this.tableData1 = response.data;
+            console.log("得到返回值tableData1:",this.tableData1)
             this.sendDataToParent()
+            this.$emit("send_table_a",this.tableData1);
           })
         }
         let indicatorsMissDataVos2 = {
@@ -147,6 +150,7 @@ export default ({
            postRequest("/api/getIndicatorsInfo",indicatorsMissDataVos2).then(response=>{
             this.tableData2 = response.data;
             this.sendDataToParent()
+            this.$emit("send_table_b",this.tableData2);
           })
         }
         let indicatorsMissDataVos3 = {
@@ -157,6 +161,7 @@ export default ({
           postRequest("/api/getIndicatorsInfo",indicatorsMissDataVos3).then(response=>{
             this.tableData3 = response.data;
             this.sendDataToParent()
+            this.$emit("send_table_c",this.tableData3);
           })
         }
       }

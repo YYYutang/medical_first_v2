@@ -175,7 +175,6 @@
             >
           </div>
         </el-form>
-
         <!--======================================     算法选择表单     =======================================================-->
         <el-form
           class="form"
@@ -252,6 +251,7 @@
             >
           </div>
         </el-form>
+
       </div>
     </el-container>
   </div>
@@ -395,6 +395,12 @@ export default {
     };
   },
   methods: {
+    open3() {
+      this.$message({
+        message: '请选择要处理的指标！',
+        type: 'warning'
+      });
+    },
     getTableName(tableName){
       console.log("表明",tableName)
       this.dataSelectForm.formData.selectedData = tableName;
@@ -414,8 +420,6 @@ export default {
                   this.physioOptions = [];
                   this.sociolOptions=[];
                   this.otherOptions=[];
-                  console.log("属性列：")
-                  console.log(response.data)
                   let data = response.data;
                   let columnNametemp = Object.keys(data);
                   for (let i = 0; i < columnNametemp.length; i++) {
@@ -461,7 +465,6 @@ export default {
                   }
                 }
               );
-
               getRequest(
                 "/feature/getInfoByTableName?tableName=" +
                   tableName.selectedData +
@@ -480,18 +483,21 @@ export default {
             }
             if (this.active == 2) {
               const page = 1;
-       
-              getRequest(
+              if(this.columnSelectForm.formData.selectedData==null || this.columnSelectForm.formData.selectedData.length==0){
+                this.open3(); // TODO 控制下一步跳转
+                return;
+              }else{
+                getRequest(
                 "/feature/getInfoBySelectedFiled?page=" +
                   page +
                   "&tableName=" +
                   this.dataSelectForm.formData.selectedData +
                   "&params=" +
                   this.columnSelectForm.formData.selectedData
-              ).then((response) => {
-                this.dataChoose = response;
-
-              });
+                ).then((response) => {
+                  this.dataChoose = response;
+                });
+              }
             }
           } else if (stepIndex == 2) {
             const params = {
@@ -500,7 +506,6 @@ export default {
               // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
               aiName: "pca",
             };
-
             postRequest("feature/runAi", params).then((response) => {
   
               for (let i in response.data[0]) {
@@ -517,11 +522,6 @@ export default {
             });
           }
           this.newShow = true;
-      //   } else {
-      //     console.log("error submit!!");
-      //     return false;
-      //   }
-      // });
     },
     resetForm(stepIndex) {
       let formName = this.formArray[stepIndex];

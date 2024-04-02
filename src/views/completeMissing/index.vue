@@ -3,8 +3,7 @@
     <el-container class="outcontainer2">
         <datasetChoose v-if="active == 1" :active="active" :type="4" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
         <characterChoose v-if="active == 2" :active="active" :step="1" :label="label" :type="4" :curentAnalyzeStep="1" @send_feat="getCheackedFeats" @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
-        <missingalgo v-if="active == 3" :active="active" :checkedFeats="checkedFeats" :isback="isback" :label="label" @send_method="getMissCompleteMehtod" @send_table1="getTable1" @send_table2="getTable2" @send_table3="getTable3"
-        :tableData1FromParent="tableData1FromParent" :tableData2FromParent="tableData2FromParent" :tableData3FromParent="tableData3FromParent"></missingalgo>
+        <missingalgo ref="missingalgo" v-if="active == 3" :active="active" :checkedFeats="checkedFeats" :isback="isback" :label="label" @send_method="getMissCompleteMehtod" @send_table_a="getTableA" @send_table_b="getTableB" @send_table_c="getTableC" :tableData1FromParent="tableData1FromParent" :tableData2FromParent="tableData2FromParent" :tableData3FromParent="tableData3FromParent"></missingalgo>
         <missingoutcome v-if="active == 4" :active="active" :missCompleteMehtod="missCompleteMehtod" :label="label"></missingoutcome>
       <br><div class="stepbutton">
         <el-button size="small" v-if="active!=1" @click="stepBack(active)">上一步</el-button>
@@ -28,7 +27,6 @@
         </span>
     </el-dialog>
     </el-container>
-
   </div>
 </template>
 <script>
@@ -71,16 +69,22 @@ export default {
     
   },
   methods: {
+    open3() {
+        this.$message({
+          message: '请选择要填充的指标！',
+          type: 'warning'
+        });
+    },
     handleClose(){
 
     },
-    getTable1(data){
+    getTableA(data){
       this.tableData1FromParent = data;
     },
-    getTable2(data){
+    getTableB(data){
       this.tableData2FromParent = data;
     },
-    getTable3(data){
+    getTableC(data){
       this.tableData3FromParent = data;
     },
     getFeatureData(data){
@@ -137,6 +141,7 @@ export default {
         this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
       }
       if(this.active == 3){
+        console.log("开始回退")
         this.isback = true;
         this.$refs.missingalgo.tableData1FromParent = this.tableData1FromParent;
         this.$refs.missingalgo.tableData2FromParent = this.tableData2FromParent;
@@ -144,9 +149,14 @@ export default {
       }
     },
     stepNext(active) {
-      // 第三步的时候 展示中文特征名称 有效值，缺失值，选着缺失值补齐算法
-      this.active++;
-      if(this.active == 3) this.isback = false;
+      if(this.active == 2 && (this.checkedFeats==null || this.checkedFeats.length==0)) {
+        // 判断是否选择数据
+          this.characterChooseVisiable = true;
+          this.open3();
+      }else{
+         this.active++;
+        if(this.active == 3) this.isback = false;
+      }
     },
     handleDataFromChild(label){
       this.label = label;

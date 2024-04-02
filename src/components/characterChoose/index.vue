@@ -258,6 +258,7 @@ export default ({
           }
         }else{
           this.groupFeature = {};
+          this.$emit("send_group_feature",this.groupFeature);
         }
       },
       handleCheckboxChangeObserve(feat){
@@ -271,6 +272,7 @@ export default ({
           }
         }else{
           this.observeFeaure = {};
+          this.$emit("send_observe_feature",this.observeFeaure);
         }
       },
       handleCheckboxChangeConsis(feat){
@@ -283,12 +285,12 @@ export default ({
               for(let i=0; i<this.featureData.length; i++) {
                 if(this.featureData[i].cheack==true && this.featureData[i]!=feat) this.featureData[i].cheack=false;
               }
-            }else{
-              this.checkedFeats.length = 0;
-              for(let i=0; i<this.featureData.length; i++) {
-                this.featureData[i].cheack=false;
-              }
+         }else{
+            this.checkedFeats.length = 0;
+            for(let i=0; i<this.featureData.length; i++) {
+              this.featureData[i].cheack=false;
             }
+          }
          // 传递给父组件
         this.$emit("send_feat",this.checkedFeats)
       },

@@ -82,6 +82,12 @@ export default {
     };
   },
   methods: {
+    open3() {
+      this.$message({
+        message: '请选择要处理的指标！',
+        type: 'warning'
+      });
+    },
      getFeatureData(data){
       this.featureDataFromParent = data;
     },
@@ -127,7 +133,11 @@ export default {
       }
     },
     stepNext(active) {
-      this.active++;
+      if(this.active == 2 && (JSON.stringify(this.groupFeat)=='{}' || JSON.stringify(this.observeFeat)=='{}')){
+        this.open3()
+      }else{
+        this.active++;
+      }
     },
   },
   mounted() {},

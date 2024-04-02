@@ -93,6 +93,13 @@ export default defineComponent({
     this.getAllData();
   },
   methods: {
+
+    open3(msg) {
+      this.$message({
+        message: msg,
+        type: 'warning'
+      });
+    },
     
     getAllData(){
         let colNames = [];
@@ -119,8 +126,10 @@ export default defineComponent({
               missFrequent: this.tableData[0].missFrequent+this.tableData[1].missFrequent
             }
             this.tableData.push(total)
-            console.log("tableData:")
-            console.log(this.tableData);
+            if((response.data.notDiscrete.binData==null || response.data.notDiscrete.binData.length==0) || (response.data.notDiscrete2.binData==null || response.data.notDiscrete2.binData.length==0)){
+              this.open3("数据异常，分析失败！");
+              return;
+            }
 
             // 饼状图数据
             for (const [key, value] of Object.entries(response.data.notDiscrete.binData)) {
@@ -130,6 +139,7 @@ export default defineComponent({
             for (const [key, value] of Object.entries(response.data.notDiscrete2.binData)) {
               this.binData2.push({ name: key, value: value });
             }
+            console.log("binData2:", this.binData2)
 
             this.$nextTick(() => {  //使用this.$nexTick方法进行渲染
               this.initMyChart1();

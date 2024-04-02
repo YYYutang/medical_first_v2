@@ -135,20 +135,20 @@ export default defineComponent({
             {
                 method: 'ICC1:one-way random-effects model',
                 type: 'ICC1',
-                ICC: '-0.972',
-                F: '0.014',
-                df1: 6481,
-                df2: 6482,
-                p: 1.00
+                icc: '0',
+                f: '0',
+                df1: 0,
+                df2: 0,
+                p: 0
             },
              {
                 method: 'ICC2:two-way random-effects mode',
                 type: 'ICC2',
-                ICC: '0.004',
-                F: '2.586',
-                df1: 6481,
-                df2: 6482,
-                p: 0.000
+                icc: '0',
+                f: '0',
+                df1: 0,
+                df2: 0,
+                p: 0
             },
          ],
          tableData2: [{
@@ -168,14 +168,23 @@ export default defineComponent({
     this.getAllData();
   },
   methods: {
-    
+    open3(mesg) {
+      this.$message({
+        message: mesg,
+        type: 'warning'
+      });
+    },
     getAllData(){
         let tableName = this.label;
         let featureName = this.checkedFeats[0].featureName;
         singleFactorAnalyze("/api/consistencyAnalyze",tableName,featureName).then(response=>{ // 传递表名、分组列名、观察列名
-       
-            this.tableData1 = response.data.iccanalyzeResult;
-            console.log("返回数据：",response.data)
+            console.log("返回数据：",response)
+            if(response.code == 500) {
+              this.open3(response.msg)
+            }else{
+              this.tableData1 = response.data.iccanalyzeResult;
+            }
+            
         })
     },
   }

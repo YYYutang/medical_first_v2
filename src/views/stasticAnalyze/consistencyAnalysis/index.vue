@@ -53,6 +53,12 @@ export default {
     };
   },
   methods: {
+    open3() {
+      this.$message({
+        message: '请选择要处理的指标！',
+        type: 'warning'
+      });
+    },
      getFeatureData(data){
       this.featureDataFromParent = data;
     },
@@ -92,7 +98,12 @@ export default {
       }
     },
     stepNext(active) {
-      this.active++;
+      if(this.active == 2 && (this.checkedFeats==null || this.checkedFeats.length==0))
+      {
+        this.open3();
+      }else{
+        this.active++;
+      }
     },
   },
   mounted() {

@@ -76,6 +76,12 @@ export default {
     };
   },
   methods: {
+    open3(msg) {
+        this.$message({
+          message: msg,
+          type: 'warning'
+        });
+    },
      getFeatureData(data){
       this.featureDataFromParent = data;
     },
@@ -85,7 +91,7 @@ export default {
     },
     getCheackedFeats(data) {
       this.checkedFeats = data;
-      console.log("收到子组件传来的值");
+      console.log("aaa收到子组件传来的值");
       console.log(this.checkedFeats);
     },
     handleDataFromChild(label) {
@@ -101,7 +107,13 @@ export default {
       }
     },
     stepNext(active) {
-      this.active++;
+      if(this.active == 2 && (this.checkedFeats==null || this.checkedFeats.length==0)){
+        this.open3("请选择需要分析的指标！")
+      }else if(this.active == 2 && (this.checkedFeats[0].missRate>30)){
+        this.open3("数据异常，无法分析！")
+      }else{
+        this.active++;
+      }
     },
     async exportContent() {
       try {
