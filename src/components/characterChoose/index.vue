@@ -35,7 +35,7 @@
             <h2 style="text-align: center" v-if="step==1">选择需要缺失补齐的特征</h2><h2 style="text-align: center; margin-top:-15px" v-if="step==2" class="top">选择需要统计分析的特征</h2>
             <!--缺失值补齐，病人画像， 描述性分析的 特征选择-->
             <div class="selectClass" v-if="curentAnalyzeStep==1">
-              <h3>文本类型字段</h3>
+              <h3>文本类型特征</h3>
               <div class="contain3">
                 <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==3">
                     <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="block invisible" v-for="n in (5 - countVisibleFeatures(3) % 5) % 5" :key="n.id"></div>
               </div>
-              <h3>连续数字类型字段</h3>
+              <h3>连续数字类型特征</h3>
               <div class="contain1">
                 <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==1">
                   <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
@@ -53,7 +53,7 @@
                 </div>
               <div class="block invisible" v-for="n in (5 - countVisibleFeatures(1) % 5 % 5) % 5" :key="n.id"></div>
               </div>
-              <h3>离散数字类型字段</h3>
+              <h3>离散数字类型特征</h3>
               <div class="contain2">
                 <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==2">
                     <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>

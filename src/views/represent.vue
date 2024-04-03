@@ -421,45 +421,55 @@ export default {
                   this.sociolOptions=[];
                   this.otherOptions=[];
                   let data = response.data;
+                  console.log("data",data)
                   let columnNametemp = Object.keys(data);
                   for (let i = 0; i < columnNametemp.length; i++) {
                     if (data[columnNametemp[i]] != null) {
                       const obj = {
-                        columnName: data[columnNametemp[i]].fieldName,
-                        columnDesc: data[columnNametemp[i]].fieldNameCh,
+                        columnName: data[columnNametemp[i]].featureName,
+                        columnDesc: data[columnNametemp[i]].chName,
                       };
-                      if (data[columnNametemp[i]].isDemography == 1) {
+                      if (data[columnNametemp[i]].isDemography == true) {  // 人口学
+                        console.log("人口学")
                         obj.columnisR = true;
                       } else {
                         obj.columnisR = false;
                       }
-                      if (data[columnNametemp[i]].isSociology == 1) {
+                      if (data[columnNametemp[i]].isSociology == true) { // 社会学
+                        console.log("社会学")
                         obj.columnisX = true;
                       } else {
                         obj.columnisX = false;
                       }
-                      if (data[columnNametemp[i]].isPhysiological == 1) {
+                      if (data[columnNametemp[i]].isPhysiological == true) { // 生理指标
+                        console.log("生理指标")
                         obj.columnisS = true;
                       } else {
                         obj.columnisS = false;
                       }
-                      if (!obj.columnisR && !obj.columnisS && !obj.columnisX) {
+                      if (!obj.columnisR && !obj.columnisS && !obj.columnisX) { // 其他
+                        console.log("其他指标")
                         obj.columnisO = true;
                       } else {
                         obj.columnisO = false;
                       }
+
                       if (obj.columnisR == true) {
                         this.demoOptions.push(obj);
                       }
+
                       if (obj.columnisS == true) {
                         this.physioOptions.push(obj);
                       }
+
                       if (obj.columnisX == true) {
                         this.sociolOptions.push(obj);
                       }
+
                       if (obj.columnisO == true) {
                         this.otherOptions.push(obj);
                       }
+                      
                       this.dataInOptions.push(obj);
                     }
                   }
@@ -582,6 +592,9 @@ export default {
     flex-direction: column;
       align-items: center;
   }
+}
+.form {
+  margin-left: 100px;
 }
 
 #maintest {

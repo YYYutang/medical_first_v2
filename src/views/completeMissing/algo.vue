@@ -11,12 +11,12 @@
       </div>
       <div>
         <div class="center">
-           <h2><br><br>请为每个变量选择填充方法<br><br></h2>
+           <h2><br><br>请为每个特征选择填充方法<br><br></h2>
         </div>
 
-          <h3 class="tips">连续数字类型字段</h3><br><br>
+          <h3 class="tips">连续数字类型特征</h3><br><br>
          <el-table :data="tableData1" style="width: 100%"> 
-          <el-table-column prop="index" label="指标" width="350"></el-table-column>
+          <el-table-column prop="index" label="特征" width="350"></el-table-column>
           <el-table-column prop="validNumber" label="有效值" width="350"></el-table-column>
           <el-table-column prop="missingQuantity" label="缺失量" width="350"></el-table-column>
           <el-table-column label="缺失值补齐方法" width="350">
@@ -36,9 +36,9 @@
           </el-table-column>
         </el-table><br>
 
-        <h3 class="tips">离散数字类型字段</h3><br><br>
+        <h3 class="tips">离散数字类型特征</h3><br><br>
          <el-table :data="tableData2" style="width: 100%"> 
-          <el-table-column prop="index" label="指标" width="350"></el-table-column>
+          <el-table-column prop="index" label="特征" width="350"></el-table-column>
           <el-table-column prop="validNumber" label="有效值" width="350"></el-table-column>
           <el-table-column prop="missingQuantity" label="缺失量" width="350"></el-table-column>
           <el-table-column label="缺失值补齐方法" width="350">
@@ -54,9 +54,9 @@
           </el-table-column>
         </el-table><br>
 
-        <h3 class="tips">文本类型字段</h3><br><br>
+        <h3 class="tips">文本类型特征</h3><br><br>
          <el-table :data="tableData3" style="width: 100%"> 
-          <el-table-column prop="index" label="指标" width="350"></el-table-column>
+          <el-table-column prop="index" label="特征" width="350"></el-table-column>
           <el-table-column prop="validNumber" label="有效值" width="350"></el-table-column>
           <el-table-column prop="missingQuantity" label="缺失量" width="350"></el-table-column>
           <el-table-column label="缺失值补齐方法" width="350">

@@ -14,11 +14,19 @@
       </div>
 
       <div id="stepcontain" v-show="showStep">
-        <datasetChoose :showDataManageStep="showDataManageStep=false" @send_data="getTableName" v-show="dataSelectForm.isShow" class="visual_datasetChoose"></datasetChoose>
-        <div style="margin-left: 50%; margin-top:10px" v-show="dataSelectForm.isShow">
-            <el-button type="primary" size="small" @click="submitForm(active)"
-              >下一步</el-button
-            >
+        <datasetChoose
+          :showDataManageStep="(showDataManageStep = false)"
+          @send_data="getTableName"
+          v-show="dataSelectForm.isShow"
+          class="visual_datasetChoose"
+        ></datasetChoose>
+        <div
+          style="margin-left: 50%; margin-top: 10px"
+          v-show="dataSelectForm.isShow"
+        >
+          <el-button type="primary" size="small" @click="submitForm(active)"
+            >下一步</el-button
+          >
         </div>
         <!--======================================     选择一条数据     ======================================================-->
         <el-form
@@ -30,7 +38,7 @@
           label-position="top"
         >
           <el-form-item prop="selectedData">
-            <h3>选择一个病人：</h3>
+            <h3>请选择一个病人：</h3>
             <div class="table" v-if="dataPre">
               <el-table
                 :data="tableData"
@@ -62,13 +70,37 @@
                   :prop="item"
                   width="150"
                 >
-                  <template slot-scope="{ row }">
-                    <div v-if="typeof row[item] === 'string' && row[item].length > 10" class="truncate-text">{{ row[item] }}</div>
+                  <!-- <template slot-scope="{ row }">
+                    <div
+                      v-if="
+                        typeof row[item] === 'string' && row[item].length > 10
+                      "
+                      :class="{ 'row-selected': row === selectedRow }"
+                      class="truncate-text"
+                    >
+                      {{ row[item] }}
+                    </div>
                     <div v-else class="truncate-text">{{ row[item] }}</div>
+                  </template> -->
+                  <template slot-scope="{ row }">
+                    <div
+                      :class="{ 'row-selected': row === selectedRow }"
+                      class="truncate-text"
+                      :style="
+                        row === selectedRow
+                          ? {
+                              backgroundColor: '#002766',
+                              color: '#fff',
+                              fontWeight: 'bold',
+                            }
+                          : {}
+                      "
+                    >
+                      {{ row[item] }}
+                    </div>
                   </template>
                 </el-table-column>
-              </el-table>   
-
+              </el-table>
             </div>
             <br />
             <el-pagination
@@ -119,6 +151,7 @@ export default {
   },
   data() {
     return {
+      selectedRow: null,
       dataPre: false,
       showForm: true,
       showChart: false,
@@ -143,16 +176,24 @@ export default {
       kidneyAbnormal: 0,
       liverAbnormal: 0,
       kidneyFormalData: [
-        { name: "BUN", min: 3.2, max: 7.1, nameCH: "血尿素氮" },
-        { name: "BU", min: 3.2, max: 7.0, nameCH: "血尿素" },
-        { name: "SCR", min: 50, max: 90, nameCH: "血肌酐" },
-        { name: "UCR", min: 100, max: 170, nameCH: "尿肌酐" },
+        // { name: "BUN", min: 3.2, max: 7.1, nameCH: "血尿素氮" },
+        // { name: "BU", min: 3.2, max: 7.0, nameCH: "血尿素" },
+        // { name: "SCR", min: 50, max: 90, nameCH: "血肌酐" },
+        // { name: "UCR", min: 100, max: 170, nameCH: "尿肌酐" },
+        { name: "MONO_num", min: 3.2, max: 7.1, nameCH: "血尿素氮" },
+        { name: "EO_num", min: 3.2, max: 7.0, nameCH: "血尿素" },
+        { name: "BASO_num", min: 50, max: 90, nameCH: "血肌酐" },
+        { name: "NEUT_per", min: 100, max: 170, nameCH: "尿肌酐" },
       ],
       liverFormalData: [
-        { name: "ALT", min: 0, max: 40, nameCH: "谷丙转氨酶" },
-        { name: "AST", min: 0, max: 35, nameCH: "谷草转氨酶" },
-        { name: "GGT", min: 10, max: 45, nameCH: "谷氨酰胺转移酶" },
-        { name: "ALP", min: 45, max: 125, nameCH: "碱性磷酸酶" },
+        // { name: "ALT", min: 0, max: 40, nameCH: "谷丙转氨酶" },
+        // { name: "AST", min: 0, max: 35, nameCH: "谷草转氨酶" },
+        // { name: "GGT", min: 10, max: 45, nameCH: "谷氨酰胺转移酶" },
+        // { name: "ALP", min: 45, max: 125, nameCH: "碱性磷酸酶" },
+        { name: "LYMPH_per", min: 0, max: 40, nameCH: "谷丙转氨酶" },
+        { name: "MONO_per", min: 0, max: 35, nameCH: "谷草转氨酶" },
+        { name: "EO_per", min: 10, max: 45, nameCH: "谷氨酰胺转移酶" },
+        { name: "BASO_per", min: 45, max: 125, nameCH: "碱性磷酸酶" },
       ],
       value1: [],
       value2: [],
@@ -200,8 +241,8 @@ export default {
     };
   },
   methods: {
-    getTableName(tableName){
-      console.log("表明",tableName)
+    getTableName(tableName) {
+      console.log("表明", tableName);
       this.dataSelectForm.formData.selectedData = tableName;
     },
     onSubmitDM() {
@@ -433,82 +474,79 @@ export default {
       barOption && barChart.setOption(barOption);
     },
     submitForm(stepIndex) {
-      console.log("开始...",stepIndex)
+      console.log("开始...", stepIndex);
       let formName = this.formArray[stepIndex];
-          console.log(stepIndex + "sdsdssstepindex" + this.active + "active");
-          if (stepIndex < 1) {
-            this[formName].isShow = false;
-            this.active++;
-            let nextFormName = this.formArray[++stepIndex];
-            this[nextFormName].isShow = true;
-            if (this.active == 1) {
-              console.log("表名称：",this.dataSelectForm.formData.selectedData)
-              let tableName = this.dataSelectForm.formData.selectedData;
-              getRequest(
-                "/feature/getInfoByTableName?tableName=" +
-                  tableName +
-                  "&page=" +
-                  1
-              ).then((response) => {
-                this.dataColumn = Object.keys(response.data[0]);
-                this.allPage = response.total * 10;
-                this.tableData = response.data;
-                this.dataPre = true;
-              });
-            }
-          } else if (stepIndex == 1) {
-            console.log("stepIndex == 1")
-            this.showChart = !this.showChart;
-            this.showStep = !this.showStep;
-            this.head1 = !this.head1;
-            this.head2 = !this.head2;
-            this.tableisShow = !this.tableisShow;
-            console.log("data:",this.oneSelectForm.formData.selectedData)
-            let select = this.oneSelectForm.formData.selectedData;
-            const temp1 = [0, 0, 0, 0];
-            temp1[0] = select["BUN"];
-            temp1[1] = select["BU"];
-            temp1[2] = select["SCR"];
-            temp1[3] = select["UCR"];
-            this.kidneyPatient = temp1;   // 肾脏数据
-            this.patientData = temp1;
-            this.liverPatient[0] = select["ALT"];
-            this.liverPatient[1] = select["AST"];
-            this.liverPatient[2] = select["GGT"];
-            this.liverPatient[3] = select["ALP"];
-            let nameArr = this.kidneyFormalData.map((item) => {
-              return item.nameCH;
-            });
-            this.baryData = nameArr;
-            var count = 0;
-            var count1 = 0;
-            for (let j in select) {
-              for (var i = 0; i < this.kidneyFormalData.length; i++) {
-                if (this.kidneyFormalData[i].name == j) {
-                  if (
-                    select[j] < this.kidneyFormalData[i].min ||
-                    select[j] > this.kidneyFormalData[i].max
-                  ) {
-                    console.log(select[j]);
-                    count++;
-                  }
-                }
-              }
-              for (var i = 0; i < this.liverFormalData.length; i++) {
-                if (this.liverFormalData[i].name == j) {
-                  if (
-                    select[j] < this.liverFormalData[i].min ||
-                    select[j] > this.liverFormalData[i].max
-                  ) {
-                    count1++;
-                  }
-                }
+      console.log(stepIndex + "sdsdssstepindex" + this.active + "active");
+      if (stepIndex < 1) {
+        this[formName].isShow = false;
+        this.active++;
+        let nextFormName = this.formArray[++stepIndex];
+        this[nextFormName].isShow = true;
+        if (this.active == 1) {
+          console.log("表名称：", this.dataSelectForm.formData.selectedData);
+          let tableName = this.dataSelectForm.formData.selectedData;
+          getRequest(
+            "/feature/getInfoByTableName?tableName=" + tableName + "&page=" + 1
+          ).then((response) => {
+            this.dataColumn = Object.keys(response.data[0]);
+            this.allPage = response.total * 10;
+            this.tableData = response.data;
+            this.dataPre = true;
+          });
+        }
+      } else if (stepIndex == 1) {
+        console.log("stepIndex == 1");
+        this.showChart = !this.showChart;
+        this.showStep = !this.showStep;
+        this.head1 = !this.head1;
+        this.head2 = !this.head2;
+        this.tableisShow = !this.tableisShow;
+        console.log("data:", this.oneSelectForm.formData.selectedData);
+        let select = this.oneSelectForm.formData.selectedData;
+        const temp1 = [0, 0, 0, 0];
+        temp1[0] = select["MONO_num"];
+        temp1[1] = select["EO_num"];
+        temp1[2] = select["BASO_num"];
+        temp1[3] = select["NEUT_per"];
+        this.kidneyPatient = temp1; // 肾脏数据
+        this.patientData = temp1;
+        this.liverPatient[0] = select["LYMPH_per"];
+        this.liverPatient[1] = select["MONO_per"];
+        this.liverPatient[2] = select["EO_per"];
+        this.liverPatient[3] = select["BASO_per"];
+        let nameArr = this.kidneyFormalData.map((item) => {
+          return item.nameCH;
+        });
+        this.baryData = nameArr;
+        var count = 0;
+        var count1 = 0;
+        for (let j in select) {
+          for (var i = 0; i < this.kidneyFormalData.length; i++) {
+            if (this.kidneyFormalData[i].name == j) {
+              if (
+                select[j] < this.kidneyFormalData[i].min ||
+                select[j] > this.kidneyFormalData[i].max
+              ) {
+                console.log(select[j]);
+                count++;
               }
             }
-            this.kidneyAbnormal = count;
-            this.liverAbnormal = count1;
-            this.drawChart();
           }
+          for (var i = 0; i < this.liverFormalData.length; i++) {
+            if (this.liverFormalData[i].name == j) {
+              if (
+                select[j] < this.liverFormalData[i].min ||
+                select[j] > this.liverFormalData[i].max
+              ) {
+                count1++;
+              }
+            }
+          }
+        }
+        this.kidneyAbnormal = count;
+        this.liverAbnormal = count1;
+        this.drawChart();
+      }
       //   } else {
       //     console.log("error submit!!");
       //     return false;
@@ -551,8 +589,8 @@ export default {
       this.$refs.oneSelectForm.setCurrentRow(row);
     },
     handleCurrentChange(val) {
-      console.log("当前值：",val)
       this.currentRow = val;
+      this.selectedRow = val;
       this.oneSelectForm.formData.selectedData = this.currentRow;
     },
     handleCurrentClick(val) {
@@ -583,10 +621,9 @@ export default {
   }
 }
 .el-form-item {
-
-        width: 60%;
-    margin: 0 auto;
-    margin-top: 30px;
+  width: 60%;
+  margin: 0 auto;
+  margin-top: 30px;
 }
 #maintest {
   display: flex;
@@ -620,8 +657,8 @@ export default {
   margin-top: 40px;
 }
 #step[data-v-b6bb290c] {
-    height: 100%;
-    margin-top: 0px;
+  height: 100%;
+  margin-top: 0px;
 }
 .truncate-text {
   overflow: hidden;
@@ -632,13 +669,12 @@ export default {
 //     -webkit-box-orient: vertical;
 //     overflow-y: hidden;
 // }
-.visual_datasetChoose{
-   ::v-deep .right_table {
+.visual_datasetChoose {
+  ::v-deep .right_table {
     height: 630px;
   }
-   ::v-deep .left_tree {
+  ::v-deep .left_tree {
     height: 630px;
   }
 }
-
 </style>

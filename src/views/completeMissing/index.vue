@@ -69,9 +69,9 @@ export default {
     
   },
   methods: {
-    open3() {
+    open3(msg) {
         this.$message({
-          message: '请选择要填充的指标！',
+          message: msg,
           type: 'warning'
         });
     },
@@ -160,10 +160,20 @@ export default {
       }
     },
     stepNext(active) {
+      let flag1 = false;
+      let flag2 = false;
+      for(let i=0; i<this.checkedFeats.length; i++){
+        if(this.checkedFeats[i].missRate==100) flag1 = true;
+        if((this.checkedFeats[i].missRate==0)) flag2 = true;
+      }
       if(this.active == 2 && (this.checkedFeats==null || this.checkedFeats.length==0)) {
         // 判断是否选择数据
           this.characterChooseVisiable = true;
-          this.open3();
+          this.open3('请选择要填充的指标！');
+      }else if(this.active == 2 && flag1==true){
+        this.open3("存在缺失率高达100%的特征，无法补齐，请重新选择！")
+      }else if(this.active == 2 && flag2==true){
+        this.open3("存在已经没有缺失的特征，不需要补齐，请重新选择！")
       }else{
          this.active++;
         if(this.active == 3) this.isback = false;

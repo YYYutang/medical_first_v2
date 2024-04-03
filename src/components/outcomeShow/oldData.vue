@@ -10,8 +10,15 @@
             height="450"
             style="width: auto"
             border
-            :row-style="{height:'33px',lineHeight:'10px',padding:'0px'}"
-        :header-cell-style="{ background: '#58AAFF', color: '#fff', lineHeight:'12px',padding:'0px',height:'34px',textAlign:'center' }"
+            :row-style="{ height: '33px', lineHeight: '10px', padding: '0px' }"
+            :header-cell-style="{
+              background: '#58AAFF',
+              color: '#fff',
+              lineHeight: '12px',
+              padding: '0px',
+              height: '34px',
+              textAlign: 'center',
+            }"
             stripe
           >
             <el-table-column
@@ -38,22 +45,56 @@
           <el-radio :label="5">全部数据</el-radio>
         </el-radio-group>
         <br />
-        <div  class="table1">
-          <el-table
+        <div class="table1">
+          <!-- <el-table
             :data="dataNow"
             border
             class="tableDown"
-          :row-style="{height:'33px',lineHeight:'10px',padding:'0px'}"
-        :header-cell-style="{ background: '#58AAFF', color: '#fff', lineHeight:'12px',padding:'0px',height:'34px',textAlign:'center' }"
+            :row-style="{ height: '33px', lineHeight: '10px', padding: '0px' }"
+            :header-cell-style="{
+              background: '#58AAFF',
+              color: '#fff',
+              lineHeight: '12px',
+              padding: '0px',
+              height: '34px',
+              textAlign: 'center',
+            }"
           >
             <el-table-column
               v-for="(item, index) in dataColumn"
               :key="index"
               :label="item"
               :prop="item"
-             align="center"
-              style="width:auto;min-width:200px;"
+              align="center"
+              style="width: auto; min-width: 200px"
             >
+            </el-table-column>
+          </el-table> -->
+          <el-table
+            :data="dataNow"
+            border
+            class="tableDown"
+            :row-style="{ height: '33px', lineHeight: '10px', padding: '0px' }"
+            :header-cell-style="{
+              background: '#58AAFF',
+              color: '#fff',
+              lineHeight: '12px',
+              padding: '0px',
+              height: '34px',
+              textAlign: 'center',
+            }"
+          >
+            <el-table-column
+              v-for="(item, index) in dataColumn"
+              :key="index"
+              :label="item"
+              :prop="item"
+              align="center"
+              style="width: auto; min-width: 200px"
+            >
+              <template slot-scope="{ row }">
+                <div class="cell-content">{{ row[item] }}</div>
+              </template>
             </el-table-column>
           </el-table>
         </div>
@@ -203,25 +244,21 @@ export default {
 };
 </script>
 <style scoped>
-
 .table {
   display: flex;
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  
-
 }
-.table1{
-  width:1200px;
-     display: flex;
-    justify-content: center;
+.table1 {
+  width: 1200px;
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
- .el-table{
-   
-   width:auto
- }
+.el-table {
+  width: auto;
+}
 .pagination {
   margin-top: 50px;
   display: flex;
@@ -235,5 +272,11 @@ export default {
   color: black;
   font-size: 20px;
   font-weight: bold;
+}
+.cell-content {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
