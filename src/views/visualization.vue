@@ -137,6 +137,10 @@
           style="width: 700px; height: 600px"
         ></div>
       </div>
+        <div class="button1" v-if="showButton">
+        <el-button  type="primary" @click="stepBack(active)">上一步</el-button>
+      </div>
+
     </el-container>
   </div>
 </template>
@@ -165,7 +169,7 @@ export default {
       healthDataLow: [3.2, 3.2, 50, 100],
       healthDataHigh: [7.1, 7.0, 90, 170],
       patientData: [],
-      formArray: ["dataSelectForm", "oneSelectForm"],
+      formArray: ["dataSelectForm", "oneSelectForm","outcome"],
       active: 0,
       currentRow: null,
       tableData: [],
@@ -175,6 +179,7 @@ export default {
       liverPatient: [],
       kidneyAbnormal: 0,
       liverAbnormal: 0,
+      showButton:false,
       kidneyFormalData: [
         // { name: "BUN", min: 3.2, max: 7.1, nameCH: "血尿素氮" },
         // { name: "BU", min: 3.2, max: 7.0, nameCH: "血尿素" },
@@ -495,12 +500,13 @@ export default {
           });
         }
       } else if (stepIndex == 1) {
-        console.log("stepIndex == 1");
         this.showChart = !this.showChart;
         this.showStep = !this.showStep;
         this.head1 = !this.head1;
         this.head2 = !this.head2;
         this.tableisShow = !this.tableisShow;
+        this.showButton=!this.showButton;
+        this.active++;
         console.log("data:", this.oneSelectForm.formData.selectedData);
         let select = this.oneSelectForm.formData.selectedData;
         const temp1 = [0, 0, 0, 0];
@@ -563,7 +569,19 @@ export default {
           this.tableData = [];
         }
         let formName = this.formArray[stepIndex];
-        this[formName].isShow = false;
+
+        if(formName=='outcome'){
+          console.log('in')
+          this.showChart = !this.showChart;
+        this.showStep = !this.showStep;
+        this.head1 = !this.head1;
+        this.head2 = !this.head2;
+        this.tableisShow = !this.tableisShow;
+        this.showButton=!this.showButton;
+        }
+        else{
+               this[formName].isShow = false;
+        }
         this.active--;
         let preFormName = this.formArray[--stepIndex];
         this[preFormName].isShow = true;
@@ -676,5 +694,10 @@ export default {
   ::v-deep .left_tree {
     height: 630px;
   }
+}
+.button1 {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
 }
 </style>
