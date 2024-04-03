@@ -595,6 +595,7 @@ export default {
 }
 .form {
   margin-left: 100px;
+  // overflow-x: hidden;
 }
 
 #maintest {
@@ -620,7 +621,7 @@ export default {
   // left: 30%;
   width: 100%;
   height: 100%;
-  left: 15%;
+  left: 10%;
   overflow-y: auto;
 }
 .represent_datasetChoose{

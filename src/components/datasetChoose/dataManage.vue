@@ -300,6 +300,7 @@
           </div>
           <!-- 显示筛选出来的表数据 -->
           <el-table
+            v-loading="filterLoading"
             :data="addTableData"
             stripe
             style="width: 100%"
@@ -504,6 +505,7 @@
           <!-- 显示表数据 -->
           <div class="table_data">
             <el-table
+              v-loading="loadingTableData"
               :data="tableData"
               stripe
               style="width: 100%"
@@ -580,8 +582,8 @@ export default {
 
   data() {
     return {
-      // 获取虚拟树形结构数据
-      // treeData: JSON.parse(JSON.stringify(treeData)),
+      filterLoading: true,
+      loadingTableData: true,
       treeData: [],
       // 获取虚拟表格数据
       // tableData: JSON.parse(JSON.stringify(tableData)),
@@ -982,15 +984,18 @@ export default {
         });
     },
     getTableData(tableId, tableName) {
+      this.loadingTableData = true;
       this.dataPred = false;
       getTableData("/api/getTableData", tableId, tableName)
         .then((response) => {
           // 获取表数据
           this.tableData = response.data;
           this.dataPred = true;
+          this.loadingTableData = false;
         })
         .catch((error) => {
           console.log(error);
+          this.loadingTableData = false;
         });
     },
     changeData(data) {
@@ -1168,6 +1173,7 @@ export default {
       this.characterOptItem = item;
     },
     submitCharacterCondition() {
+      this.filterLoading = true;
       console.log("this.addDataForm.characterList");
       console.log(this.addDataForm.characterList)
       if(this.addDataForm.dataName==null || this.addDataForm.dataName=='') {
@@ -1212,6 +1218,7 @@ export default {
 
       this.$axios(this.options).then((res) => {
         this.addTableData = res.data;
+        this.filterLoading = false;
       });
       this.showAddTableData = true;
       let s = JSON.stringify(this.addDataForm.characterList, null, 2);
@@ -1507,4 +1514,7 @@ export default {
 .table_data {
   overflow-y: auto;
 }
+body {
+    margin: 0;
+  }
 </style>
