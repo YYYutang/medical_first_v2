@@ -16,6 +16,11 @@
               :dataColumns="dataInOptions"
             >
             </oldData>
+            <div class="button1" v-if="oldShow">
+              <el-button size="small" @click="stepBack(active)"
+                >上一步</el-button
+              >
+            </div>
           </el-tab-pane>
           <el-tab-pane label="处理后数据统计分析" name="second"
             ><newData
@@ -26,8 +31,13 @@
               :dataName="dataSelectForm.formData.selectedData"
               :columnName="columnSelectForm.formData.selectedData"
               :chartDatay="chartDatay"
-            ></newData
-          ></el-tab-pane>
+            ></newData>
+            <div class="button1" v-if="newShow">
+              <el-button size="small" @click="stepBack(active)"
+                >上一步</el-button
+              >
+            </div>
+          </el-tab-pane>
         </el-tabs>
       </div>
     </el-header>
@@ -41,8 +51,13 @@
         </el-steps>
       </div>
       <div id="stepcontain" v-show="showStep">
-        <datasetChoose v-show="dataSelectForm.isShow" :showDataManageStep="showDataManageStep=false" @send_data="getTableName" class="represent_datasetChoose"></datasetChoose>
-        <div class="button1"  v-show="dataSelectForm.isShow">
+        <datasetChoose
+          v-show="dataSelectForm.isShow"
+          :showDataManageStep="(showDataManageStep = false)"
+          @send_data="getTableName"
+          class="represent_datasetChoose"
+        ></datasetChoose>
+        <div class="button1" v-show="dataSelectForm.isShow">
           <el-button size="small" type="primary" @click="submitForm(active)"
             >下一步</el-button
           >
@@ -71,25 +86,18 @@
                   :span="6"
                 >
                   <div v-if="item.columnisR">
-                    <el-tooltip
-                      effect="light"
-                      :content="item.columnDesc"
-                      placement="top"
+                    <el-checkbox
+                      class="radio"
+                      :label="item.columnName"
+                      border
                       style="margin-top: 20px"
+                      >{{ item.columnName }}</el-checkbox
                     >
-                      <el-checkbox
-                        class="radio"
-                        :label="item.columnName"
-                        border
-                        style="margin-top: 20px"
-                        >{{ item.columnName }}</el-checkbox
-                      >
-                    </el-tooltip>
                   </div>
                 </el-col>
               </el-row>
               <el-row :gutter="10">
-                <h5 class="text" style="margin-top:20px">行为学指标</h5>
+                <h5 class="text" style="margin-top: 20px">行为学指标</h5>
 
                 <el-col
                   v-for="item in sociolOptions"
@@ -97,25 +105,18 @@
                   :span="6"
                 >
                   <div v-if="item.columnisX">
-                    <el-tooltip
-                      effect="light"
-                      :content="item.columnDesc"
-                      placement="top"
+                    <el-checkbox
+                      class="radio"
+                      :label="item.columnName"
+                      border
                       style="margin-top: 20px"
+                      >{{ item.columnName }}</el-checkbox
                     >
-                      <el-checkbox
-                        class="radio"
-                        :label="item.columnName"
-                        border
-                        style="margin-top: 20px"
-                        >{{ item.columnName }}</el-checkbox
-                      >
-                    </el-tooltip>
                   </div>
                 </el-col>
               </el-row>
               <el-row :gutter="10">
-                <h5 class="text" style="margin-top:20px">生理指标</h5>
+                <h5 class="text" style="margin-top: 20px">生理指标</h5>
 
                 <el-col
                   v-for="item in physioOptions"
@@ -123,45 +124,31 @@
                   :span="6"
                 >
                   <div v-if="item.columnisS">
-                    <el-tooltip
-                      effect="light"
-                      :content="item.columnDesc"
-                      placement="top"
+                    <el-checkbox
+                      class="radio"
+                      :label="item.columnName"
+                      border
                       style="margin-top: 20px"
+                      >{{ item.columnName }}</el-checkbox
                     >
-                      <el-checkbox
-                        class="radio"
-                        :label="item.columnName"
-                        border
-                        style="margin-top: 20px"
-                        >{{ item.columnName }}</el-checkbox
-                      >
-                    </el-tooltip>
                   </div>
                 </el-col>
               </el-row>
               <el-row :gutter="10">
-                <h5 class="text" style="margin-top:20px">其他指标</h5>
+                <h5 class="text" style="margin-top: 20px">其他指标</h5>
                 <el-col
                   v-for="item in otherOptions"
                   :key="item.columnName"
                   :span="6"
                 >
                   <div v-if="item.columnisO">
-                    <el-tooltip
-                      effect="light"
-                      :content="item.columnDesc"
-                      placement="top"
+                    <el-checkbox
+                      class="radio"
+                      :label="item.columnName"
+                      border
                       style="margin-top: 20px"
+                      >{{ item.columnName }}</el-checkbox
                     >
-                      <el-checkbox
-                        class="radio"
-                        :label="item.columnName"
-                        border
-                        style="margin-top: 20px"
-                        >{{ item.columnName }}</el-checkbox
-                      >
-                    </el-tooltip>
                   </div>
                 </el-col>
               </el-row>
@@ -251,7 +238,6 @@
             >
           </div>
         </el-form>
-
       </div>
     </el-container>
   </div>
@@ -267,7 +253,7 @@ export default {
     knn,
     oldData,
     newData,
-    datasetChoose
+    datasetChoose,
   },
   data() {
     return {
@@ -336,7 +322,7 @@ export default {
       value1: [],
       value2: [],
       chartDatay: [],
-      formArray: ["dataSelectForm", "columnSelectForm", "algoForm"],
+      formArray: ["dataSelectForm", "columnSelectForm", "algoForm", "outcome"],
       active: 0,
 
       //数据选择-----------------------------------------------------------------------------------------------
@@ -397,141 +383,159 @@ export default {
   methods: {
     open3() {
       this.$message({
-        message: '请选择要处理的指标！',
-        type: 'warning'
+        message: "请选择要处理的指标！",
+        type: "warning",
       });
     },
-    getTableName(tableName){
-      console.log("表明",tableName)
+    getTableName(tableName) {
+      console.log("表明", tableName);
       this.dataSelectForm.formData.selectedData = tableName;
     },
     submitForm(stepIndex) {
       let formName = this.formArray[stepIndex];
-          if (stepIndex < 2) {
-            this[formName].isShow = false;
-            this.active++;
-            let nextFormName = this.formArray[++stepIndex];
-            this[nextFormName].isShow = true;
-            if (this.active == 1) {
-              let tableName = this.dataSelectForm.formData;
-              getRequest("/feature/getAllFiled/" + tableName.selectedData).then(
-                (response) => {
-                  this.demoOptions = [];
-                  this.physioOptions = [];
-                  this.sociolOptions=[];
-                  this.otherOptions=[];
-                  let data = response.data;
-                  console.log("data",data)
-                  let columnNametemp = Object.keys(data);
-                  for (let i = 0; i < columnNametemp.length; i++) {
-                    if (data[columnNametemp[i]] != null) {
-                      const obj = {
-                        columnName: data[columnNametemp[i]].featureName,
-                        columnDesc: data[columnNametemp[i]].chName,
-                      };
-                      if (data[columnNametemp[i]].isDemography == true) {  // 人口学
-                        console.log("人口学")
-                        obj.columnisR = true;
-                      } else {
-                        obj.columnisR = false;
-                      }
-                      if (data[columnNametemp[i]].isSociology == true) { // 社会学
-                        console.log("社会学")
-                        obj.columnisX = true;
-                      } else {
-                        obj.columnisX = false;
-                      }
-                      if (data[columnNametemp[i]].isPhysiological == true) { // 生理指标
-                        console.log("生理指标")
-                        obj.columnisS = true;
-                      } else {
-                        obj.columnisS = false;
-                      }
-                      if (!obj.columnisR && !obj.columnisS && !obj.columnisX) { // 其他
-                        console.log("其他指标")
-                        obj.columnisO = true;
-                      } else {
-                        obj.columnisO = false;
-                      }
-
-                      if (obj.columnisR == true) {
-                        this.demoOptions.push(obj);
-                      }
-
-                      if (obj.columnisS == true) {
-                        this.physioOptions.push(obj);
-                      }
-
-                      if (obj.columnisX == true) {
-                        this.sociolOptions.push(obj);
-                      }
-
-                      if (obj.columnisO == true) {
-                        this.otherOptions.push(obj);
-                      }
-                      
-                      this.dataInOptions.push(obj);
-                    }
+      this.active++;
+      if (stepIndex < 2) {
+        let nextFormName = this.formArray[++stepIndex];
+        if (this.active == 1) {
+          this[formName].isShow = false;
+          this[nextFormName].isShow = true;
+          let tableName = this.dataSelectForm.formData;
+          getRequest("/feature/getAllFiled/" + tableName.selectedData).then(
+            (response) => {
+              this.demoOptions = [];
+              this.physioOptions = [];
+              this.sociolOptions = [];
+              this.otherOptions = [];
+              let data = response.data;
+              console.log("data", data);
+              let columnNametemp = Object.keys(data);
+              for (let i = 0; i < columnNametemp.length; i++) {
+                if (data[columnNametemp[i]] != null) {
+                  const obj = {
+                    columnName: data[columnNametemp[i]].featureName,
+                  };
+                  if (data[columnNametemp[i]].isDemography == true) {
+                    // 人口学
+                    console.log("人口学");
+                    obj.columnisR = true;
+                  } else {
+                    obj.columnisR = false;
                   }
+                  if (data[columnNametemp[i]].isSociology == true) {
+                    // 社会学
+                    console.log("社会学");
+                    obj.columnisX = true;
+                  } else {
+                    obj.columnisX = false;
+                  }
+                  if (data[columnNametemp[i]].isPhysiological == true) {
+                    // 生理指标
+                    console.log("生理指标");
+                    obj.columnisS = true;
+                  } else {
+                    obj.columnisS = false;
+                  }
+                  if (!obj.columnisR && !obj.columnisS && !obj.columnisX) {
+                    // 其他
+                    console.log("其他指标");
+                    obj.columnisO = true;
+                  } else {
+                    obj.columnisO = false;
+                  }
+
+                  if (obj.columnisR == true) {
+                    this.demoOptions.push(obj);
+                  }
+
+                  if (obj.columnisS == true) {
+                    this.physioOptions.push(obj);
+                  }
+
+                  if (obj.columnisX == true) {
+                    this.sociolOptions.push(obj);
+                  }
+
+                  if (obj.columnisO == true) {
+                    this.otherOptions.push(obj);
+                  }
+
+                  this.dataInOptions.push(obj);
                 }
-              );
-              getRequest(
-                "/feature/getInfoByTableName?tableName=" +
-                  tableName.selectedData +
-                  "&page=" +
-                  1
-              ).then((response) => {
-                this.dataAll = response;
-              });
-              getRequest(
-                "/feature/getStatisticaldData/" + tableName.selectedData
-              ).then((response) => {
-                console.log("测试.....")
-                console.log(response)
-                this.statisData = response.data;
-              });
-            }
-            if (this.active == 2) {
-              const page = 1;
-              if(this.columnSelectForm.formData.selectedData==null || this.columnSelectForm.formData.selectedData.length==0){
-                this.open3(); // TODO 控制下一步跳转
-                return;
-              }else{
-                getRequest(
-                "/feature/getInfoBySelectedFiled?page=" +
-                  page +
-                  "&tableName=" +
-                  this.dataSelectForm.formData.selectedData +
-                  "&params=" +
-                  this.columnSelectForm.formData.selectedData
-                ).then((response) => {
-                  this.dataChoose = response;
-                });
               }
             }
-          } else if (stepIndex == 2) {
-            const params = {
-              tableName: this.dataSelectForm.formData.selectedData, //模型选择的数据表表名
-              runParams: this.columnSelectForm.formData.selectedData, //模型选择的属性列（数组）
-              // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
-              aiName: "pca",
-            };
-            postRequest("feature/runAi", params).then((response) => {
-  
-              for (let i in response.data[0]) {
-                var num = parseInt(i) + 1;
-                this.dataNewColumns.push("主成分" + num);
-                this.dataNew["主成分" + num] = response.data[0][i];
-              }
-              for (let i in response.data[1]) {
-                this.chartDatay.push(response.data[1][i]);
-              }
-              this.head1 = !this.head1;
-              this.head2 = !this.head2;
-              this.showStep = !this.showStep;
+          );
+          getRequest(
+            "/feature/getInfoByTableName?tableName=" +
+              tableName.selectedData +
+              "&page=" +
+              1
+          ).then((response) => {
+            this.dataAll = response;
+          });
+          getRequest(
+            "/feature/getStatisticaldData/" + tableName.selectedData
+          ).then((response) => {
+            console.log("测试.....");
+            console.log(response);
+            this.statisData = response.data;
+          });
+        }
+        if (this.active == 2) {
+          const page = 1;
+          if (
+            this.columnSelectForm.formData.selectedData == null ||
+            this.columnSelectForm.formData.selectedData.length == 0
+          ) {
+            this.open3(); // TODO 控制下一步跳转
+            this.active--;
+            return;
+          } else {
+            this[formName].isShow = false;
+            this[nextFormName].isShow = true;
+            getRequest(
+              "/feature/getInfoBySelectedFiled?page=" +
+                page +
+                "&tableName=" +
+                this.dataSelectForm.formData.selectedData +
+                "&params=" +
+                this.columnSelectForm.formData.selectedData
+            ).then((response) => {
+              this.dataChoose = response;
             });
           }
-          this.newShow = true;
+        }
+      } else if (stepIndex == 2) {
+        const params = {
+          tableName: this.dataSelectForm.formData.selectedData, //模型选择的数据表表名
+          runParams: this.columnSelectForm.formData.selectedData, //模型选择的属性列（数组）
+          // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
+          aiName: "pca",
+        };
+        postRequest("feature/runAi", params)
+          .then((response) => {
+            for (let i in response.data[0]) {
+              var num = parseInt(i) + 1;
+              this.dataNewColumns.push("主成分" + num);
+              this.dataNew["主成分" + num] = response.data[0][i];
+            }
+            for (let i in response.data[1]) {
+              this.chartDatay.push(response.data[1][i]);
+            }
+            this.head1 = !this.head1;
+            this.head2 = !this.head2;
+            this.showStep = !this.showStep;
+          })
+          .catch((error) => {
+            console.log(error);
+            this.active--;
+          });
+      } 
+      if(this.activeName=='first'){
+               this.oldShow = true;
+      }
+        if(this.activeName=='second'){
+               this.newShow = true;
+      }
     },
     resetForm(stepIndex) {
       let formName = this.formArray[stepIndex];
@@ -543,7 +547,15 @@ export default {
           this.dataInOptions = [];
         }
         let formName = this.formArray[stepIndex];
-        this[formName].isShow = false;
+        if (formName == "outcome") {
+          this.newShow = false;
+          this.oldShow = false;
+          this.head1 = !this.head1;
+          this.head2 = !this.head2;
+          this.showStep = !this.showStep;
+        } else {
+          this[formName].isShow = false;
+        }
         this.active--;
         let preFormName = this.formArray[--stepIndex];
         this[preFormName].isShow = true;
@@ -588,9 +600,9 @@ export default {
 .el-form {
   /deep/.el-form-item__content {
     line-height: 20px;
-      display: flex;
+    display: flex;
     flex-direction: column;
-      align-items: center;
+    align-items: center;
   }
 }
 .form {
@@ -621,20 +633,19 @@ export default {
   width: 100%;
   height: 100%;
   left: 15%;
-  overflow-y: auto;
 }
-.represent_datasetChoose{
-   ::v-deep .right_table {
+.represent_datasetChoose {
+  ::v-deep .right_table {
     height: 630px;
   }
-   ::v-deep .left_tree {
+  ::v-deep .left_tree {
     height: 630px;
   }
 }
 .button1 {
-  display:flex;
+  display: flex;
   justify-content: center;
-  margin-top:10px
+  margin-top: 10px;
 }
 .text {
   font-size: 14px;

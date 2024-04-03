@@ -251,7 +251,7 @@ export default {
   align-items: center;
 }
 .table1 {
-  width: 1200px;
+ width:1000px;
   display: flex;
   justify-content: center;
   align-items: center;

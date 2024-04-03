@@ -32,7 +32,7 @@ export default {
       this.$router.push("/dash");
     },
     linktoDataManage() {
-      this.$router.push("/dataManage");
+      this.$router.push("/dataManagePublic");
     },
     linktoReperesent() {
       this.$router.push("/represent");
