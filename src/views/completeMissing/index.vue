@@ -9,10 +9,10 @@
         <el-button size="small" v-if="active!=1" @click="stepBack(active)">上一步</el-button>
         <el-button size="small" type="primary" v-if="active!=4" @click="stepNext(active)"
           >下一步</el-button>
-        <el-button size="small" type="primary" v-if="active==4" @click="dialogVisible = true"
+        <el-button size="small" type="primary" v-if="active==4" @click="exportFile()"
           >导出</el-button>
       </div>
-      <el-dialog
+      <!-- <el-dialog
         title="提示"
         :visible.sync="dialogVisible"
         width="30%"
@@ -25,7 +25,7 @@
           <el-button @click="dialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="exportFile()">确 定</el-button>
         </span>
-    </el-dialog>
+    </el-dialog> -->
     </el-container>
   </div>
 </template>
@@ -51,7 +51,7 @@ export default {
       tableData3FromParent: [],
       featureDataFromParent: [],
       selectTreeNode:[],
-      dialogVisible: false,
+      // dialogVisible: false,
       filePath: '',
       fileName: '',
       active: 1,
@@ -107,15 +107,26 @@ export default {
         path: this.filePath,
         fileName: this.fileName
       }
-      console.log("文件上产信息为：")
-      console.log(dataFillMethodVo)
       postRequest("/api/exportFile",allParam).then(response=>{
-        this.open2()
-        this.dialogVisible = false;
-      }).catch(error=>{
+        let blob = new Blob([response.data], { type: 'text/csv' });
+        // 创建 Data URI
+        const dataUri = window.URL.createObjectURL(blob);
+        // 创建隐藏的 <a> 标签
+        const link = document.createElement('a');
+        link.href = dataUri;
+        link.download = 'exported_data.csv'; // 下载文件的名称
+        // 将 <a> 标签添加到页面中并模拟点击
+        document.body.appendChild(link);
+        link.click();
+        // 下载完成后移除 <a> 标签
+        document.body.removeChild(link);
         this.open2();
+      }).catch(err=>{
+        console.log("导出错误",err)
+        this.open4();
       })
     },
+
     open2() {
         this.$message({
           message: '恭喜你，文件导出成功了哦',
