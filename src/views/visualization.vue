@@ -155,6 +155,7 @@ export default {
   },
   data() {
     return {
+      is_select: false,
       selectedRow: null,
       dataPre: false,
       showForm: true,
@@ -478,7 +479,18 @@ export default {
       option && myChart.setOption(option);
       barOption && barChart.setOption(barOption);
     },
+    open3(msg) {
+      this.$message({
+        message:msg,
+        type: "warning",
+      });
+    },
     submitForm(stepIndex) {
+      console.log("stepIndex:",stepIndex)
+      if(stepIndex == 1 && this.is_select == false){
+        this.open3("请选择一个病人！")
+        return;
+      }
       console.log("开始...", stepIndex);
       let formName = this.formArray[stepIndex];
       console.log(stepIndex + "sdsdssstepindex" + this.active + "active");
@@ -610,6 +622,7 @@ export default {
       this.currentRow = val;
       this.selectedRow = val;
       this.oneSelectForm.formData.selectedData = this.currentRow;
+      this.is_select = true;
     },
     handleCurrentClick(val) {
       this.currentPage = val;

@@ -82,6 +82,15 @@
               @click="() => remove(node, data)"
             >
             </el-button>
+             <!-- <el-popconfirm
+              title="删除后无法恢复"
+              icon="el-icon-warning"
+              icon-color="red"
+              @confirm="remove(node, data)"
+            >
+              <el-button slot="reference" size="mini" icon="el-icon-delete" class="no-border-icon"></el-button
+              >
+            </el-popconfirm> -->
           </span>
         </span>
       </el-tree>
@@ -458,7 +467,12 @@
     <div class="right_table">
       <el-card class="right_table_topCard">
         <div class="describe_content">
-          <h3>数据集名称</h3>
+          <!-- <h3>数据集名称：{{tableName}}</h3>
+          <el-button style="margin-left: 200px;">导出</el-button> -->
+          <div style="display: flex; align-items: center">
+            <h3 style="margin-right: auto">数据集名称：{{ tableName }}</h3>
+            <el-button type="primary" @click="openExportDialog()">导出</el-button>
+          </div>
           <p style="margin-top: 0.5%">
             <i class="el-icon-user"></i>创建人:
             <span>{{ showDataForm.createUser }}</span>
@@ -481,7 +495,7 @@
             <el-table-column
               type="index"
               width="50"
-              label="样本序号"
+              label="id"
             ></el-table-column>
             <el-table-column
               v-for="(value, key) in tableData[0]"
@@ -496,6 +510,29 @@
               </template>
             </el-table-column>
           </el-table>
+           <!-- 导出对话框 -->
+          <el-dialog :visible="exportDialogVisible" @close="exportDialogVisible = false" width="60%">
+            <div slot="title">选择导出字段</div>
+            <div>
+               <!-- 全选复选框 -->
+              <!-- <el-checkbox v-model="isAllSelected" @change="selectAll">全选</el-checkbox> -->
+               <el-button type="success" @click="toggleSelectAll">{{ isAllSelected ? '取消全选' : '全选' }}</el-button>
+              <br><br>
+              <table class="checkbox-table">
+                <tbody>
+                  <tr v-for="(row, rowIndex) in fieldRows" :key="rowIndex">
+                    <td v-for="(field, colIndex) in row" :key="colIndex">
+                      <el-checkbox v-model="selectedFields" :label="field">{{ field }}</el-checkbox>
+                    </td>
+                  </tr>
+                </tbody>
+            </table>
+            </div>
+            <div slot="footer">
+              <el-button @click="exportData">提交</el-button>
+              <el-button @click="exportDialogVisible = false">取消</el-button>
+            </div>
+          </el-dialog>
         </div>
       </el-card>
     </div>
@@ -520,6 +557,15 @@ export default {
     loginUserID() {
       return sessionStorage.getItem("userid");
     },
+
+     fieldRows() {
+      const rows = [];
+      const itemsPerRow = 5; // 每行显示的复选框数量
+      for (let i = 0; i < this.allFields.length; i += itemsPerRow) {
+        rows.push(this.allFields.slice(i, i + itemsPerRow));
+      }
+      return rows;
+    }
   },
 
   watch: {
@@ -530,8 +576,12 @@ export default {
 
   data() {
     return {
+      exportDialogVisible: false, // 控制导出对话框的显示状态
+      allFields: ['字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3'], // 所有可选择的字段列表
+      selectedFields: [], // 用户选择的字段
       // 获取虚拟树形结构数据
       // treeData: JSON.parse(JSON.stringify(treeData)),
+      tableName: "copd",
       treeData: [],
       dataPre: false,
       // 获取虚拟表格数据
@@ -669,6 +719,69 @@ export default {
   },
 
   methods: {
+     selectAll() {
+      if (this.isAllSelected) {
+        // 如果全选复选框被选中，则选择所有字段
+        this.selectedFields = this.allFields.slice();
+      } else {
+        // 否则取消选择所有字段
+        this.selectedFields = [];
+      }
+    },
+      toggleSelectAll() {
+      this.isAllSelected = !this.isAllSelected; // 切换全选状态
+      if (this.isAllSelected) {
+        // 如果全选按钮被选中，则选择所有字段
+        this.selectedFields = this.allFields.slice();
+      } else {
+        // 否则取消选择所有字段
+        this.selectedFields = [];
+      }
+    },
+    openExportDialog() {
+      this.exportDialogVisible = true; // 打开导出对话框
+      // 根据表名获取字段信息
+      getRequest("/api/filed/getAllFieldsByTableName",{tableName: this.tableName}).then(response=>{
+        this.allFields = response.data;
+      }).catch(error=>{
+        this.open4("获取字段列表失败！")
+      })
+    },
+     open4(msg) {
+        this.$message.error(msg);
+    },
+     open2(msg) {
+        this.$message({
+          message: msg,
+          type: 'success'
+        });
+    },
+    exportData() {
+      console.log('提交选择的字段：', this.selectedFields);
+      this.exportDialogVisible = false; // 关闭导出对话框
+      getRequest("/api/getTableDataByFields",{tableName: this.tableName, featureList: this.selectedFields.join(",")}).then(response=>{
+        if(response.code!="200") this.open4("导出失败！")
+        else {
+          let blob = new Blob([response.data], { type: 'text/csv' });
+          // 创建 Data URI
+          const dataUri = window.URL.createObjectURL(blob);
+          // 创建隐藏的 <a> 标签
+          const link = document.createElement('a');
+          link.href = dataUri;
+          link.download = this.tableName+'_export.csv'; // 下载文件的名称
+          // 将 <a> 标签添加到页面中并模拟点击
+          document.body.appendChild(link);
+          link.click();
+          // 下载完成后移除 <a> 标签
+          document.body.removeChild(link);
+
+          this.open2("数据导出成功");
+          }
+      }).catch(error=>{
+          this.open4("导出失败",error)
+      })
+
+    },
     headerCellStyle() {
       return {
         backgroundColor: "#f0f0f0",
@@ -879,6 +992,7 @@ export default {
         });
     },
     getTableData(tableId, tableName) {
+      this.tableName = tableName;
       this.dataPre = false;
       (this.tableData = []),
         getTableData("/api/getTableData", tableId, tableName)
@@ -916,11 +1030,15 @@ export default {
       let catagoryNodeJSON = JSON.stringify(catagoryNode);
       addDisease("/api/addDisease", catagoryNodeJSON)
         .then((response) => {
-          this.getCatgory(); //刷新目录结构
-          console.log(response.data);
+          if(response.code!=200){
+            this.open3(response.msg)
+          }else{
+            this.getCatgory(); //刷新目录结构
+            this.open2(response.msg)
+          }
         })
         .catch((error) => {
-          alert("新增疾病目录错误" + error);
+          this.open4("新增疾病目录错误")
         });
       this.nodeData = {};
       this.cleanInput();
@@ -961,7 +1079,13 @@ export default {
       let diseaseName = this.diseaseName;
       saveParentDisease("/api/addParentDisease", diseaseName)
         .then((response) => {
-          this.getCatgory();
+          if(response.code!=200){
+            this.open3(response.msg)
+          }else{
+            this.getCatgory();
+            this.open2(response.msg)
+          }
+          
         })
         .catch((error) => {});
       // const newNode = { id: id++, label: this.diseaseName, children: [] , isLeafs: false};
@@ -1464,4 +1588,22 @@ export default {
   /* height: 650px;
   overflow: auto; */
 }
+.no-border-icon .el-icon-delete {
+  border: none !important; /* 移除图标的边框 */
+}
+
+.export-dialog {
+  max-width: 100%; /* 设置对话框的最大宽度 */
+}
+
+.checkbox-table {
+  width: 100%; /* 表格宽度100% */
+  border-collapse: collapse; /* 合并边框 */
+}
+
+.checkbox-table td {
+  border: 1px solid #ebeef5; /* 设置表格边框 */
+  padding: 10px; /* 设置单元格内边距 */
+}
+
 </style>

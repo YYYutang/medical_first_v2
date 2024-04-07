@@ -10,11 +10,8 @@
     </div>
     <div class="bottom_container">
       <div class="left_tree">
-        <el-button
-          type="success"
-          class="add_button"
-          @click="dialogDiseaseVisible2 = true"
-          >添加病种</el-button
+        <el-button type="success" class="add_button"
+          >请选择以下数据集</el-button
         >
         <el-dialog
           title="提示"
@@ -45,10 +42,9 @@
           @node-click="changeData"
           @check-change="handleCheckChange"
         >
-          <span class="custom-tree-node" slot-scope="{ node, data }">
+          <!-- <span class="custom-tree-node" slot-scope="{ node, data }">
             <span>{{ node.label }}</span>
             <span>
-              <!--公共数据集confirm-->
               <el-popconfirm
                 v-if="data.isCommon"
                 confirm-button-text="添加新病种"
@@ -68,7 +64,6 @@
                 >
                 </el-button>
               </el-popconfirm>
-              <!--非公共数据集confirm-->
               <el-popconfirm
                 v-else
                 confirm-button-text="添加新病种"
@@ -96,15 +91,15 @@
               >
               </el-button>
             </span>
-          </span>
+          </span> -->
         </el-tree>
-        <el-dialog
+        <!-- <el-dialog
           title="提示"
           :visible.sync="dialogDiseaseVisible"
           width="30%"
         >
           <span>
-            请输入新病种名称（a）：<el-input
+            请输入新病种名称：<el-input
               placeholder="请输入内容"
               v-model="diseaseName"
               class="nameInput"
@@ -114,9 +109,9 @@
             <el-button @click="cleanInput()">取 消</el-button>
             <el-button type="primary" @click="() => append(0)">确 定</el-button>
           </span>
-        </el-dialog>
+        </el-dialog> -->
       </div>
-      <el-dialog
+      <!-- <el-dialog
         title="新增数据集"
         :visible.sync="dialogDataVisible"
         width="60%"
@@ -298,7 +293,6 @@
               筛选病例
             </button>
           </div>
-          <!-- 显示筛选出来的表数据 -->
           <el-table
             v-loading="filterLoading"
             :data="addTableData"
@@ -343,9 +337,6 @@
                 <el-menu-item index="3" @click="exchangeCharacterList(3)">
                   <span slot="title">行为学</span>
                 </el-menu-item>
-                <!-- <el-menu-item index="4" @click="exchangeCharacterList(3)">
-                            <span slot="title">生命体征</span>
-                        </el-menu-item> -->
               </el-menu>
             </el-aside>
             <el-main>
@@ -366,9 +357,9 @@
             >
           </span>
         </el-dialog>
-      </el-dialog>
+      </el-dialog> -->
       <!--===============================     导入数据表单   ===================================================================-->
-      <el-dialog
+      <!-- <el-dialog
         v-loading="loading"
         :element-loading-text="loadText"
         id="importDataTable"
@@ -488,11 +479,14 @@
             <el-button type="primary" @click="compelete">完成上传</el-button>
           </div>
         </el-dialog>
-      </el-dialog>
+      </el-dialog> -->
       <div class="right_table">
         <el-card class="right_table_topCard">
           <div class="describe_content">
-            <h3>数据集名称</h3>
+            <!-- <h3>数据集信息预览</h3> -->
+            <el-button type="success"
+              >数据信息预览</el-button
+            >
             <p style="margin-top: 0.5%">
               <i class="el-icon-user"></i>创建人1:
               <span>{{ showDataForm.createUser }}</span>
@@ -1096,29 +1090,48 @@ export default {
       this.dialogDataVisible = false;
     },
     addTable() {
-       if(this.addDataForm.dataName==null || this.addDataForm.dataName=='') {
-        this.open3("请输入新建数据集名称！")
+      if (
+        this.addDataForm.dataName == null ||
+        this.addDataForm.dataName == ""
+      ) {
+        this.open3("请输入新建数据集名称！");
         return;
       }
-      if(this.addDataForm.createUser==null || this.addDataForm.createUser=='') {
-        this.open3("请输入数据筛选操作员姓名！")
+      if (
+        this.addDataForm.createUser == null ||
+        this.addDataForm.createUser == ""
+      ) {
+        this.open3("请输入数据筛选操作员姓名！");
         return;
       }
 
-      for(let i=0; i<this.addDataForm.characterList.length; i++){
-        if(this.addDataForm.characterList[i].featureName==null || this.addDataForm.characterList[i].featureName=='') {
+      for (let i = 0; i < this.addDataForm.characterList.length; i++) {
+        if (
+          this.addDataForm.characterList[i].featureName == null ||
+          this.addDataForm.characterList[i].featureName == ""
+        ) {
           this.open3("请选择完整参与运算的特征！");
           return;
         }
-        if(this.addDataForm.characterList[i].computeOpt==null || this.addDataForm.characterList[i].computeOpt=='') {
+        if (
+          this.addDataForm.characterList[i].computeOpt == null ||
+          this.addDataForm.characterList[i].computeOpt == ""
+        ) {
           this.open3("请选择完整的运算符！");
           return;
         }
-        if(i!=0 && (this.addDataForm.characterList[i].opt=='' || this.addDataForm.characterList[i].opt== null)) {
-          this.open3("请选择完整条件选择连接运算！")
+        if (
+          i != 0 &&
+          (this.addDataForm.characterList[i].opt == "" ||
+            this.addDataForm.characterList[i].opt == null)
+        ) {
+          this.open3("请选择完整条件选择连接运算！");
           return;
         }
-        if(this.addDataForm.characterList[i].value==null || this.addDataForm.characterList[i].value=='') {
+        if (
+          this.addDataForm.characterList[i].value == null ||
+          this.addDataForm.characterList[i].value == ""
+        ) {
           this.open3("请输入完整条件的限定范围！");
           return;
         }
@@ -1175,34 +1188,52 @@ export default {
     submitCharacterCondition() {
       this.filterLoading = true;
       console.log("this.addDataForm.characterList");
-      console.log(this.addDataForm.characterList)
-      if(this.addDataForm.dataName==null || this.addDataForm.dataName=='') {
-        this.open3("请输入新建数据集名称！")
+      console.log(this.addDataForm.characterList);
+      if (
+        this.addDataForm.dataName == null ||
+        this.addDataForm.dataName == ""
+      ) {
+        this.open3("请输入新建数据集名称！");
         return;
       }
-      if(this.addDataForm.createUser==null || this.addDataForm.createUser=='') {
-        this.open3("请输入数据筛选操作员姓名！")
+      if (
+        this.addDataForm.createUser == null ||
+        this.addDataForm.createUser == ""
+      ) {
+        this.open3("请输入数据筛选操作员姓名！");
         return;
       }
 
-      for(let i=0; i<this.addDataForm.characterList.length; i++){
-        if(this.addDataForm.characterList[i].featureName==null || this.addDataForm.characterList[i].featureName=='') {
+      for (let i = 0; i < this.addDataForm.characterList.length; i++) {
+        if (
+          this.addDataForm.characterList[i].featureName == null ||
+          this.addDataForm.characterList[i].featureName == ""
+        ) {
           this.open3("请选择完整参与运算的特征！");
           return;
         }
-        if(this.addDataForm.characterList[i].computeOpt==null || this.addDataForm.characterList[i].computeOpt=='') {
+        if (
+          this.addDataForm.characterList[i].computeOpt == null ||
+          this.addDataForm.characterList[i].computeOpt == ""
+        ) {
           this.open3("请选择完整的运算符！");
           return;
         }
-        if(i!=0 && (this.addDataForm.characterList[i].opt=='' || this.addDataForm.characterList[i].opt== null)) {
-          this.open3("请选择完整条件选择连接运算！")
+        if (
+          i != 0 &&
+          (this.addDataForm.characterList[i].opt == "" ||
+            this.addDataForm.characterList[i].opt == null)
+        ) {
+          this.open3("请选择完整条件选择连接运算！");
           return;
         }
-        if(this.addDataForm.characterList[i].value==null || this.addDataForm.characterList[i].value=='') {
+        if (
+          this.addDataForm.characterList[i].value == null ||
+          this.addDataForm.characterList[i].value == ""
+        ) {
           this.open3("请输入完整条件的限定范围！");
           return;
         }
-
       }
       let filterConditions = {};
       filterConditions.addDataForm = this.addDataForm;
@@ -1515,6 +1546,6 @@ export default {
   overflow-y: auto;
 }
 body {
-    margin: 0;
-  }
+  margin: 0;
+}
 </style>

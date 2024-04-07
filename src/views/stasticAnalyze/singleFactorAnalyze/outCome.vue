@@ -86,10 +86,14 @@ export default defineComponent({
          allData: [],
          binData1:[],
          binData2:[],
-         tableData: []
+         tableData: [],
+         taskInfoParam: {},
     };
   },
   created() {
+    // 获取任务管理模块传递过来的参数
+    this.taskInfoParam = this.$route.params
+    console.log("taskInfoParam",this.taskInfoParam)
     this.getAllData();
   },
   methods: {
@@ -103,22 +107,27 @@ export default defineComponent({
     
     getAllData(){
         let colNames = [];
-        console.log(".....................")
-        // console.log(this.observeFeat.label)
-        // console.log(this.groupFeat)
-        colNames.push(this.groupFeat.featureName);
-        colNames.push(this.observeFeat.featureName);
-        console.log(colNames)
-        getSingleAnalyze("/api/singleFactorAnalyze",this.label,colNames.join(",")).then(response=>{ // 传递表名、分组列名、观察列名
+        let label=null;
+        if(Object.keys(this.taskInfoParam).length==0){
+          colNames.push(this.groupFeat.featureName);
+          colNames.push(this.observeFeat.featureName);
+          label = this.label;
+        }else{
+           colNames.push(this.taskInfoParam.features[0]);
+           colNames.push(this.taskInfoParam.features[1]);
+           label = this.taskInfoParam.label;
+        }
+        console.log("后端表名：",label)
+        console.log("后端列名：",colNames)
+        getSingleAnalyze("/api/singleFactorAnalyze",label,colNames.join(",")).then(response=>{ // 传递表名、分组列名、观察列名
             // 分析表格数据
             this.tableData = response.data.discreteVos;
             console.log("response",response.data)
-            console.log("response",response.data.tp)
             this.tableData[0].wilconxon = "w值:"+response.data.wilcoxonW+"；  p值:"+response.data.wilcoxonP;
             this.tableData[0].t_exame = "t值:"+response.data.tt+"；  p值:"+response.data.tp;
             this.tableData[0].t_recorrect = "t值:"+response.data.correctTT+"；  p值:"+response.data.correctTP
 
-
+            console.log("tableData1:",this.tableData)
             let total = {
               variable: 'total',
               frequent: this.tableData[0].frequent+this.tableData[1].frequent,
@@ -126,13 +135,15 @@ export default defineComponent({
               missFrequent: this.tableData[0].missFrequent+this.tableData[1].missFrequent
             }
             this.tableData.push(total)
+            console.log("tableData2:",this.tableData)
             if((response.data.notDiscrete.binData==null || response.data.notDiscrete.binData.length==0) || (response.data.notDiscrete2.binData==null || response.data.notDiscrete2.binData.length==0)){
               this.open3("数据异常，分析失败！");
               return;
             }
-
+            console.log("aaaaa",this)
             // 饼状图数据
             for (const [key, value] of Object.entries(response.data.notDiscrete.binData)) {
+              console.log("还没有初始化时：",this.binData1)
               this.binData1.push({ name: key, value: value });
             }
             console.log("binData1:", this.binData1)

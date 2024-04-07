@@ -17,7 +17,7 @@
             >
             </oldData>
             <div class="button1" v-if="oldShow">
-              <el-button size="small" @click="stepBack(active)"
+              <el-button size="small" @click="stepBack(active)" class="el-button--primary"
                 >上一步</el-button
               >
             </div>
@@ -33,7 +33,7 @@
               :chartDatay="chartDatay"
             ></newData>
             <div class="button1" v-if="newShow">
-              <el-button size="small" @click="stepBack(active)"
+              <el-button size="small" @click="stepBack(active)" class="el-button--primary"
                 >上一步</el-button
               >
             </div>
@@ -381,9 +381,9 @@ export default {
     };
   },
   methods: {
-    open3() {
+    open3(msg) {
       this.$message({
-        message: "请选择要处理的指标！",
+        message: msg,
         type: "warning",
       });
     },
@@ -484,9 +484,9 @@ export default {
           const page = 1;
           if (
             this.columnSelectForm.formData.selectedData == null ||
-            this.columnSelectForm.formData.selectedData.length == 0
+            this.columnSelectForm.formData.selectedData.length <=1
           ) {
-            this.open3(); // TODO 控制下一步跳转
+            this.open3("选择的属性列必须为多选！"); // TODO 控制下一步跳转
             this.active--;
             return;
           } else {

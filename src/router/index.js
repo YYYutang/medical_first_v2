@@ -21,6 +21,11 @@ import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue"
 import columnManage2 from "@/views/tableManage.vue"
 import dataManagePublic from "@/views/dataManagePublic.vue"
 import taskManage from "@/views/taskManage.vue"
+
+
+import consistencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
+import singleOutcome from "@/views/stasticAnalyze/singleFactorAnalyze/outCome.vue"
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -113,11 +118,25 @@ const routes = [
       name: 'describeAnalyze',
       component: describeAnalyze,
     },
+
     {
       path: '/describeOutcome',
       name: 'describeOutcome',
       component: describeOutcome,
-    }
+    },
+    {
+      path: '/consistencyOutcome',
+      name: 'consistencyOutcome',
+      component: consistencyOutcome,
+    },
+    {
+      path: '/singleOutcome',
+      name: 'singleOutcome',
+      component: singleOutcome,
+    },
+
+    
+
     ]
   },
 ]

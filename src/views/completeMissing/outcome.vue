@@ -36,6 +36,7 @@ export default ({
     props:['active','missCompleteMehtod','label'],
     data(){
         return{
+          taskInfoParam: {},
           tableData: [
             // {xuetang: '100', flag1: false, xueya: '90', flag2: false, smoke: '是', flag3: false, drink: '是', flag4: false},
             // {xuetang: '100', flag1: true, xueya: '91', flag2: false, smoke: '否', flag3: true, drink: '否', flag4: true},
@@ -45,14 +46,30 @@ export default ({
         }
     },
     created(){
+        // 加载任务管理传递的参数
+      this.taskInfoParam = this.$route.params
+      console.log("任务管理传递过来的参数：",this.taskInfoParam)
       this.fillData();
+    },
+    mounted(){
     },
     methods:{
       fillData(){
-        let dataFillMethodVo = {
-          missCompleteMethod: this.missCompleteMehtod,
-          tableName: this.label
-        };
+        let dataFillMethodVo = {};
+        console.log("missCompleteMethod",this.missCompleteMehtod)
+        if(Object.keys(this.taskInfoParam).length>0){
+          console.log("开始创建参数....")
+          dataFillMethodVo = {
+            missCompleteMethod: this.taskInfoParam.missCompleteMethods,
+            tableName: this.taskInfoParam.label
+          }
+        }else{
+          dataFillMethodVo = {
+            missCompleteMethod: this.missCompleteMehtod,
+            tableName: this.label
+          };
+        }
+        console.log("传递给后端的参数：",dataFillMethodVo)
         postRequest("/api/fillData",dataFillMethodVo).then(response=>{
           this.tableData = response.data;
         }).catch(error=>{
@@ -60,8 +77,6 @@ export default ({
         })
       }
     },
-    mounted(){
-    }
 
 })
 </script>
