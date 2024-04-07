@@ -12,18 +12,6 @@
         :highlight-current="true"
         @node-click="changeData"
       >
-        <!-- <span class="custom-tree-node" slot-scope="{ node, data }">
-                  <span>{{ node.label }}</span>
-                  <span>
-                    <el-button
-                      icon="el-icon-delete"
-                      size="mini"
-                      type="text"
-                      @click="() => remove(node, data)"
-                    >
-                    </el-button>
-                  </span>
-                </span> -->
       </el-tree>
       <el-dialog title="提示" :visible.sync="dialogDiseaseVisible" width="30%">
         <span>
@@ -178,6 +166,7 @@
 
         <span slot="footer" class="dialog-footer">
           <el-button @click="resultDialogShow = false">关 闭</el-button>
+          <el-button @click="getTaskDetail()">详细信息</el-button>
         </span>
       </el-dialog>
     </div>
@@ -200,6 +189,8 @@ export default {
   },
   data() {
     return {
+      curTaskInfo:{},
+      look: false,
       disease: "",
       leader: "",
       resultDialogShow: false,
@@ -214,7 +205,24 @@ export default {
   methods: {
     // ...mapActions(["getTaskList","getTreeData"]),
     // ...mapMutations(["SetTaskList"]),
-
+    getTaskDetail(){
+        // 判断任务类型然后给这些任务结果页面添加参数
+        if(this.curTaskInfo.taskname==='缺失值补齐'){
+          let missCompleteMethods = []; // 缺失值补齐的参数
+          let features = this.curTaskInfo.feature.split(","); // 哪些字段参与填充
+          let missCompleteMehtod = this.curTaskInfo.model.split(","); // 字段填充方法
+          for(let i=0; i<features.length; i++){
+            missCompleteMethods.push({"index": features[i], "missCompleteMethod": missCompleteMehtod[i]})
+          }
+          let paramData = {"missCompleteMethods":missCompleteMethods, "label": this.curTaskInfo.dataset} // 最终传递参数
+          this.$router.push({ name: 'missingoutcome', params: paramData});
+        }
+        if(this.curTaskInfo.taskname==='单因素分析'){
+          let features = this.curTaskInfo.feature.split(",");
+          let paramData = {"features": features,"label": this.curTaskInfo.dataset}
+          this.$router.push({ name: 'singleOutcome', params: paramData});
+        }
+    },
     getTreeData() {
       getRequest("/api/disease/all").then((res) => {
         if (res.code == 200) {
@@ -245,6 +253,8 @@ export default {
         });
     },
     handleCheck(row) {
+      console.log("当前任务：",row)
+      this.curTaskInfo = row;
       getRequest(`Task/getOne/${row.id}`).then((res) => {
         if (res.code == 200) {
           this.result = res.data;
@@ -266,7 +276,8 @@ export default {
       getRequest(`Task/delete/${row.id}`).then((res) => {
         if (res.code == 200) {
           this.$message.success("删除任务成功");
-          this.SetTaskList(res.data);
+          // this.SetTaskList(res.data);
+          this.getTaskAllList();
         } else {
           this.$message.error("删除任务失败");
         }
@@ -286,6 +297,7 @@ export default {
 .main {
   display: grid;
   grid-template-columns: 12% 85%;
+  width: 100%;
 }
 
 .left_tree {
@@ -298,6 +310,7 @@ export default {
 }
 .right {
   float: right;
+  width: 100%;
 }
 
 .custom-tree-node {
@@ -367,6 +380,6 @@ export default {
   justify-self: end;
 }
 .taskCard {
-  width: 110%;
+  width: 100%;
 }
 </style>

@@ -83,3 +83,15 @@ export function singleFactorAnalyze(url, tableName, featureName) {
     }
   });
 }
+
+
+export function exportTableByFields(url, tableName, featureList) {
+  return request({
+    method: "get",
+    url,
+    params: {
+      tableName: tableName,
+      featureList: featureList
+    }
+  });
+}

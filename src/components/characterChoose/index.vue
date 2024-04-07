@@ -287,9 +287,9 @@ export default ({
               }
          }else{
             this.checkedFeats.length = 0;
-            for(let i=0; i<this.featureData.length; i++) {
-              this.featureData[i].cheack=false;
-            }
+            // for(let i=0; i<this.featureData.length; i++) {
+            //   this.featureData[i].cheack=false;
+            // }
           }
          // 传递给父组件
         this.$emit("send_feat",this.checkedFeats)
@@ -300,8 +300,8 @@ export default ({
       handleCheckboxChange(feat){
         // 发送给父组件
         this.$emit("sendFeatueData",this.featureData);
-       if(this.isDescribe==false){ //  描述性分析只能选择一个复选框
-          if(this.checkedFeats.includes(feat)){  // 包含
+       if(this.isDescribe==false){ //  缺失值补齐
+          if(this.checkedFeats.includes(feat)){
             if(!feat.cheack) { // 非选中状态
               this.checkedFeats = this.checkedFeats.filter(item => item !== feat);
             }
@@ -310,18 +310,21 @@ export default ({
               this.checkedFeats.push(feat);
             }
           }
-        }else{
+        }else{ // 描述性分析  描述性分析只能选择一个复选框
             if(feat.cheack){
-               this.checkedFeats.length = 0;
-               this.checkedFeats.push(feat);
+              console.log("选中")
+               this.checkedFeats = [feat];
               for(let i=0; i<this.featureData.length; i++) {
-                if(this.featureData[i].cheack==true && this.featureData[i]!=feat) this.featureData[i].cheack=false;
+                if(this.featureData[i]!=feat && this.featureData[i].cheack == true) {
+                  this.featureData[i].cheack=false;
+                }
               }
             }else{
-              this.checkedFeats.length = 0;
-              for(let i=0; i<this.featureData.length; i++) {
-                this.featureData[i].cheack=false;
-              }
+              console.log("取消")
+              this.checkedFeats = [];
+              // for(let i=0; i<this.featureData.length; i++) {
+              //   this.featureData[i].cheack=false;
+              // }
             }
         }
         // 传递给父组件
