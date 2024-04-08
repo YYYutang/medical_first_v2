@@ -471,7 +471,7 @@
           <el-button style="margin-left: 200px;">导出</el-button> -->
           <div style="display: flex; align-items: center">
             <h3 style="margin-right: auto">数据集名称：{{ tableName }}</h3>
-            <el-button type="primary" @click="openExportDialog()">导出</el-button>
+            <el-button type="primary" size="small" @click="openExportDialog()">导出</el-button>
           </div>
           <p style="margin-top: 0.5%">
             <i class="el-icon-user"></i>创建人:

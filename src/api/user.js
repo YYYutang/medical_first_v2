@@ -95,3 +95,13 @@ export function exportTableByFields(url, tableName, featureList) {
     }
   });
 }
+export function addVisliazationTask(url, tableName, selectDisease) {
+  return request({
+    method: "get",
+    url,
+    params: {
+      tableName: tableName,
+      selectDisease: JSON.stringify(selectDisease)
+    }
+  });
+}

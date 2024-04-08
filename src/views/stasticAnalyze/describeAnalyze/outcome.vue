@@ -122,28 +122,39 @@ export default ({
           { name: 'C', value: 150 },
           { name: 'D', value: 300 },
           { name: 'E', value: 180 }
-      ]
+      ],
+      taskInfoParam: {}
     }
   },
   mounted(){
-    // this.initPieChart();
   },
 
     created(){
+       this.taskInfoParam = this.$route.params
+       console.log("taskInfoParam:",this.taskInfoParam)
        this.requestFormData();
-      // this.initPieChart();
     },
     methods: {
 
       requestFormData(){
-        requestFormData("/api/tableDesAnalyze", this.checkedFeats[0].featureName,this.label).then(response=>{
+        let featureName = null;
+        let label = null;
+        if(Object.keys(this.taskInfoParam).length>0){
+          featureName = this.taskInfoParam.feature
+          label = this.taskInfoParam.label
+        }else{
+          featureName = this.checkedFeats[0].featureName
+          label = this.label
+        }
+        requestFormData("/api/tableDesAnalyze", featureName,label).then(response=>{
           this.discrete = response.data.discrete
           if(response.data.discrete==true){ // 离散
             let data = []
             let pieD = []
-            let head = {variable: '文本变量 - '+this.checkedFeats[0].featureName}
+            let head = {variable: '文本变量 - '+featureName}
             data.push(head)
-            if(this.checkedFeats[0].featureName==="sexcode"){
+            console.log("featureName:",featureName)
+            if(featureName==="sexcode"){
               let vos = response.data.discreteVos
               for (let i=0; i<vos.length; i++){
                 let temp = {
@@ -164,6 +175,7 @@ export default ({
             } else{
               let vos = response.data.discreteVos
               for (let i=0; i<vos.length; i++){
+                console.log("当前离散值：",vos[i])
                 let temp = {
                   variable: vos[i].variable,
                   frequent: vos[i].frequent,

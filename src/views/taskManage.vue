@@ -203,8 +203,6 @@ export default {
     };
   },
   methods: {
-    // ...mapActions(["getTaskList","getTreeData"]),
-    // ...mapMutations(["SetTaskList"]),
     getTaskDetail(){
         // 判断任务类型然后给这些任务结果页面添加参数
         if(this.curTaskInfo.taskname==='缺失值补齐'){
@@ -221,6 +219,22 @@ export default {
           let features = this.curTaskInfo.feature.split(",");
           let paramData = {"features": features,"label": this.curTaskInfo.dataset}
           this.$router.push({ name: 'singleOutcome', params: paramData});
+        }
+        if(this.curTaskInfo.taskname==='描述性分析'){
+          let paramData = {"label":this.curTaskInfo.dataset, "feature":this.curTaskInfo.feature}
+          this.$router.push({ name: 'describeOutcome', params: paramData});
+        }
+        if(this.curTaskInfo.taskname==='一致性验证') {
+          let paramData = {"label": this.curTaskInfo.dataset, "featureName":this.curTaskInfo.feature}
+          this.$router.push({ name: 'consistencyOutcome', params: paramData});
+        }
+        if(this.curTaskInfo.taskname==='病人画像') {
+          let paramData = {"label": this.curTaskInfo.dataset, "select":this.curTaskInfo.result}
+          this.$router.push({ name: 'visualization', params: paramData});
+        }
+        if(this.curTaskInfo.taskname==='疾病特征表征') {
+          let paramData = {"tableName": this.curTaskInfo.dataset, "aiName":this.curTaskInfo.model, "runParams": this.curTaskInfo.feature}
+          this.$router.push({ name: 'represent', params: paramData});
         }
     },
     getTreeData() {
