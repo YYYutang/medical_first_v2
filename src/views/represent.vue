@@ -257,6 +257,7 @@ export default {
   },
   data() {
     return {
+      taskInfoParam: null,
       dataPre: false,
       activeName: "first",
       head1: true,
@@ -376,9 +377,25 @@ export default {
       },
       dataAll: [],
       dataChoose: [],
-      dataNew: [],
+      // dataNew: [],
       statisData: [],
     };
+  },
+  created() {
+    this.taskInfoParam = this.$route.params;
+    if(this.taskInfoParam == null || Object.keys(this.taskInfoParam).length==0){
+      this.getAllData();
+    }else{
+      this.dataSelectForm.isShow = false;
+      this.columnSelectForm.isShow = false;
+      this.algoForm.isShow = false;
+      this.head2  = true;
+      // this.oldShow = true;
+      this.showStep  = false
+      this.getAllData()
+      this.submitForm(2)
+    }
+    
   },
   methods: {
     open3(msg) {
@@ -505,12 +522,21 @@ export default {
           }
         }
       } else if (stepIndex == 2) {
-        const params = {
-          tableName: this.dataSelectForm.formData.selectedData, //模型选择的数据表表名
-          runParams: this.columnSelectForm.formData.selectedData, //模型选择的属性列（数组）
-          // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
-          aiName: "pca",
-        };
+        let params = {};
+        if(this.taskInfoParam == null || Object.keys(this.taskInfoParam).length == 0){
+          params = {
+            tableName: this.dataSelectForm.formData.selectedData, //模型选择的数据表表名
+            runParams: this.columnSelectForm.formData.selectedData, //模型选择的属性列（数组）
+            // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
+            aiName: "pca",
+          };
+        }else{
+          params = {
+            tableName: this.taskInfoParam.tableName, //模型选择的数据表表名
+            runParams: this.taskInfoParam.runParams, //模型选择的属性列（数组）
+            aiName: this.taskInfoParam.runParams,
+          }
+        }
         postRequest("feature/runAi", params)
           .then((response) => {
             for (let i in response.data[0]) {
@@ -588,10 +614,6 @@ export default {
       }
       // this.newShow = true;
     },
-  },
-  mounted() {
-    // this.dataOptions.length = [];
-    this.getAllData();
   },
 };
 </script>

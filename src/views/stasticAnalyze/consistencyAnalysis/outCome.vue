@@ -159,12 +159,12 @@ export default defineComponent({
           standardDeviation: 8.05,
           '95%CI': '-111.366~-110.215',
           t: -367.44
-        }]
+        }],
+        taskInfoParam: {}
     };
   },
   created() {
-    console.log("表名：",this.label)
-    console.log(this.checkedFeats)
+    this.taskInfoParam = this.$route.params
     this.getAllData();
   },
   methods: {
@@ -175,8 +175,15 @@ export default defineComponent({
       });
     },
     getAllData(){
-        let tableName = this.label;
-        let featureName = this.checkedFeats[0].featureName;
+        let tableName = null;
+        let featureName = null;
+        if(Object.keys(this.taskInfoParam).length==0){
+          tableName = this.label;
+          featureName = this.checkedFeats[0].featureName;
+        }else{
+          tableName = this.taskInfoParam.label;
+          featureName = this.taskInfoParam.featureName;
+        }
         singleFactorAnalyze("/api/consistencyAnalyze",tableName,featureName).then(response=>{ // 传递表名、分组列名、观察列名
             console.log("返回数据：",response)
             if(response.code == 500) {

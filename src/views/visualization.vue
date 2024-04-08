@@ -70,18 +70,6 @@
                   :prop="item"
                   width="150"
                 >
-                  <!-- <template slot-scope="{ row }">
-                    <div
-                      v-if="
-                        typeof row[item] === 'string' && row[item].length > 10
-                      "
-                      :class="{ 'row-selected': row === selectedRow }"
-                      class="truncate-text"
-                    >
-                      {{ row[item] }}
-                    </div>
-                    <div v-else class="truncate-text">{{ row[item] }}</div>
-                  </template> -->
                   <template slot-scope="{ row }">
                     <div
                       :class="{ 'row-selected': row === selectedRow }"
@@ -125,7 +113,7 @@
         </el-form>
       </div>
 
-      <div v-show="showChart">
+      <div v-show="showChart" ref="exportContent">
         <div
           id="chart"
           class="charts"
@@ -138,7 +126,8 @@
         ></div>
       </div>
         <div class="button1" v-if="showButton">
-        <el-button  type="primary" @click="stepBack(active)">上一步</el-button>
+        <el-button  type="primary" size="small" @click="stepBack(active)">上一步</el-button>
+        <el-button  type="primary" size="small" @click="exportData">导 出</el-button>
       </div>
 
     </el-container>
@@ -146,8 +135,10 @@
 </template>
 <script>
 import { postRequest, getRequest } from "@/utils/api";
+import { addVisliazationTask } from "@/api/user"
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import * as echarts from "echarts";
+import html2canvas from "html2canvas";
 
 export default {
   components: {
@@ -155,6 +146,7 @@ export default {
   },
   data() {
     return {
+      taskInfoParm: null,
       is_select: false,
       selectedRow: null,
       dataPre: false,
@@ -247,6 +239,20 @@ export default {
     };
   },
   methods: {
+    async exportData() {
+      try {
+        const divToCapture =
+          this.$refs.exportContent;
+        const canvas = await html2canvas(divToCapture);
+        const imageUrl = canvas.toDataURL();
+        const link = document.createElement("a");
+        link.href = imageUrl;
+        link.download = "image.png";
+        link.click();
+      } catch (error) {
+        console.error("Error capturing image:", error);
+      }
+    },
     getTableName(tableName) {
       console.log("表明", tableName);
       this.dataSelectForm.formData.selectedData = tableName;
@@ -256,9 +262,12 @@ export default {
       this.showChart = !this.showChart;
     },
     drawChart() {
+      alert("开始画图")
       var option;
       let myChart = echarts.init(document.getElementById("chart"));
+      
       let barChart = echarts.init(document.getElementById("barChart"));
+      
       const that = this;
 
       $.get("./pic.svg", function (svg) {
@@ -486,21 +495,17 @@ export default {
       });
     },
     submitForm(stepIndex) {
-      console.log("stepIndex:",stepIndex)
-      if(stepIndex == 1 && this.is_select == false){
+      if((stepIndex == 1 && this.is_select == false) || (stepIndex == 1 && this.selectedRow==null)){
         this.open3("请选择一个病人！")
         return;
       }
-      console.log("开始...", stepIndex);
       let formName = this.formArray[stepIndex];
-      console.log(stepIndex + "sdsdssstepindex" + this.active + "active");
       if (stepIndex < 1) {
         this[formName].isShow = false;
         this.active++;
         let nextFormName = this.formArray[++stepIndex];
         this[nextFormName].isShow = true;
         if (this.active == 1) {
-          console.log("表名称：", this.dataSelectForm.formData.selectedData);
           let tableName = this.dataSelectForm.formData.selectedData;
           getRequest(
             "/feature/getInfoByTableName?tableName=" + tableName + "&page=" + 1
@@ -512,6 +517,25 @@ export default {
           });
         }
       } else if (stepIndex == 1) {
+        let tableName = this.dataSelectForm.formData.selectedData;
+        let select = this.oneSelectForm.formData.selectedData;
+        console.log("选中的表为：",tableName)
+        console.log("选中的数据为：",select)
+        if(this.taskInfoParm == null || Object.keys(this.taskInfoParm).length == 0){
+          addVisliazationTask("/Task/visualization",tableName,select).then(response=>{
+            if(response.code!=200){
+              this.open4("任务创建失败")
+              return;
+            }
+          }).catch(error=>{
+            this.open4("任务创建失败！")
+            return;
+          })
+        }else{
+          alert("任务转过来")
+          tableName = this.taskInfoParm.label;
+          select = this.taskInfoParm.select
+        }
         this.showChart = !this.showChart;
         this.showStep = !this.showStep;
         this.head1 = !this.head1;
@@ -519,8 +543,7 @@ export default {
         this.tableisShow = !this.tableisShow;
         this.showButton=!this.showButton;
         this.active++;
-        console.log("data:", this.oneSelectForm.formData.selectedData);
-        let select = this.oneSelectForm.formData.selectedData;
+      
         const temp1 = [0, 0, 0, 0];
         temp1[0] = select["MONO_num"];
         temp1[1] = select["EO_num"];
@@ -563,19 +586,16 @@ export default {
         }
         this.kidneyAbnormal = count;
         this.liverAbnormal = count1;
+        alert("正常")
         this.drawChart();
       }
-      //   } else {
-      //     console.log("error submit!!");
-      //     return false;
-      //   }
-      // });
     },
     resetForm(stepIndex) {
       let formName = this.formArray[stepIndex];
       this.$refs[formName].resetFields();
     },
     stepBack(stepIndex) {
+      // alert("stepIndex:"+stepIndex)
       if (this.active - 1 >= 0) {
         if (this.active == 1) {
           this.tableData = [];
@@ -636,8 +656,21 @@ export default {
       });
     },
   },
-  mounted() {
-    this.getAllData();
+
+  created() {
+    this.taskInfoParm = this.$route.params
+    if(this.taskInfoParm == null || Object.keys(this.taskInfoParm).length==0){
+       alert("传过来是空")
+       this.getAllData();
+    }else{
+      this.dataSelectForm.isShow = false;
+      this.oneSelectForm.isShow = false;
+      this.showChart = true;
+      this.is_select = true;
+      this.selectedRow = {};
+      this.active = 2;
+      this.submitForm(1);
+    }
   },
 };
 </script>
