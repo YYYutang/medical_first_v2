@@ -6,7 +6,7 @@ import represent from "@/views/represent.vue";
 import visualization from "@/views/visualization.vue";
 import dataManage from "@/views/dataManage2.vue";
 import introduce from"@/views/introduce/introduce.vue"
-import logIn from "@/views/User/login.vue"
+import logIn from "@/views/Login.vue"
 import register from "@/views/User/register.vue"
 import columnManage from "@/views/columnManage/columnManage.vue"
 import operationManage from "@/views/operationManage.vue"
@@ -27,7 +27,7 @@ import singleAnalyze from "@/views/stasticAnalyze/singleFactorAnalyze/index.vue"
 
 import consistencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
 import singleOutcome from "@/views/stasticAnalyze/singleFactorAnalyze/outCome.vue"
-
+import userManage from "@/views/userManage.vue"
 Vue.use(VueRouter)
 
 const routes = [
@@ -64,6 +64,11 @@ const routes = [
       path: '/dataManagePublic',
       name: 'dataManagePublic',
       component: dataManagePublic,
+    },
+    {
+      path: '/userManage',
+      name: 'userManage',
+      component: userManage,
     },
     {
       path: '/taskManage',

@@ -307,6 +307,7 @@ export default ({
        if(this.isDescribe==false){ //  缺失值补齐
           if(this.checkedFeats.includes(feat)){
             if(!feat.cheack) { // 非选中状态
+            
               this.checkedFeats = this.checkedFeats.filter(item => item !== feat);
             }
           }else{  // 不包含
@@ -335,14 +336,19 @@ export default ({
         this.$emit("send_feat",this.checkedFeats)
       },
       getIndicatorsFromBackEnd(types){
-        console.log("tableName  "+this.tableName)
+        if(types===''){
+          this.featureData=[]
+        }
+        else{
         getIndicators("/api/getIndicators",types, this.tableName).then(response=>{
-          console.log("features:",response.data)
+
           this.featureData = response.data;
+    
           // 给父组件传递参数
           this.$emit("send_indicators",this.featureData)
         }).catch(error=>{
         })
+        }
       },
       handleCheck(data,node){
         this.selectedNode.length = 0;
@@ -351,6 +357,7 @@ export default ({
           this.selectedNode.push(node.checkedNodes[i].label);
           this.defaultCheckedKeys.push(node.checkedNodes[i].id)
         }
+   
         // 将选中的树节点传递给父节点
         this.$emit("sendTreeNode",this.defaultCheckedKeys)
         this.getIndicatorsFromBackEnd(this.selectedNode.join(","));

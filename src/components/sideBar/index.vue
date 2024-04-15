@@ -53,6 +53,10 @@
               <i class="el-icon-connection"></i>
               字段管理</el-menu-item
             > -->
+                        <el-menu-item index="/userManage">
+              <i class="el-icon-s-custom"></i>
+              用户管理</el-menu-item
+            >
              <el-menu-item index="/completeMissing">
               <i class="el-icon-s-custom"></i>
               缺失值处理</el-menu-item
