@@ -27,6 +27,7 @@
           :label="label"
           :checkedFeats="checkedFeats"
           ref="childComponentRef"
+          :newTaskInfo="newTaskInfo"
         ></describeOutcome>
         <div class="stepbutton">
           <el-button size="small" v-if="active != 1" @click="stepBack(active)"
@@ -68,12 +69,16 @@ export default {
   },
   data() {
     return {
+      newTaskInfo: null, 
       featureDataFromParent: [],
       selectTreeNode: [],
       label: "",
       active: 1,
       checkedFeats: [],
     };
+  },
+  created(){
+    this.newTaskInfo = this.$route.params;
   },
   methods: {
     open3(msg) {

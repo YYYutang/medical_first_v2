@@ -34,10 +34,10 @@
         </div>
       </div>
       <br />
-      <div class="table">
+      <div class="table"  >
         <p class="text">原始数据:</p>
         <br />
-        <el-radio-group v-model="dataCondition" @input="changeDataNow">
+        <el-radio-group v-model="dataCondition" @input="changeDataNow" >
           <el-radio :label="1">人口学</el-radio>
           <el-radio :label="2">生理指标</el-radio>
           <el-radio :label="3">行为学</el-radio>
@@ -45,7 +45,7 @@
           <el-radio :label="5">全部数据</el-radio>
         </el-radio-group>
         <br />
-        <div class="table1">
+        <div class="table1" v-loading='changeDataLoading' element-loading-text="数据量较大，正在加载中...">
           <!-- <el-table
             :data="dataNow"
             border
@@ -130,6 +130,7 @@ export default {
       column: [],
       statis: [],
       dataCondition: 0,
+      changeDataLoading:false,
     };
   },
   methods: {
@@ -201,6 +202,7 @@ export default {
     },
     changeDataNow(val) {
       let tempColumn = [];
+      this.changeDataLoading=true;
       if (val == "1") {
         for (var i = 0; i < this.dataColumns.length; i++) {
           if (this.dataColumns[i].columnisR) {
@@ -236,6 +238,7 @@ export default {
       if (val == "5") {
         this.dataColumn = Object.keys(this.dataAll.data[0]);
       }
+         this.changeDataLoading=false;
     },
   },
   created() {
@@ -252,7 +255,7 @@ export default {
   width:auto;
 }
 .table1 {
- width:1000px;
+ width:1600px;
   display: flex;
   justify-content: center;
   align-items: center;

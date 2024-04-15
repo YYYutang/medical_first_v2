@@ -21,7 +21,9 @@ import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue"
 import columnManage2 from "@/views/tableManage.vue"
 import dataManagePublic from "@/views/dataManagePublic.vue"
 import taskManage from "@/views/taskManage.vue"
-
+import taskInfo from "@/components/TaskInfo.vue"
+import consistencyAnalyze from "@/views/stasticAnalyze/consistencyAnalysis/index.vue"
+import singleAnalyze from "@/views/stasticAnalyze/singleFactorAnalyze/index.vue"
 
 import consistencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
 import singleOutcome from "@/views/stasticAnalyze/singleFactorAnalyze/outCome.vue"
@@ -134,6 +136,23 @@ const routes = [
       name: 'singleOutcome',
       component: singleOutcome,
     },
+    {
+      path: '/taskInfo',
+      name: 'taskInfo',
+      component: taskInfo,
+    },
+    
+    {
+      path: '/consistencyAnalyze',
+      name: 'consistencyAnalyze',
+      component: consistencyAnalyze,
+    },
+    {
+      path: '/singleAnalyze',
+      name: 'singleAnalyze',
+      component: singleAnalyze,
+    },
+
 
     
 

@@ -1,12 +1,7 @@
 <template>
   <div class="dm_container">
     <div class="left_tree">
-      <el-button
-        type="success"
-        class="add_button"
-        @click="dialogDiseaseVisible2 = true"
-        >添加病种</el-button
-      >
+  
       <el-dialog title="提示" :visible.sync="dialogDiseaseVisible2" width="30%">
         <span>
           请输入新病种名称：<el-input
@@ -20,6 +15,15 @@
           <el-button type="primary" @click="addDisease()">确 定</el-button>
         </span>
       </el-dialog>
+      <div class="tipInfo">
+        <h3>可选数据</h3>
+        <span class="statistic">
+          一级病种: {{ diseaseNum }} 个
+        </span>
+        <span class="statistic">
+          数据表: {{ datasetNum }} 个
+        </span>
+      </div>
       <el-tree
         ref="tree"
         :data="treeData"
@@ -30,10 +34,10 @@
         :check-on-click-node="true"
         :highlight-current="true"
         @node-click="changeData"
-        @check-change="handleCheckChange"
       >
         <span class="custom-tree-node" slot-scope="{ node, data }">
-          <span>{{ node.label }}</span>
+         <span v-if="data.catLevel == 1" style="font-weight:bold;font-size:15px;color:#252525">{{ node.label }}</span>
+          <span v-else>{{ node.label }}</span>
           <span>
             <!--公共数据集confirm-->
             <el-popconfirm
@@ -76,13 +80,14 @@
               </el-button>
             </el-popconfirm>
             <el-button
+             v-if="data.id != '1778674449155934433' && data.id != '1010'"
               icon="el-icon-delete"
               size="mini"
               type="text"
               @click="() => remove(node, data)"
             >
             </el-button>
-             <!-- <el-popconfirm
+            <!-- <el-popconfirm
               title="删除后无法恢复"
               icon="el-icon-warning"
               icon-color="red"
@@ -147,7 +152,7 @@
           >
           <el-button
             @click="chooseCharacter(addDataForm.characterList[0])"
-            style="width: 130px; margin-right: 8px; margin-left: 0px"
+            style="margin-right: 8px; margin-left: 0px"
             >{{ addDataForm.characterList[0].button }}</el-button
           >
           <span v-if="addDataForm.characterList[0].type === 'discrete'">
@@ -281,25 +286,31 @@
           </button>
         </div>
         <!-- 显示筛选出来的表数据 -->
-        <el-table
-          :data="addTableData"
-          stripe
-          style="width: 100%"
-          height="450"
-          v-show="showAddTableData"
+        <div
+          class="addTableData_board"
+          v-loading="addTableDataLoading"
+          :element-loading-text="loadText"
         >
-          <el-table-column
-            v-for="(value, key) in addTableData[0]"
-            :key="key"
-            :prop="key"
-            :label="key"
-            width="80"
+          <el-table
+            :data="addTableData"
+            stripe
+            style="width: 100%"
+            height="450"
+            v-show="showAddTableData"
           >
-            <template slot-scope="{ row }">
-              <div class="truncate-text">{{ row[key] }}</div>
-            </template>
-          </el-table-column>
-        </el-table>
+            <el-table-column
+              v-for="(value, key) in addTableData[0]"
+              :key="key"
+              :prop="key"
+              :label="key"
+              width="80"
+            >
+              <template slot-scope="{ row }">
+                <div class="truncate-text">{{ row[key] }}</div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </div>
 
       <span slot="footer" class="dialog-footer">
@@ -423,7 +434,7 @@
 
       <el-dialog
         v-loading="loading2"
-        :element-loading-text="loadText2"
+        :element-loading-text="loadText"
         append-to-body
         title="请选择特征类型"
         :visible.sync="featuresVision"
@@ -471,7 +482,9 @@
           <el-button style="margin-left: 200px;">导出</el-button> -->
           <div style="display: flex; align-items: center">
             <h3 style="margin-right: auto">数据集名称：{{ tableName }}</h3>
-            <el-button type="primary" size="small" @click="openExportDialog()">导出</el-button>
+            <el-button type="primary" size="small" @click="openExportDialog()"
+              >导出</el-button
+            >
           </div>
           <p style="margin-top: 0.5%">
             <i class="el-icon-user"></i>创建人:
@@ -480,59 +493,77 @@
             <span>{{ showDataForm.createTime }}</span>
             <i class="el-icon-folder-opened"></i>所属类别:
             <span>{{ showDataForm.classPath }}</span>
+            <i class="el-icon-folder-opened"></i>数据总条数:
+            <span>{{ showDataForm.rowNumber }}</span>
+            <i class="el-icon-folder-opened"></i>特征总数:
+            <span>{{ showDataForm.colNumber }}</span>
           </p>
         </div>
-        <div class="tableData" v-if="dataPre == true">
-          <el-table
-            :data="tableData"
-            stripe
-            style="width: auto"
-            class="custom-table"
-            v-if="dataPre == true"
-            :header-cell-style="headerCellStyle"
-            max-height="660"
-          >
-            <el-table-column
+        <div
+          class="loading_board"
+          v-loading="dataLoading"
+          element-loading-text="数据量较大，正在努力加载中..."
+        >
+          <div class="tableData" v-if="dataPre == true">
+            <el-table
+              :data="tableData"
+              stripe
+              style="width: auto"
+              class="custom-table"
+              v-if="dataPre == true"
+              :header-cell-style="headerCellStyle"
+              max-height="660"
+            >
+              <!-- <el-table-column
               type="index"
               width="50"
               label="id"
-            ></el-table-column>
-            <el-table-column
-              v-for="(value, key) in tableData[0]"
-              :key="key"
-              :prop="key"
-              :label="key"
-              width="120px"
-              :sortable="true"
+            ></el-table-column> -->
+              <el-table-column
+                v-for="(value, key) in tableData[0]"
+                :key="key"
+                :prop="key"
+                :label="key"
+                width="120px"
+                :sortable="true"
+              >
+                <template slot-scope="{ row }">
+                  <div class="truncate-text">{{ row[key] }}</div>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 导出对话框 -->
+            <el-dialog
+              :visible="exportDialogVisible"
+              @close="exportDialogVisible = false"
+              width="60%"
             >
-              <template slot-scope="{ row }">
-                <div class="truncate-text">{{ row[key] }}</div>
-              </template>
-            </el-table-column>
-          </el-table>
-           <!-- 导出对话框 -->
-          <el-dialog :visible="exportDialogVisible" @close="exportDialogVisible = false" width="60%">
-            <div slot="title">选择导出字段</div>
-            <div>
-               <!-- 全选复选框 -->
-              <!-- <el-checkbox v-model="isAllSelected" @change="selectAll">全选</el-checkbox> -->
-               <el-button type="success" @click="toggleSelectAll">{{ isAllSelected ? '取消全选' : '全选' }}</el-button>
-              <br><br>
-              <table class="checkbox-table">
-                <tbody>
-                  <tr v-for="(row, rowIndex) in fieldRows" :key="rowIndex">
-                    <td v-for="(field, colIndex) in row" :key="colIndex">
-                      <el-checkbox v-model="selectedFields" :label="field">{{ field }}</el-checkbox>
-                    </td>
-                  </tr>
-                </tbody>
-            </table>
-            </div>
-            <div slot="footer">
-              <el-button @click="exportData">提交</el-button>
-              <el-button @click="exportDialogVisible = false">取消</el-button>
-            </div>
-          </el-dialog>
+              <div slot="title">选择导出字段</div>
+              <div>
+                <!-- 全选复选框 -->
+                <!-- <el-checkbox v-model="isAllSelected" @change="selectAll">全选</el-checkbox> -->
+                <el-button type="success" @click="toggleSelectAll">{{
+                  isAllSelected ? "取消全选" : "全选"
+                }}</el-button>
+                <br /><br />
+                <table class="checkbox-table">
+                  <tbody>
+                    <tr v-for="(row, rowIndex) in fieldRows" :key="rowIndex">
+                      <td v-for="(field, colIndex) in row" :key="colIndex">
+                        <el-checkbox v-model="selectedFields" :label="field">{{
+                          field
+                        }}</el-checkbox>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div slot="footer">
+                <el-button @click="exportData">提交</el-button>
+                <el-button @click="exportDialogVisible = false">取消</el-button>
+              </div>
+            </el-dialog>
+          </div>
         </div>
       </el-card>
     </div>
@@ -558,14 +589,14 @@ export default {
       return sessionStorage.getItem("userid");
     },
 
-     fieldRows() {
+    fieldRows() {
       const rows = [];
       const itemsPerRow = 5; // 每行显示的复选框数量
       for (let i = 0; i < this.allFields.length; i += itemsPerRow) {
         rows.push(this.allFields.slice(i, i + itemsPerRow));
       }
       return rows;
-    }
+    },
   },
 
   watch: {
@@ -577,11 +608,31 @@ export default {
   data() {
     return {
       exportDialogVisible: false, // 控制导出对话框的显示状态
-      allFields: ['字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3','字段1', '字段2', '字段3'], // 所有可选择的字段列表
+      allFields: [
+        "字段1",
+        "字段2",
+        "字段3",
+        "字段1",
+        "字段2",
+        "字段3",
+        "字段1",
+        "字段2",
+        "字段3",
+        "字段1",
+        "字段2",
+        "字段3",
+        "字段1",
+        "字段2",
+        "字段3",
+        "字段1",
+        "字段2",
+        "字段3",
+      ], // 所有可选择的字段列表
       selectedFields: [], // 用户选择的字段
       // 获取虚拟树形结构数据
       // treeData: JSON.parse(JSON.stringify(treeData)),
       tableName: "copd",
+
       treeData: [],
       dataPre: false,
       // 获取虚拟表格数据
@@ -599,6 +650,8 @@ export default {
         createUser: "",
         createTime: "",
         classPath: "",
+        colNumber: 0,
+        rowNumber: 0,
       },
       addDataForm: {
         dataName: "",
@@ -624,7 +677,8 @@ export default {
       addTableData: [],
       input3: "",
       select: "",
-
+      diseaseNum:0,
+      datasetNum:0,
       dialogDiseaseVisible2: false,
 
       nodeData: {},
@@ -634,8 +688,9 @@ export default {
       loading: false,
       loading2: false,
       getData_loading: false,
-      loadText: "拼命加载中",
-      loadText2: "拼命加载中",
+      loadText: "正在筛选...",
+      dataLoading: false,
+      addTableDataLoading: false,
       disease: "",
       creator: "",
       disOptions,
@@ -719,7 +774,7 @@ export default {
   },
 
   methods: {
-     selectAll() {
+    selectAll() {
       if (this.isAllSelected) {
         // 如果全选复选框被选中，则选择所有字段
         this.selectedFields = this.allFields.slice();
@@ -728,7 +783,7 @@ export default {
         this.selectedFields = [];
       }
     },
-      toggleSelectAll() {
+    toggleSelectAll() {
       this.isAllSelected = !this.isAllSelected; // 切换全选状态
       if (this.isAllSelected) {
         // 如果全选按钮被选中，则选择所有字段
@@ -741,46 +796,54 @@ export default {
     openExportDialog() {
       this.exportDialogVisible = true; // 打开导出对话框
       // 根据表名获取字段信息
-      getRequest("/api/filed/getAllFieldsByTableName",{tableName: this.tableName}).then(response=>{
-        this.allFields = response.data;
-      }).catch(error=>{
-        this.open4("获取字段列表失败！")
+      getRequest("/api/filed/getAllFieldsByTableName", {
+        tableName: this.tableName,
       })
-    },
-     open4(msg) {
-        this.$message.error(msg);
-    },
-     open2(msg) {
-        this.$message({
-          message: msg,
-          type: 'success'
+        .then((response) => {
+          this.allFields = response.data;
+        })
+        .catch((error) => {
+          this.open4("获取字段列表失败！");
         });
     },
+    open4(msg) {
+      this.$message.error(msg);
+    },
+    open2(msg) {
+      this.$message({
+        message: msg,
+        type: "success",
+      });
+    },
     exportData() {
-      console.log('提交选择的字段：', this.selectedFields);
+      console.log("提交选择的字段：", this.selectedFields);
       this.exportDialogVisible = false; // 关闭导出对话框
-      getRequest("/api/getTableDataByFields",{tableName: this.tableName, featureList: this.selectedFields.join(",")}).then(response=>{
-        if(response.code!="200") this.open4("导出失败！")
-        else {
-          let blob = new Blob([response.data], { type: 'text/csv' });
-          // 创建 Data URI
-          const dataUri = window.URL.createObjectURL(blob);
-          // 创建隐藏的 <a> 标签
-          const link = document.createElement('a');
-          link.href = dataUri;
-          link.download = this.tableName+'_export.csv'; // 下载文件的名称
-          // 将 <a> 标签添加到页面中并模拟点击
-          document.body.appendChild(link);
-          link.click();
-          // 下载完成后移除 <a> 标签
-          document.body.removeChild(link);
-
-          this.open2("数据导出成功");
-          }
-      }).catch(error=>{
-          this.open4("导出失败",error)
+      getRequest("/api/getTableDataByFields", {
+        tableName: this.tableName,
+        featureList: this.selectedFields.join(","),
       })
+        .then((response) => {
+          if (response.code != "200") this.open4("导出失败！");
+          else {
+            let blob = new Blob([response.data], { type: "text/csv" });
+            // 创建 Data URI
+            const dataUri = window.URL.createObjectURL(blob);
+            // 创建隐藏的 <a> 标签
+            const link = document.createElement("a");
+            link.href = dataUri;
+            link.download = this.tableName + "_export.csv"; // 下载文件的名称
+            // 将 <a> 标签添加到页面中并模拟点击
+            document.body.appendChild(link);
+            link.click();
+            // 下载完成后移除 <a> 标签
+            document.body.removeChild(link);
 
+            this.open2("数据导出成功");
+          }
+        })
+        .catch((error) => {
+          this.open4("导出失败", error);
+        });
     },
     headerCellStyle() {
       return {
@@ -955,6 +1018,11 @@ export default {
     getCatgory() {
       getCategory("/api/category").then((response) => {
         this.treeData = response.data;
+         this.diseaseNum = response.data[0].children.length + response.data[1].children.length;
+       getRequest("/api/getTableNumber").then((res) => {
+          if (res.code == 200)
+            this.datasetNum = res.data;
+        })
       });
     },
     uploadFile() {
@@ -985,7 +1053,9 @@ export default {
           this.showDataForm.createUser = response.data.createUser;
           this.showDataForm.createTime = response.data.createTime;
           this.showDataForm.classPath = response.data.classPath;
-          this.tableData = [];
+          this.showDataForm.rowNumber = response.data.rowNumber;
+          this.showDataForm.colNumber = response.data.colNumber;
+    
         })
         .catch((error) => {
           console.log("错误", error);
@@ -994,16 +1064,22 @@ export default {
     getTableData(tableId, tableName) {
       this.tableName = tableName;
       this.dataPre = false;
-      (this.tableData = []),
-        getTableData("/api/getTableData", tableId, tableName)
-          .then((response) => {
-            // 获取表数据
-            this.tableData = response.data;
-            this.dataPre = true;
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+      this.dataLoading = true;
+      if (this.tableData.length > 0) {
+        this.tableData = [];
+      }
+      getTableData("/api/getTableData", tableId, tableName)
+        .then((response) => {
+          // 获取表数据
+          this.tableData = response.data;
+          this.dataPre = true;
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          this.dataLoading = false;
+        });
     },
     changeData(data) {
       if (data.isLeafs == 1) {
@@ -1030,15 +1106,15 @@ export default {
       let catagoryNodeJSON = JSON.stringify(catagoryNode);
       addDisease("/api/addDisease", catagoryNodeJSON)
         .then((response) => {
-          if(response.code!=200){
-            this.open3(response.msg)
-          }else{
+          if (response.code != 200) {
+            this.open3(response.msg);
+          } else {
             this.getCatgory(); //刷新目录结构
-            this.open2(response.msg)
+            this.open2(response.msg);
           }
         })
         .catch((error) => {
-          this.open4("新增疾病目录错误")
+          this.open4("新增疾病目录错误");
         });
       this.nodeData = {};
       this.cleanInput();
@@ -1079,13 +1155,12 @@ export default {
       let diseaseName = this.diseaseName;
       saveParentDisease("/api/addParentDisease", diseaseName)
         .then((response) => {
-          if(response.code!=200){
-            this.open3(response.msg)
-          }else{
+          if (response.code != 200) {
+            this.open3(response.msg);
+          } else {
             this.getCatgory();
-            this.open2(response.msg)
+            this.open2(response.msg);
           }
-          
         })
         .catch((error) => {});
       // const newNode = { id: id++, label: this.diseaseName, children: [] , isLeafs: false};
@@ -1100,7 +1175,7 @@ export default {
     },
 
     markNode(data) {
-      console.log(data);
+  
       this.nodeData = data;
     },
     open3(msg) {
@@ -1215,8 +1290,6 @@ export default {
       this.characterOptItem = item;
     },
     submitCharacterCondition() {
-      console.log("this.addDataForm.characterList");
-      console.log(this.addDataForm.characterList);
       if (
         this.addDataForm.dataName == null ||
         this.addDataForm.dataName == ""
@@ -1274,7 +1347,7 @@ export default {
           "Content-Type": "application/json",
         },
       };
-      console.log("请求参数：" + JSON.stringify(filterConditions));
+      this.addTableDataLoading = true;
       this.$axios(this.options)
         .then((res) => {
           this.addTableData = res.data;
@@ -1285,11 +1358,11 @@ export default {
         .catch((error) => {
           this.$message.error("获取数据失败");
           console.log("获取数据失败" + error);
+        })
+        .finally(() => {
+          this.addTableDataLoading = false;
         });
       let s = JSON.stringify(this.addDataForm.characterList, null, 2);
-      console.log("this.addDataForm:");
-      console.log(this.addDataForm);
-      console.log(s);
     },
     getNowDateFormat() {
       const currentDate = new Date();
@@ -1496,7 +1569,12 @@ export default {
   left: 1%;
   /* overflow-y: auto; */
 }
-
+.loading_board {
+  height: 800px;
+}
+.addTableData_board {
+  height: 500px;
+}
 .describe_content {
   display: inline-block;
   width: 70%;
@@ -1606,4 +1684,19 @@ export default {
   padding: 10px; /* 设置单元格内边距 */
 }
 
+.tipInfo {
+  background-color: rgba(124, 124, 124, 0.1);
+  height: 50px;
+  text-align: center;
+}
+
+.tipInfo .statistic {
+  font-size: 13px;
+  color: #585858;
+}
+
+.hr-dashed {
+  border: 0;
+  border-top: 1px dashed #899bbb;
+}
 </style>

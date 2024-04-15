@@ -28,7 +28,7 @@
       <el-container>
         <el-aside width="200px" class="side">
           <el-menu
-            default-active="/introduce"
+            :default-active="activeMenu"
             router
             class="el-menu-vertical-demo"
             @open="handleOpen"
@@ -49,13 +49,13 @@
               <i class="el-icon-s-data"></i>
               任务管理</el-menu-item
             >
-            <el-menu-item index="/columnManage2">
+            <!-- <el-menu-item index="/columnManage2">
               <i class="el-icon-connection"></i>
               字段管理</el-menu-item
-            >
+            > -->
              <el-menu-item index="/completeMissing">
               <i class="el-icon-s-custom"></i>
-              缺失值补齐</el-menu-item
+              缺失值处理</el-menu-item
             >
              <el-menu-item index="/stasticAnalyze">
               <i class="el-icon-s-custom"></i>
@@ -63,7 +63,7 @@
             >
             <el-menu-item index="/represent">
               <i class="el-icon-data-line"></i>
-              疾病的特征指标表征</el-menu-item
+              特征表征</el-menu-item
             >
             <el-menu-item index="/visualization">
               <i class="el-icon-s-custom"></i>
@@ -99,11 +99,13 @@ export default {
   components: { AppMain },
   data() {
     return {
-      activeIndex: "1",
-      activeIndex2: "1",
+      activeMenu:'/introduce',
       dialogVisible: false,
         username:"",
     };
+  },
+  created(){
+this.setMenuHighlight();
   },
   methods: {
      handleSelect(key) {
@@ -123,6 +125,18 @@ export default {
        getRequest('index/getUserInfo').then((resp)=>{
       this.username=resp.data
        })
+    },
+     setMenuHighlight() {
+      // 如果有直接跳转，比如从一个外部链接或直接输入URL访问
+      this.activeMenu = this.$route.path;
+    },
+  },
+   watch: {
+    // 监听路由变化来更新菜单高亮
+    $route(newRoute) {
+     
+      this.activeMenu = newRoute.path;
+
     }
   },
   mounted(){

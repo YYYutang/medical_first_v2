@@ -5,7 +5,7 @@
           <datasetChoose v-if="active == 1" class="con_datasetChoose" :active='active' :type="3" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
           <characterChoose v-if="active == 2" :active='active' :analyzeStep="3" :type="2" :label="label" @send_feat="getCheackedFeats" :curentAnalyzeStep="3" 
           @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
-          <conssitencyOutcome v-if="active == 3" :active='active' :label="label" :checkedFeats="checkedFeats" ref="childComponentRef"></conssitencyOutcome>
+          <conssitencyOutcome v-if="active == 3" :active='active' :label="label" :checkedFeats="checkedFeats" ref="childComponentRef" :newTaskInfo="newTaskInfo"></conssitencyOutcome>
         <div class="stepbutton">
           <el-button size="small" v-if="active != 1" @click="stepBack(active)"
             >上一步</el-button
@@ -45,12 +45,16 @@ export default {
   },
   data() {
     return {
+      newTaskInfo: null,
       featureDataFromParent: [],
       selectTreeNode: [],
       label: '',
       active: 1,
       checkedFeats: [],
     };
+  },
+  created(){
+    this.newTaskInfo = this.$route.params;
   },
   methods: {
     open3() {

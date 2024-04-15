@@ -9,19 +9,12 @@
         </div>
         <div class="icon" @click="linktoDataManage">
           <svg-icon icon-file-name="数据管理" />
-          <h3 style="font-size: 30px">数据管理</h3>
+          <h3 style="font-size: 30px">数据管理与上传</h3>
         </div>
-        <div class="icon" @click="linktoComplete">
-          <svg-icon icon-file-name="缺失值" />
-          <h3 style="font-size: 30px">缺失值处理</h3>
-        </div>
-        <div class="icon" @click="linktoStatis">
-          <svg-icon icon-file-name="统计分析" />
-          <h3 style="font-size: 30px">统计分析</h3>
-        </div>
+
         <div class="icon" @click="linktoReperesent">
           <svg-icon icon-file-name="特征" style="" />
-          <h3 style="font-size: 30px">特征表征</h3>
+          <h3 style="font-size: 30px">疾病的指标表征</h3>
         </div>
         <div class="icon" @click="linktoVisualization">
           <svg-icon icon-file-name="画像" />
@@ -47,12 +40,6 @@ export default {
     linktoVisualization() {
       this.$router.push("/visualization");
     },
-    linktoComplete() {
-      this.$router.push("/completeMissing");
-    },
-    linktoStatis() {
-      this.$router.push("/stasticAnalyze");
-    },
   },
 };
 </script>
@@ -68,7 +55,7 @@ export default {
   font-size: 80px;
   display: grid;
 
-  grid-template-columns: repeat(3, 300px);
+  grid-template-columns: repeat(2, 300px);
   grid-template-rows: repeat(2, 300px);
   gap: 5px;
   justify-items: center;

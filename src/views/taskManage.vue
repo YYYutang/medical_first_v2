@@ -1,6 +1,9 @@
 <template>
   <div class="main">
     <div class="left_tree">
+      <div class="tip_boarder">
+        <span>点击病种筛选任务</span>
+      </div>
       <el-tree
         ref="tree"
         :data="treeData"
@@ -12,6 +15,14 @@
         :highlight-current="true"
         @node-click="changeData"
       >
+        <span class="custom-tree-node" slot-scope="{ node, data }">
+          <span
+            v-if="data.catLevel == 1"
+            style="font-weight: bold; font-size: 15px; color: #252525"
+            >{{ node.label }}</span
+          >
+          <span v-else>{{ node.label }}</span>
+        </span>
       </el-tree>
       <el-dialog title="提示" :visible.sync="dialogDiseaseVisible" width="30%">
         <span>
@@ -32,7 +43,11 @@
       <div id="top_buttons">
         <div id="task_leader">
           <span>任务负责人：</span>
-          <el-select v-model="leader" placeholder="请选择">
+          <el-select
+            v-model="leader"
+            placeholder="请选择"
+            @change="handleSelectChange"
+          >
             <el-option
               v-for="item in leaderList"
               :key="item"
@@ -42,23 +57,39 @@
             </el-option>
           </el-select>
         </div>
+        <div id="task_leader">
+          <span>任务类型：</span>
+          <el-select
+            v-model="tasktype"
+            placeholder="请选择"
+            @change="handleSelectChange"
+          >
+            <el-option
+              v-for="item in typeList"
+              :key="item"
+              :label="item"
+              :value="item"
+            >
+            </el-option>
+          </el-select>
+        </div>
         <el-button @click="clearFilter">清除</el-button>
-        <!-- <el-button type="success">新建任务</el-button> -->
+        <el-button size="medium" type="primary" @click="creatTask()"
+          >新建任务</el-button
+        >
       </div>
 
       <!--===============================    卡片组     ==============================================================-->
-      <div class="cardGroup">
+      <div
+        class="cardGroup"
+        v-loading="cardLoading"
+        element-loading-text="任务数量较大，正在努力加载中..."
+      >
         <el-card
           class="taskCard"
           v-for="item in taskList"
           :key="item.id"
           shadow="always"
-          v-show="
-            !(disease || leader) ||
-            (disease == item.disease && !leader) ||
-            (leader == item.leader && !disease) ||
-            (disease == item.disease && leader == item.leader)
-          "
         >
           <div class="cardInfo">
             <div><span class="ttl">任务名称：</span>{{ item.taskname }}</div>
@@ -66,6 +97,7 @@
             <div><span class="ttl">所属疾病：</span>{{ item.disease }}</div>
             <div><span class="ttl">使用模型：</span>{{ item.model }}</div>
             <div><span class="ttl">数据表：</span>{{ item.dataset }}</div>
+            <div><span class="ttl">任务类型：</span>{{ item.tasktype }}</div>
             <div><span class="ttl">创建时间：</span>{{ item.createtime }}</div>
           </div>
           <div class="editButton">
@@ -89,7 +121,21 @@
           </div>
         </el-card>
       </div>
-
+      <!-- <div class="cardGroupCloak" v-if="noTaskData">
+        <span>暂无数据</span>
+      </div> -->
+      <el-empty :image-size="200"  description="暂无相关任务" v-if="noTaskData"></el-empty>
+      <div class="block" style="text-align: center; margin-top: 20px">
+        <!---一页9条数据-->
+        <el-pagination
+          layout="prev, pager, next"
+          :total="taskTotal"
+          :page-size="pageSize"
+          :current-page.sync="currentPage"
+          @current-change="filterTask"
+        >
+        </el-pagination>
+      </div>
       <el-dialog
         :title="result.taskName"
         :visible.sync="resultDialogShow"
@@ -158,6 +204,8 @@
 
 <script>
 import { getRequest } from "@/utils/api";
+
+import { filterTask, getTaskNumber } from "@/api/user";
 // import { state } from "@antv/g2plot/lib/adaptor/common";
 // import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
 
@@ -169,57 +217,201 @@ export default {
   created() {
     this.getTaskAllList();
     this.getTreeData();
+    this.filterTask(1);
   },
   data() {
     return {
-      curTaskInfo:{},
+      currentPage: 1,
+      pageSize: 9,
+      taskTotal: 100,
+      curTaskInfo: {},
       look: false,
-      disease: "",
-      leader: "",
+      disease: null,
+      leader: null,
+      tasktype: null,
       resultDialogShow: false,
       result: {},
       taskList: [],
       treeData: [],
       leaderList: [],
+      typeList: [],
       dialogDiseaseVisible: false,
       diseaseName: "",
+      cardLoading: false,
+      noTaskData:false,
     };
   },
   methods: {
-    getTaskDetail(){
-        // 判断任务类型然后给这些任务结果页面添加参数
-        if(this.curTaskInfo.taskname==='缺失值补齐'){
-          let missCompleteMethods = []; // 缺失值补齐的参数
-          let features = this.curTaskInfo.feature.split(","); // 哪些字段参与填充
-          let missCompleteMehtod = this.curTaskInfo.model.split(","); // 字段填充方法
-          for(let i=0; i<features.length; i++){
-            missCompleteMethods.push({"index": features[i], "missCompleteMethod": missCompleteMehtod[i]})
-          }
-          let paramData = {"missCompleteMethods":missCompleteMethods, "label": this.curTaskInfo.dataset} // 最终传递参数
-          this.$router.push({ name: 'missingoutcome', params: paramData});
+    handleSelectChange() {
+      this.filterTask();
+    },
+    creatTask() {
+      this.$router.push({ name: "taskInfo", params: this.typeList });
+    },
+    filterTask(newPage) {
+      this.cardLoading = false;
+      getTaskNumber(
+        "/Task/getTaskNumber",
+        this.disease,
+        this.tasktype,
+        this.leader
+      ).then((response) => {
+  
+        this.taskTotal = response.data;
+        
+      });
+      filterTask(
+        "/Task/filterTaskBypage",
+        this.disease,
+        this.tasktype,
+        this.leader,
+        this.currentPage,
+        this.pageSize
+      )
+        .then((response) => {
+          this.taskList = response.data;
+        })
+        .finally(() => {
+          this.cardLoading = false;
+        });
+    },
+    getTaskDetail() {
+      // 判断任务类型然后给这些任务结果页面添加参数
+      if (this.curTaskInfo.tasktype === "缺失值补齐") {
+        let missCompleteMethods = []; // 缺失值补齐的参数
+        let features = this.curTaskInfo.feature.split(","); // 哪些字段参与填充
+        let missCompleteMehtod = this.curTaskInfo.model.split(","); // 字段填充方法
+        for (let i = 0; i < features.length; i++) {
+          missCompleteMethods.push({
+            index: features[i],
+            missCompleteMethod: missCompleteMehtod[i],
+          });
         }
-        if(this.curTaskInfo.taskname==='单因素分析'){
-          console.log('this.curTaskInfo.taskname',this.curTaskInfo)
-          let features = this.curTaskInfo.feature.split(",");
-          let paramData = {"features": features,"label": this.curTaskInfo.dataset}
-          this.$router.push({ name: 'singleOutcome', params: paramData});
+        let taskInfo = {
+          taskName: this.curTaskInfo.taskname,
+          principal: this.curTaskInfo.leader,
+          participant: this.participant,
+          tasktype: this.curTaskInfo.tasktype,
+          tips: this.curTaskInfo.remark,
+        };
+        let paramData = {
+          missCompleteMethods: missCompleteMethods,
+          label: this.curTaskInfo.dataset,
+          taskInfo: taskInfo,
+        }; // 最终传递参数
+        this.$router.push({ name: "missingoutcome", params: paramData });
+      }
+
+      if (this.curTaskInfo.tasktype === "单因素分析") {
+        console.log("this.curTaskInfo.taskname", this.curTaskInfo);
+        let features = this.curTaskInfo.feature.split(",");
+        let taskInfo = {
+          taskName: this.curTaskInfo.taskname,
+          principal: this.curTaskInfo.leader,
+          participant: this.participant,
+          tasktype: this.curTaskInfo.tasktype,
+          tips: this.curTaskInfo.remark,
+        };
+        let paramData = {
+          features: features,
+          label: this.curTaskInfo.dataset,
+          taskInfo: taskInfo,
+        };
+        this.$router.push({ name: "singleOutcome", params: paramData });
+      }
+
+      if (this.curTaskInfo.tasktype === "描述性分析") {
+        let taskInfo = {
+          taskName: this.curTaskInfo.taskname,
+          principal: this.curTaskInfo.leader,
+          participant: this.participant,
+          tasktype: this.curTaskInfo.tasktype,
+          tips: this.curTaskInfo.remark,
+        };
+        let paramData = {
+          label: this.curTaskInfo.dataset,
+          feature: this.curTaskInfo.feature,
+          taskInfo: taskInfo,
+        };
+        this.$router.push({ name: "describeOutcome", params: paramData });
+      }
+
+      if (this.curTaskInfo.tasktype === "一致性验证") {
+        let taskInfo = {
+          taskName: this.curTaskInfo.taskname,
+          principal: this.curTaskInfo.leader,
+          participant: this.participant,
+          tasktype: this.curTaskInfo.tasktype,
+          tips: this.curTaskInfo.remark,
+        };
+        let paramData = {
+          label: this.curTaskInfo.dataset,
+          featureName: this.curTaskInfo.feature,
+          taskInfo: taskInfo,
+        };
+        this.$router.push({ name: "consistencyOutcome", params: paramData });
+      }
+
+      if (this.curTaskInfo.tasktype === "病人画像") {
+        let taskInfo = {
+          taskName: this.curTaskInfo.taskname,
+          principal: this.curTaskInfo.leader,
+          participant: this.participant,
+          tasktype: this.curTaskInfo.tasktype,
+          tips: this.curTaskInfo.remark,
+        };
+        let paramData = {
+          label: this.curTaskInfo.dataset,
+          select: this.curTaskInfo.result,
+          taskInfo: taskInfo,
+        };
+        this.$router.push({ name: "visualization", params: paramData });
+      }
+
+      if (this.curTaskInfo.tasktype === "疾病特征表征") {
+        let taskInfo = {
+          taskName: this.curTaskInfo.taskname,
+          principal: this.curTaskInfo.leader,
+          participant: this.participant,
+          tasktype: this.curTaskInfo.tasktype,
+          tips: this.curTaskInfo.remark,
+        };
+        let paramData = {
+          tableName: this.curTaskInfo.dataset,
+          aiName: this.curTaskInfo.model,
+          runParams: this.curTaskInfo.feature,
+          taskInfo: taskInfo,
+        };
+        this.$router.push({ name: "represent", params: paramData });
+      }
+    },
+    filterTask(newPage) {
+      console.log("当前页为：", this.currentPage);
+      getTaskNumber(
+        "/Task/getTaskNumber",
+        this.disease,
+        this.tasktype,
+        this.leader
+      ).then((response) => {
+        this.taskTotal = response.data;
+        if(this.taskTotal===0){
+          this.noTaskData=true
+          console.log('this.noTaskData',this.noTaskData)
         }
-        if(this.curTaskInfo.taskname==='描述性分析'){
-          let paramData = {"label":this.curTaskInfo.dataset, "feature":this.curTaskInfo.feature}
-          this.$router.push({ name: 'describeOutcome', params: paramData});
+        else{
+         this.noTaskData=false
         }
-        if(this.curTaskInfo.taskname==='一致性验证') {
-          let paramData = {"label": this.curTaskInfo.dataset, "featureName":this.curTaskInfo.feature}
-          this.$router.push({ name: 'consistencyOutcome', params: paramData});
-        }
-        if(this.curTaskInfo.taskname==='病人画像') {
-          let paramData = {"label": this.curTaskInfo.dataset, "select":this.curTaskInfo.result}
-          this.$router.push({ name: 'visualization', params: paramData});
-        }
-        if(this.curTaskInfo.taskname==='疾病特征表征') {
-          let paramData = {"tableName": this.curTaskInfo.dataset, "aiName":this.curTaskInfo.model, "runParams": this.curTaskInfo.feature}
-          this.$router.push({ name: 'represent', params: paramData});
-        }
+      });
+      filterTask(
+        "/Task/filterTaskBypage",
+        this.disease,
+        this.tasktype,
+        this.leader,
+        this.currentPage,
+        this.pageSize
+      ).then((response) => {
+        this.taskList = response.data;
+      });
     },
     getTreeData() {
       getRequest("/api/disease/all").then((res) => {
@@ -230,12 +422,17 @@ export default {
         }
       });
     },
+
     getTaskAllList() {
       var that = this;
       getRequest("/Task/all")
         .then((res) => {
-
-          that.taskList = res.data;
+          console.log("所有任务：", that.taskList);
+      
+          for (let i = 0; i < res.data.length; i++) {
+            this.typeList.push(res.data[i].tasktype);
+          }
+          this.typeList = [...new Set(this.typeList)];
         })
         .catch((err) => {
           console.log("任务列表获取错误，请联系管理员。");
@@ -251,7 +448,7 @@ export default {
         });
     },
     handleCheck(row) {
-      console.log("当前任务：",row)
+      console.log("当前任务：", row);
       this.curTaskInfo = row;
       getRequest(`Task/getOne/${row.id}`).then((res) => {
         if (res.code == 200) {
@@ -282,19 +479,21 @@ export default {
       });
     },
     clearFilter() {
-      this.disease = "";
-      this.leader = "";
+      this.disease = null;
+      this.leader = null;
+      this.tasktype = null;
+      this.filterTask();
     },
     changeData(node) {
       this.disease = node.label;
+      this.filterTask();
     },
   },
 };
 </script>
 <style scoped>
 .main {
-  display: grid;
-  grid-template-columns: 12% 85%;
+  display: flex;
   width: 100%;
 }
 
@@ -345,7 +544,7 @@ export default {
 }
 .cardGroup {
   width: 100%;
-  margin-left: 3%;
+  margin-left: 20px;
   display: grid;
   grid-template-columns: repeat(auto-fill, 400px);
   grid-row-gap: 40px;
@@ -359,8 +558,8 @@ export default {
   gap: 10px; /* 定义网格行和列之间的间隙 */
 }
 
-.cardInfo > div:nth-child(5), /* 第五个子元素（数据表） */
-    .cardInfo > div:nth-child(6) /* 第六个子元素（创建时间） */ {
+/* .cardInfo > div:nth-child(5), 第五个子元素（数据表） */
+.cardInfo > div:nth-child(7) /* 第7个子元素（创建时间） */ {
   grid-column: 1 / span 2; /* 这两个元素跨越两列 */
 }
 
@@ -380,4 +579,30 @@ export default {
 .taskCard {
   width: 100%;
 }
+.add_button {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.tip_boarder {
+  width: auto;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6e6e6;
+  color: #535353;
+  font-weight: bold;
+}
+/* .cardGroupCloak{
+  width:auto;
+  height:600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e6e6e6;
+  margin-left:20px;
+  font-size: 30px;
+  background: rgb(236, 235, 235);
+} */
 </style>

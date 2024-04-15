@@ -27,7 +27,17 @@ export function getIndicators(url, types,tableName) {
   });
 }
 
-
+export function getTaskNumber(url, disease, tasktype, leader) {
+  return request({
+    method: "get",
+    url,
+    params: {
+      disease: disease,
+      tasktype: tasktype,
+      leader: leader,
+    }
+  });
+}
 
 export function getIndicatorInfo(url, checkedFeats,tableName) {
   return request({
@@ -40,13 +50,14 @@ export function getIndicatorInfo(url, checkedFeats,tableName) {
   });
 }
 
-export function requestFormData(url, featureName,tableName) {
+export function requestFormData(url, featureName,tableName,taskInfo) {
   return request({
     method: "get",
     url,
     params: {
       featureName: featureName,
-      tableName: tableName
+      tableName: tableName,
+      taskInfo: JSON.stringify(taskInfo)
     }
   });
 }
@@ -61,25 +72,27 @@ export function saveParentDisease(url, diseaseName) {
   });
 }
 
-export function getSingleAnalyze(url, tableName, colNames) {
+export function getSingleAnalyze(url, tableName, colNames,taskInfo) {
   return request({
     method: "get",
     url,
     params: {
       tableName: tableName,
-      colNames: colNames
+      colNames: colNames,
+      taskInfo: JSON.stringify(taskInfo)
     }
   });
 }
 
 
-export function singleFactorAnalyze(url, tableName, featureName) {
+export function singleFactorAnalyze(url, tableName, featureName,taskInfo) {
   return request({
     method: "get",
     url,
     params: {
       tableName: tableName,
-      featureName: featureName
+      featureName: featureName,
+      taskInfo: JSON.stringify(taskInfo)
     }
   });
 }
@@ -95,13 +108,40 @@ export function exportTableByFields(url, tableName, featureList) {
     }
   });
 }
-export function addVisliazationTask(url, tableName, selectDisease) {
+export function addVisliazationTask(url, tableName, selectDisease,taskInfo) {
   return request({
     method: "get",
     url,
     params: {
       tableName: tableName,
-      selectDisease: JSON.stringify(selectDisease)
+      selectDisease: JSON.stringify(selectDisease),
+      taskInfo:JSON.stringify(taskInfo)
+    }
+  });
+}
+
+export function filterTask(url, disease, tasktype, leader,newPage,pageSize) {
+  return request({
+    method: "get",
+    url,
+    params: {
+      disease: disease,
+      tasktype: tasktype,
+      leader: leader,
+      newPage: newPage,
+      pageSize: pageSize
+    }
+  });
+}
+export function addRepresentTask(url, tableName, colNames, model, taskInfo) {
+  return request({
+    method: "get",
+    url,
+    params: {
+      tableName: tableName,
+      colNames: colNames,
+      model: model,
+      taskInfo: JSON.stringify(taskInfo)
     }
   });
 }

@@ -36,6 +36,8 @@
           v-show="oneSelectForm.isShow"
           ref="oneSelectForm"
           label-position="top"
+          v-loading="dataLoading"
+          element-loading-text="数据量较大，正在努力加载中..."
         >
           <el-form-item prop="selectedData">
             <h3>请选择一个病人：</h3>
@@ -45,6 +47,7 @@
                 v-model="oneSelectForm.formData.selectedData"
                 highlight-current-row
                 @current-change="handleCurrentChange"
+                :current-row-key="tableData.patien_id"
                 style="width: auto"
                 border
                 row-height="34"
@@ -61,7 +64,6 @@
                   height: '34px',
                   textAlign: 'center',
                 }"
-                stripe
               >
                 <el-table-column
                   v-for="(item, index) in dataColumn"
@@ -74,7 +76,8 @@
                     <div
                       :class="{ 'row-selected': row === selectedRow }"
                       class="truncate-text"
-                      :style="
+                    >
+                      <!-- :style="
                         row === selectedRow
                           ? {
                               backgroundColor: '#002766',
@@ -82,8 +85,7 @@
                               fontWeight: 'bold',
                             }
                           : {}
-                      "
-                    >
+                      " -->
                       {{ row[item] }}
                     </div>
                   </template>
@@ -115,6 +117,54 @@
 
       <div v-show="showChart" ref="exportContent">
         <div
+          v-if="taskInfo != null && taskInfo.principal != null"
+          style="margin-top: 10px; margin-bottom: 0px; text-align: center"
+        >
+          <p style="margin-top: 0px">
+            <i class="el-icon-user"></i>创建人:
+            <span>{{ taskInfo.principal }}</span>
+            <i style="margin-left: 20px" class="el-icon-user"></i>参与人员:
+            <span>{{ taskInfo.participants }}</span>
+            <i style="margin-left: 20px" class="el-icon-folder-opened"></i
+            >任务名称:
+            <span>{{ taskInfo.taskName }}</span>
+            <i style="margin-left: 20px" class="el-icon-folder-opened"></i
+            >任务类型:
+            <span>{{ taskInfo.tasktype }}</span>
+            <i style="margin-left: 20px" class="el-icon-folder-opened"></i>备注:
+            <span>{{ taskInfo.tips }}</span>
+          </p>
+        </div>
+        <div class="patientContent">
+          <el-descriptions
+            class="patientDescription"
+            title="病人信息"
+            :column="3"
+            :size="size"
+          >
+            <el-descriptions-item label="姓名">{{
+              this.selectedRow?.name || "无"
+            }}</el-descriptions-item>
+            <el-descriptions-item label="性别">{{
+              this.selectedRow?.sexname || "无"
+            }}</el-descriptions-item>
+            <el-descriptions-item label="年龄">{{
+              this.selectedRow?.age || "无"
+            }}</el-descriptions-item>
+            <el-descriptions-item label="正常指标个数">
+              <el-tag size="small">{{
+                8 - nullCount - liverAbnormal - kidneyAbnormal
+              }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="异常指标个数">
+              <el-tag size="small">{{ kidneyAbnormal + liverAbnormal }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="空指标个数">
+              <el-tag size="small">{{ nullCount }}</el-tag>
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
+        <div
           id="chart"
           class="charts"
           style="width: 700px; height: 600px"
@@ -125,20 +175,24 @@
           style="width: 700px; height: 600px"
         ></div>
       </div>
-        <div class="button1" v-if="showButton">
-        <el-button  type="primary" size="small" @click="stepBack(active)">上一步</el-button>
-        <el-button  type="primary" size="small" @click="exportData">导 出</el-button>
+      <div class="button1" v-if="showButton">
+        <el-button type="primary" size="small" @click="stepBack(active)"
+          >上一步</el-button
+        >
+        <el-button type="primary" size="small" @click="exportData"
+          >导 出</el-button
+        >
       </div>
-
     </el-container>
   </div>
 </template>
 <script>
 import { postRequest, getRequest } from "@/utils/api";
-import { addVisliazationTask } from "@/api/user"
+import { addVisliazationTask } from "@/api/user";
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import * as echarts from "echarts";
 import html2canvas from "html2canvas";
+import server from "@/utils/request";
 
 export default {
   components: {
@@ -146,6 +200,7 @@ export default {
   },
   data() {
     return {
+      taskInfo: null,
       taskInfoParm: null,
       is_select: false,
       selectedRow: null,
@@ -162,7 +217,7 @@ export default {
       healthDataLow: [3.2, 3.2, 50, 100],
       healthDataHigh: [7.1, 7.0, 90, 170],
       patientData: [],
-      formArray: ["dataSelectForm", "oneSelectForm","outcome"],
+      formArray: ["dataSelectForm", "oneSelectForm", "outcome"],
       active: 0,
       currentRow: null,
       tableData: [],
@@ -172,7 +227,8 @@ export default {
       liverPatient: [],
       kidneyAbnormal: 0,
       liverAbnormal: 0,
-      showButton:false,
+      nullCount: 0,
+      showButton: false,
       kidneyFormalData: [
         // { name: "BUN", min: 3.2, max: 7.1, nameCH: "血尿素氮" },
         // { name: "BU", min: 3.2, max: 7.0, nameCH: "血尿素" },
@@ -236,13 +292,47 @@ export default {
           ],
         },
       },
+      dataLoading: false,
     };
+  },
+  // created() {
+  //   this.taskInfoParm = this.$route.params
+  //   if(this.taskInfoParm.label!=null && this.taskInfoParm.select!=null) this.taskInfo = this.taskInfoParm.taskInfo;
+  //   else this.taskInfo = this.taskInfoParm;
+  //   console.log("taskInfo",this.taskInfo)
+  //   if(this.taskInfoParm != null && (this.taskInfoParm.label!=null && this.taskInfoParm.select!=null)){ // 判断是否是直接从任务管理跳转过来
+  //       console.log("直接从任务管理跳转过来")
+  //       this.is_select = true;
+  //       this.selectedRow = {};
+  //       this.submitForm(1);
+  //   }else{
+  //     this.getAllData();
+  //   }
+  // },
+  mounted() {
+    this.taskInfoParm = this.$route.params;
+    if (this.taskInfoParm.label != null && this.taskInfoParm.select != null)
+      this.taskInfo = this.taskInfoParm.taskInfo;
+    else this.taskInfo = this.taskInfoParm;
+    console.log("taskInfo", this.taskInfo);
+    if (
+      this.taskInfoParm != null &&
+      this.taskInfoParm.label != null &&
+      this.taskInfoParm.select != null
+    ) {
+      // 判断是否是直接从任务管理跳转过来
+      this.is_select = true;
+      this.showButton = true;
+      this.selectedRow = {};
+      this.submitForm(1);
+    } else {
+      this.getAllData();
+    }
   },
   methods: {
     async exportData() {
       try {
-        const divToCapture =
-          this.$refs.exportContent;
+        const divToCapture = this.$refs.exportContent;
         const canvas = await html2canvas(divToCapture);
         const imageUrl = canvas.toDataURL();
         const link = document.createElement("a");
@@ -254,7 +344,6 @@ export default {
       }
     },
     getTableName(tableName) {
-      console.log("表明", tableName);
       this.dataSelectForm.formData.selectedData = tableName;
     },
     onSubmitDM() {
@@ -262,17 +351,19 @@ export default {
       this.showChart = !this.showChart;
     },
     drawChart() {
-      alert("开始画图")
       var option;
       let myChart = echarts.init(document.getElementById("chart"));
-      
       let barChart = echarts.init(document.getElementById("barChart"));
-      
       const that = this;
 
       $.get("./pic.svg", function (svg) {
         echarts.registerMap("organ_diagram", { svg: svg });
         option = {
+          title: {
+            text: "请点击图中器官切换查看指标（目前仅有肾与肝）", // 这里是你的标题文本
+            left: "center", // 标题的水平位置
+            top: "top",
+          },
           tooltip: {
             trigger: "item",
             formatter: function (args) {
@@ -490,13 +581,16 @@ export default {
     },
     open3(msg) {
       this.$message({
-        message:msg,
+        message: msg,
         type: "warning",
       });
     },
     submitForm(stepIndex) {
-      if((stepIndex == 1 && this.is_select == false) || (stepIndex == 1 && this.selectedRow==null)){
-        this.open3("请选择一个病人！")
+      if (
+        (stepIndex == 1 && this.is_select == false) ||
+        (stepIndex == 1 && this.selectedRow == null)
+      ) {
+        this.open3("请选择一个病人！");
         return;
       }
       let formName = this.formArray[stepIndex];
@@ -507,44 +601,61 @@ export default {
         this[nextFormName].isShow = true;
         if (this.active == 1) {
           let tableName = this.dataSelectForm.formData.selectedData;
+          this.dataLoading = true;
           getRequest(
             "/feature/getInfoByTableName?tableName=" + tableName + "&page=" + 1
-          ).then((response) => {
-            this.dataColumn = Object.keys(response.data[0]);
-            this.allPage = response.total * 10;
-            this.tableData = response.data;
-            this.dataPre = true;
-          });
+          )
+            .then((response) => {
+              this.dataColumn = Object.keys(response.data[0]);
+              this.allPage = response.total * 10;
+              this.tableData = response.data;
+              this.dataPre = true;
+            })
+            .finally(() => {
+              this.dataLoading = false;
+            });
         }
       } else if (stepIndex == 1) {
         let tableName = this.dataSelectForm.formData.selectedData;
         let select = this.oneSelectForm.formData.selectedData;
-        console.log("选中的表为：",tableName)
-        console.log("选中的数据为：",select)
-        if(this.taskInfoParm == null || Object.keys(this.taskInfoParm).length == 0){
-          addVisliazationTask("/Task/visualization",tableName,select).then(response=>{
-            if(response.code!=200){
-              this.open4("任务创建失败")
-              return;
-            }
-          }).catch(error=>{
-            this.open4("任务创建失败！")
-            return;
-          })
-        }else{
-          alert("任务转过来")
+
+        if (
+          this.taskInfoParm != null &&
+          this.taskInfoParm.label != null &&
+          this.taskInfoParm.select != null
+        ) {
+          //// 直接从任务管理跳转拿过来
           tableName = this.taskInfoParm.label;
-          select = this.taskInfoParm.select
+          select = this.taskInfoParm.select;
+        } else {
+          // 创建任务过来的 或者正常流程过来
+          addVisliazationTask(
+            "/Task/visualization",
+            tableName,
+            select,
+            this.taskInfo
+          )
+            .then((response) => {
+              if (response.code != 200) {
+                this.open4("任务创建失败");
+                return;
+              }
+            })
+            .catch((error) => {
+              this.open4("任务创建失败！");
+              return;
+            });
         }
         this.showChart = !this.showChart;
         this.showStep = !this.showStep;
         this.head1 = !this.head1;
         this.head2 = !this.head2;
         this.tableisShow = !this.tableisShow;
-        this.showButton=!this.showButton;
+        this.showButton = !this.showButton;
         this.active++;
-      
         const temp1 = [0, 0, 0, 0];
+        if (typeof select == "string") select = JSON.parse(select);
+        console.log("select[MONO_num]", select.MONO_num);
         temp1[0] = select["MONO_num"];
         temp1[1] = select["EO_num"];
         temp1[2] = select["BASO_num"];
@@ -561,21 +672,25 @@ export default {
         this.baryData = nameArr;
         var count = 0;
         var count1 = 0;
+        var count2 = 0;
         for (let j in select) {
           for (var i = 0; i < this.kidneyFormalData.length; i++) {
             if (this.kidneyFormalData[i].name == j) {
-              if (
+              if (!select[j]) {
+                count2++;
+              } else if (
                 select[j] < this.kidneyFormalData[i].min ||
                 select[j] > this.kidneyFormalData[i].max
               ) {
-                console.log(select[j]);
                 count++;
               }
             }
           }
           for (var i = 0; i < this.liverFormalData.length; i++) {
             if (this.liverFormalData[i].name == j) {
-              if (
+              if (!select[j]) {
+                count2++;
+              } else if (
                 select[j] < this.liverFormalData[i].min ||
                 select[j] > this.liverFormalData[i].max
               ) {
@@ -586,7 +701,8 @@ export default {
         }
         this.kidneyAbnormal = count;
         this.liverAbnormal = count1;
-        alert("正常")
+        this.nullCount = count2;
+        // 任务创建直接过来画图出问题
         this.drawChart();
       }
     },
@@ -602,17 +718,16 @@ export default {
         }
         let formName = this.formArray[stepIndex];
 
-        if(formName=='outcome'){
-          console.log('in')
+        if (formName == "outcome") {
+          console.log("in");
           this.showChart = !this.showChart;
-        this.showStep = !this.showStep;
-        this.head1 = !this.head1;
-        this.head2 = !this.head2;
-        this.tableisShow = !this.tableisShow;
-        this.showButton=!this.showButton;
-        }
-        else{
-               this[formName].isShow = false;
+          this.showStep = !this.showStep;
+          this.head1 = !this.head1;
+          this.head2 = !this.head2;
+          this.tableisShow = !this.tableisShow;
+          this.showButton = !this.showButton;
+        } else {
+          this[formName].isShow = false;
         }
         this.active--;
         let preFormName = this.formArray[--stepIndex];
@@ -641,6 +756,7 @@ export default {
     handleCurrentChange(val) {
       this.currentRow = val;
       this.selectedRow = val;
+      console.log("selectedRow", this.selectedRow);
       this.oneSelectForm.formData.selectedData = this.currentRow;
       this.is_select = true;
     },
@@ -655,22 +771,6 @@ export default {
         this.tableData = response.data;
       });
     },
-  },
-
-  created() {
-    this.taskInfoParm = this.$route.params
-    if(this.taskInfoParm == null || Object.keys(this.taskInfoParm).length==0){
-       alert("传过来是空")
-       this.getAllData();
-    }else{
-      this.dataSelectForm.isShow = false;
-      this.oneSelectForm.isShow = false;
-      this.showChart = true;
-      this.is_select = true;
-      this.selectedRow = {};
-      this.active = 2;
-      this.submitForm(1);
-    }
   },
 };
 </script>
@@ -744,6 +844,19 @@ export default {
 .button1 {
   display: flex;
   justify-content: center;
+  margin-top: 10px;
+}
+/deep/ .el-table__body tr.current-row > td.el-table__cell {
+  background-color: #157df0;
+  color: #fff;
+}
+.patientDescription {
+  width: 80%;
+}
+.patientContent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-top: 10px;
 }
 </style>

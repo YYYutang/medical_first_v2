@@ -30,6 +30,7 @@
           :groupFeat="groupFeat"
           :observeFeat="observeFeat"
           ref="childComponentRef"
+          :newTaskInfo = "newTaskInfo"
         ></singleOutCome>
         <div class="stepbutton3">
           <el-button size="small" v-if="active != 1" @click="stepBack(active)"
@@ -70,6 +71,7 @@ export default {
   },
   data() {
     return {
+      newTaskInfo: null,
       selectTreeNode: [],
       featureDataFromParent: [],
       observeFeatFromParent:{},
@@ -81,7 +83,11 @@ export default {
       observeFeat: {},
     };
   },
+  created(){
+    this.newTaskInfo = this.$route.params
+  },
   methods: {
+  
     open3() {
       this.$message({
         message: '请选择要处理的指标！',
@@ -149,12 +155,12 @@ export default {
   display: flex;
   height: auto;
   flex-direction: column;
+  min-height: 100vh;
 }
 .stepbutton3 {
-  display: flex;
-  justify-content: center; /* 水平居中 */
-  align-items: center; /* 垂直居中 */
-  margin-top: 10px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
 }
 
 .stepbutton {

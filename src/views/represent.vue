@@ -16,12 +16,20 @@
               :dataColumns="dataInOptions"
             >
             </oldData>
-            <div class="button1" v-if="oldShow">
+            <div class="button1" v-if="originalShow">
               <el-button
                 size="small"
                 @click="stepBack(active)"
                 class="el-button--primary"
                 >上一步</el-button
+              >
+            </div>
+            <div class="button1" v-if="returnShow">
+              <el-button
+                size="small"
+                @click="returnTask()"
+                class="el-button--primary"
+                >返回</el-button
               >
             </div>
           </el-tab-pane>
@@ -35,12 +43,20 @@
               :columnName="columnSelectForm.formData.selectedData"
               :chartDatay="chartDatay"
             ></newData>
-            <div class="button1" v-if="newShow">
+            <div class="button1" v-if="originalShow">
               <el-button
                 size="small"
                 @click="stepBack(active)"
                 class="el-button--primary"
                 >上一步</el-button
+              >
+            </div>
+            <div class="button1" v-if="returnShow">
+              <el-button
+                size="small"
+                @click="returnTask()"
+                class="el-button--primary"
+                >返回</el-button
               >
             </div>
           </el-tab-pane>
@@ -76,6 +92,8 @@
           v-show="columnSelectForm.isShow"
           ref="columnSelectForm"
           label-position="top"
+          v-loading="columnSelectFormLoading"
+          element-loading-text="数据量较大，正在努力加载中..."
         >
           <el-form-item label="选择属性列" prop="selectedData">
             <el-checkbox-group
@@ -231,10 +249,12 @@
 </template>
 <script>
 import { postRequest, getRequest } from "@/utils/api";
+import { addRepresentTask } from "@/api/user";
 import knn from "@/components/algos/knn.vue";
 import oldData from "@/components/outcomeShow/oldData.vue";
 import newData from "@/components/outcomeShow/newData.vue";
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
+import { TableColumn } from "element-ui";
 export default {
   components: {
     knn,
@@ -244,6 +264,7 @@ export default {
   },
   data() {
     return {
+      taskInfo: null,
       taskInfoParam: null,
       dataPre: false,
       activeName: "first",
@@ -252,6 +273,8 @@ export default {
       showStep: true,
       oldShow: false,
       newShow: false,
+      originalShow: false,
+      returnShow: false,
       dataOptions: [],
       dataInOptions: [],
       dataNew: [],
@@ -366,24 +389,34 @@ export default {
       dataChoose: {},
       // dataNew: [],
       statisData: [],
+      columnSelectFormLoading: false,
     };
   },
   created() {
     this.taskInfoParam = this.$route.params;
     if (
-      this.taskInfoParam == null ||
-      Object.keys(this.taskInfoParam).length == 0
+      this.taskInfoParam != null &&
+      this.taskInfoParam.tableName != null &&
+      this.aiName != null
+    )
+      this.taskInfo = this.taskInfoParam.taskInfo;
+    else this.taskInfo = this.taskInfoParam;
+    if (
+      this.taskInfoParam != null &&
+      this.taskInfoParam.tableName != null &&
+      this.taskInfoParam.aiName != null
     ) {
-      this.getAllData();
-    } else {
+      // 直接从任务管理跳转 查看结果
       this.dataSelectForm.isShow = false;
       this.columnSelectForm.isShow = false;
       this.algoForm.isShow = false;
       this.head2 = true;
-      // this.oldShow = true;
       this.showStep = false;
       this.getAllData();
+      console.log("成功获取所有信息");
       this.submitForm(2);
+    } else {
+      this.getAllData();
     }
   },
   methods: {
@@ -392,6 +425,9 @@ export default {
         message: msg,
         type: "warning",
       });
+    },
+    returnTask() {
+      this.$router.push("/taskManage");
     },
     getTableName(tableName) {
       this.dataSelectForm.formData.selectedData = tableName;
@@ -409,6 +445,7 @@ export default {
       this.statisData = response.data;
     },
     async getAllfilled(tableName) {
+      this.columnSelectFormLoading = true;
       const response = await getRequest("/feature/getAllFiled/" + tableName);
       this.demoOptions = [];
       this.physioOptions = [];
@@ -421,21 +458,21 @@ export default {
           const obj = {
             columnName: data[columnNametemp[i]].featureName,
           };
-          if (data[columnNametemp[i]].isDemography == true) {
+          if (data[columnNametemp[i]].population == true) {
             // 人口学
 
             obj.columnisR = true;
           } else {
             obj.columnisR = false;
           }
-          if (data[columnNametemp[i]].isSociology == true) {
+          if (data[columnNametemp[i]].society == true) {
             // 社会学
 
             obj.columnisX = true;
           } else {
             obj.columnisX = false;
           }
-          if (data[columnNametemp[i]].isPhysiological == true) {
+          if (data[columnNametemp[i]].physiology == true) {
             // 生理指标
 
             obj.columnisS = true;
@@ -469,6 +506,7 @@ export default {
           this.dataInOptions.push(obj);
         }
       }
+      this.columnSelectFormLoading = false;
     },
     async getOutcome(params) {
       try {
@@ -487,7 +525,7 @@ export default {
           this.head2 = !this.head2;
           this.showStep = !this.showStep;
         }
-        this.oldShow=true
+        this.oldShow = true;
       } catch (error) {
         console.log(error);
         this.active--;
@@ -502,7 +540,7 @@ export default {
           "&params=" +
           params
       );
-      console.log('datachoose_response',response)
+      console.log("datachoose_response", response);
       this.dataChoose = response;
     },
     async submitForm(stepIndex) {
@@ -539,26 +577,25 @@ export default {
         }
       } else if (stepIndex == 2) {
         let params = {};
+        console.log("判断是否直接跳转", this.taskInfoParam);
         if (
-          this.taskInfoParam == null ||
-          Object.keys(this.taskInfoParam).length === 0
+          this.taskInfoParam != null &&
+          this.taskInfoParam.tableName != null &&
+          this.taskInfoParam.runParams != null
         ) {
-          params = {
-            tableName: this.dataSelectForm.formData.selectedData, //模型选择的数据表表名
-            runParams: this.columnSelectForm.formData.selectedData, //模型选择的属性列（数组）
-            // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
-            aiName: "pca",
-          };
-          this.getOutcome(params);
-        } else {
+          // 直接任务管理查看结果
+          console.log("直接跳转了");
           this.head1 = false;
           params = {
             tableName: this.taskInfoParam.tableName, //模型选择的数据表表名
             runParams: this.taskInfoParam.runParams.split(","), //模型选择的属性列（数组）
-            aiName: this.taskInfoParam.aiName,
+            // aiName: this.taskInfoParam.aiName,
+            aiName: "pca",
           };
-          this.dataSelectForm.formData.selectedData= this.taskInfoParam.tableName
-          this.columnSelectForm.formData.selectedData=this.taskInfoParam.runParams.split(",")
+          this.dataSelectForm.formData.selectedData =
+            this.taskInfoParam.tableName;
+          this.columnSelectForm.formData.selectedData =
+            this.taskInfoParam.runParams.split(",");
           await this.getAllfilled(this.taskInfoParam.tableName);
           await this.getFirstPageData(this.taskInfoParam.tableName);
           await this.getStasticData(this.taskInfoParam.tableName);
@@ -567,16 +604,47 @@ export default {
             this.taskInfoParam.tableName,
             params.runParams
           );
+          console.log("parms: ", params);
           await this.getOutcome(params);
+          this.returnShow = true;
+          this.originalShow = false;
+        } else {
+          // 正常创建任务
+          params = {
+            tableName: this.dataSelectForm.formData.selectedData, //模型选择的数据表表名
+            runParams: this.columnSelectForm.formData.selectedData, //模型选择的属性列（数组）
+            // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
+            aiName: "pca",
+          };
+          this.head2 = true;
+          this.head1 = false;
+          this.algoForm.isShow = false;
+          this.showStep = false;
+          let tableName = this.dataSelectForm.formData.selectedData;
+          await this.getAllfilled(tableName);
+          await this.getFirstPageData(tableName);
+          await this.getStasticData(tableName);
+          await this.getDataChoose(1, tableName, params.runParams);
+          await this.getOutcome(params);
+          // 发送创建 疾病特征表征的任务
+          addRepresentTask(
+            "Task/addRepresentTask/",
+            tableName,
+            this.columnSelectForm.formData.selectedData.join(","),
+            params.aiName,
+            this.taskInfo
+          );
+          this.returnShow = false;
+          this.originalShow = true;
         }
       }
       if (this.activeName == "first") {
         this.oldShow = true;
-        this.newShow=false;
+        this.newShow = false;
       }
       if (this.activeName == "second") {
         this.newShow = true;
-        this.oldShow=false;
+        this.oldShow = false;
       }
     },
     resetForm(stepIndex) {
@@ -589,6 +657,7 @@ export default {
           this.dataInOptions = [];
         }
         let formName = this.formArray[stepIndex];
+        console.log('formName',formName)
         if (formName == "outcome") {
           this.newShow = false;
           this.oldShow = false;
@@ -628,7 +697,6 @@ export default {
       } else if (tab.$options.propsData.name == "second") {
         this.newShow = true;
       }
-      // this.newShow = true;
     },
   },
 };
@@ -672,7 +740,6 @@ export default {
   width: 100%;
   height: 100%;
   left: 15%;
-  overflow-y: auto;
 }
 .represent_datasetChoose {
   ::v-deep .right_table {

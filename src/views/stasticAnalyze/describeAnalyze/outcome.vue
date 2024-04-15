@@ -10,6 +10,22 @@
       </div>
       <div class="outcome" v-if="discrete==true">
         <h2 class="title">分析报告</h2>
+
+        <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:10px; margin-bottom: 10px;">
+          <p style="margin-top:0px">
+            <i class="el-icon-user"></i>创建人:
+            <span>{{ taskInfo.principal }}</span>
+            <i style="margin-left:20px" class="el-icon-user"></i>参与人员:
+            <span>{{ taskInfo.participants }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务名称:
+            <span>{{ taskInfo.taskName }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务类型:
+            <span>{{ taskInfo.tasktype }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>备注:
+            <span>{{taskInfo.tips}}</span>
+          </p>
+        </div>
+
         <h3 class="result">统计结果</h3>
         <h4 style="text-align: center">定性数据 描述性统计</h4>
         <div class="table">
@@ -40,10 +56,24 @@
           </el-table>
         </div>
         <h3 style="margin-top: 30px;">统计图表</h3>
-        <div ref="chart" style="width: 400px; height: 400px;"></div>
+        <div ref="chart" style="width: 600px; height: 400px;"></div>
       </div>
       <div class="outcome" v-else>
         <h2 class="title">分析报告</h2>
+        <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:10px; margin-bottom: 10px;">
+          <p style="margin-top:0px">
+            <i class="el-icon-user"></i>创建人:
+            <span>{{ taskInfo.principal }}</span>
+            <i style="margin-left:20px" class="el-icon-user"></i>参与人员:
+            <span>{{ taskInfo.participants }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务名称:
+            <span>{{ taskInfo.taskName }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务类型:
+            <span>{{ taskInfo.tasktype }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>备注:
+            <span>{{taskInfo.tips}}</span>
+          </p>
+        </div>
         <h3 class="result">统计结果</h3>
         <h4 style="text-align: center">定性数据 描述性统计分析</h4>
          <el-table
@@ -83,7 +113,10 @@
           </el-table-column>
         </el-table>
         <h3 style="margin-top: 30px;">统计图表</h3>
-        <div ref="binChart" style="width: 600px; height: 400px;" class="bin" ></div>
+        <div class="message" style="margin-top:10px">
+          <p>下表统计的是选择特征在整个数据集中的数值取值分布情况。每组是一段取值范围，图的x坐标显示的就是每一组的取值范围，y轴坐标显示的就是统计每个取值范围出现的次数</p>
+        </div>
+        <div ref="binChart" style="width: 620px; height: 400px;" class="bin" ></div>
       </div>
     </div>
   </div>
@@ -98,9 +131,16 @@ import { tabSwitch } from '@/components/mixins/mixin';
 /*特征选择页面*/
 export default ({
     name:'outcome',
-    props:['active', 'label', 'checkedFeats'],
+    props:['active', 'label', 'checkedFeats','newTaskInfo'],
     data(){
         return{
+         taskInfo: {
+            taskName: "",
+            principal: "",
+            tasktype: "",
+            participants: "",
+            tips: ""
+         },
          discrete: true,
          tableData: [],
 
@@ -132,6 +172,27 @@ export default ({
     created(){
        this.taskInfoParam = this.$route.params
        console.log("taskInfoParam:",this.taskInfoParam)
+       this.taskInfo = this.newTaskInfo;
+       if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo;
+       
+      //  if(this.newTaskInfo!=null && this.newTaskInfo.participants!=null){// 在任务管理处创建任务
+      //     console.log("封装1")
+      //     // this.taskInfo.participants = this.newTaskInfo.participants;
+      //     // this.taskInfo.principal = this.newTaskInfo.principal;
+      //     // this.taskInfo.taskName = this.newTaskInfo.taskName;
+      //     // this.taskInfo.tasktype = this.newTaskInfo.tasktype;
+      //     // this.taskInfo.tips = this.newTaskInfo.tips;
+      //     this.taskInfo = this.newTaskInfo
+      //  }
+      //  if(this.taskInfo.participants == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) { // 直接从任务管理处调过来
+      //   console.log("封装参数")
+      //   // this.taskInfo.participants = this.taskInfoParam.taskInfo.participants;
+      //   // this.taskInfo.principal = this.taskInfoParam.taskInfo.principal;
+      //   // this.taskInfo.taskName = this.taskInfoParam.taskInfo.taskName;
+      //   // this.taskInfo.tasktype = this.taskInfoParam.taskInfo.tasktype;
+      //   // this.taskInfo.tips = this.taskInfoParam.taskInfo.tips;
+      //   this.taskInfo = this.taskInfoParam.taskInfo
+      //  }
        this.requestFormData();
     },
     methods: {
@@ -139,14 +200,18 @@ export default ({
       requestFormData(){
         let featureName = null;
         let label = null;
-        if(Object.keys(this.taskInfoParam).length>0){
+        if(this.taskInfoParam!=null && this.taskInfoParam.feature!=null && this.taskInfoParam.label!=null){ // 判断是否是直接从任务管理跳转
+          console.log("直接从任务管理跳转过来的")
           featureName = this.taskInfoParam.feature
           label = this.taskInfoParam.label
         }else{
           featureName = this.checkedFeats[0].featureName
           label = this.label
         }
-        requestFormData("/api/tableDesAnalyze", featureName,label).then(response=>{
+        console.log("featureName:",featureName)
+        console.log("label:",label)
+        console.log("taskInfo",this.taskInfo)
+        requestFormData("/api/tableDesAnalyze", featureName, label, this.taskInfo).then(response=>{
           this.discrete = response.data.discrete
           if(response.data.discrete==true){ // 离散
             let data = []
@@ -290,11 +355,18 @@ export default ({
         },
         tooltip: {},
         xAxis: {
+          name: '取值范围',
           data: this.binData.map(item => item.name)
         },
+        axisLine: {
+        lineStyle: {
+          color: '#999', // 刻度线颜色
+          width: 1 // 刻度线粗细
+        }
+      },
         yAxis: {},
         series: [{
-          name: '数值',
+          name: '频数',
           type: 'bar',
           data: this.binData.map(item => item.value),
           barWidth: '50%', // 柱子宽度
@@ -397,6 +469,10 @@ b {
   align-items: center; /* 垂直居中 */
   flex-direction: column;
   /* background-color: skyblue; */
+}
+
+.message{
+  width: 50%;
 }
 
 

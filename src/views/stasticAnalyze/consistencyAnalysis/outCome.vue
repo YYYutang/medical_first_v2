@@ -10,6 +10,20 @@
       </div>
       <div class="result">
         <h3 style="text-align: center; font-size: 30px; margin-top:20px">分析报告</h3>
+         <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:10px; margin-bottom: 0px; text-align: center;">
+          <p style="margin-top:0px">
+            <i class="el-icon-user"></i>创建人:
+            <span>{{ taskInfo.principal }}</span>
+             <i style="margin-left:20px" class="el-icon-user"></i>参与人员:
+            <span>{{ taskInfo.participants }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务名称:
+            <span>{{ taskInfo.taskName }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务类型:
+            <span>{{ taskInfo.tasktype }}</span>
+             <i style="margin-left:20px" class="el-icon-folder-opened"></i>备注:
+            <span>{{taskInfo.tips}}</span>
+          </p>
+        </div>
         <h3 style="font-size: 30px; margin-top:20px; margin-left: 100px; margin-bottom: 20px">ICC</h3>
         <h3 style="font-size: 20px; margin-left:150px">统计结果</h3>
         <div>
@@ -127,7 +141,7 @@ import { postRequest, getRequest } from '@/utils/api';
 import { singleFactorAnalyze } from "@/api/user"
 export default defineComponent({
   name: 'outcome2',
-  props: ['active', 'label', 'checkedFeats'],
+  props: ['active', 'label', 'checkedFeats','newTaskInfo'],
   data() {
     return {
          allData: [],
@@ -160,11 +174,15 @@ export default defineComponent({
           '95%CI': '-111.366~-110.215',
           t: -367.44
         }],
-        taskInfoParam: {}
+        taskInfoParam: {},
+        taskInfo: null
     };
   },
   created() {
     this.taskInfoParam = this.$route.params
+    console.log("taskInfoParam:",this.taskInfoParam)
+    this.taskInfo = this.newTaskInfo;
+    if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo;
     this.getAllData();
   },
   methods: {
@@ -177,14 +195,14 @@ export default defineComponent({
     getAllData(){
         let tableName = null;
         let featureName = null;
-        if(Object.keys(this.taskInfoParam).length==0){
-          tableName = this.label;
-          featureName = this.checkedFeats[0].featureName;
-        }else{
+        if(this.taskInfoParam!=null && this.taskInfoParam.featureName!=null && this.taskInfoParam.label!=null){// 判断是否是直接从任务管理查看任务结果
           tableName = this.taskInfoParam.label;
           featureName = this.taskInfoParam.featureName;
+        }else{
+          tableName = this.label;
+          featureName = this.checkedFeats[0].featureName;
         }
-        singleFactorAnalyze("/api/consistencyAnalyze",tableName,featureName).then(response=>{ // 传递表名、分组列名、观察列名
+        singleFactorAnalyze("/api/consistencyAnalyze",tableName,featureName,this.taskInfo).then(response=>{ // 传递表名、分组列名、观察列名
             console.log("返回数据：",response)
             if(response.code == 500) {
               this.open3(response.msg)

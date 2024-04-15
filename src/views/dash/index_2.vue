@@ -14,7 +14,7 @@
                   class="imgStyle"
                   style="border-radius: 15px"
                 />
-                <div style="font-size:large;font-weight:bold;margin-top:10px">{{ item.title }}</div>
+                <div style="text-align: center">{{ item.title }}</div>
               </div>
             </div>
           </div>
@@ -29,14 +29,14 @@
           <div>
             <el-row :gutter="30">
               <el-col :span="6" id="data_sta">
-                <div class="text_style">
+                <div>
                   <el-progress
                     type="circle"
                     :percentage="100"
+                   
                     :format="text"
                   ></el-progress>
-                  <el-statistic  :value="dataAllNum">
-                     <template slot="title"> <span style="font-size:20px;font:bold">数据总量</span> </template>
+                  <el-statistic title="数据总量" :value="dataAllNum">
                     <template slot="suffix"> 条 </template>
                   </el-statistic>
                 </div>
@@ -48,25 +48,9 @@
                     :percentage="100"
                       :format="text2"
                   ></el-progress>
-                  <el-statistic   :value="insAllNum">
-                     <template slot="title"> <span style="font-size:20px;font:bold">指标总量</span> </template>
+                  <el-statistic title="指标总量" :value="insAllNum">
                     <template slot="formatter"> {{ insAllNum }}</template>
                     <template slot="suffix"> 个 </template>
-                  </el-statistic>
-                </div>
-              </el-col>
-                <el-col :span="6" id="data_sta">
-                <div>
-                  <el-progress
-                    type="circle"
-                    :percentage="effectiveall"
-                  ></el-progress>
-                  <el-statistic
-                    :value="effectiveall"
-                    :precision="2"
-                  >
-                   <template slot="title"> <span style="font-size:20px;font:bold">总体有效率</span> </template>
-                    <template slot="suffix">% </template>
                   </el-statistic>
                 </div>
               </el-col>
@@ -77,13 +61,27 @@
                     :percentage="missingAll"
                   ></el-progress>
                   <el-statistic
-      
                     group-separator=","
                     :precision="2"
                     decimal-separator="."
                     :value="missingAll"
+                    title="总体缺失率"
                   >
-                   <template slot="title"> <span style="font-size:20px;font:bold">总体缺失率</span> </template>
+                    <template slot="suffix">% </template>
+                  </el-statistic>
+                </div>
+              </el-col>
+              <el-col :span="6" id="data_sta">
+                <div>
+                  <el-progress
+                    type="circle"
+                    :percentage="effectiveall"
+                  ></el-progress>
+                  <el-statistic
+                    title="总体有效率"
+                    :value="effectiveall"
+                    :precision="2"
+                  >
                     <template slot="suffix">% </template>
                   </el-statistic>
                 </div>
@@ -109,7 +107,7 @@
               <el-progress
                 :text-inside="true"
                 :stroke-width="28"
-               :percentage="parseFloat(((item.num * 100) / patientNum).toFixed(2))"
+                :percentage="(item.num * 100) / patientNum"
                 style="margin-top: 10px"
               ></el-progress>
             </div>
@@ -136,7 +134,7 @@
       <div class="right">
         <el-card>
           <div slot="header" class="clearfix">
-            <span class="lineStyle">▍</span><span>近七天任务增长趋势</span>
+            <span class="lineStyle">▍</span><span>近七天任务变化趋势</span>
           </div>
           <div id="increase" style="width: 500px; height: 400px"></div>
         </el-card>
@@ -144,7 +142,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import { getRequest } from "@/utils/api";
 import storage from "@/utils/storage";
@@ -165,27 +162,12 @@ export default {
 
       quickEntry: [
         {
-          title: "数据管理",
+          title: "数据表管理",
           img: require("../../assets/dataManage.png"),
           router: "/dataManagePublic",
         },
-         {
-          title: "任务管理",
-          img: require("../../assets/other.png"),
-          router: "/taskManage",
-        },
-          {
-          title: "统计分析",
-          img: require("../../assets/tongji.png"),
-          router: "/stasticAnalyze",
-        },
-         {
-          title: "缺失值处理",
-          img: require("../../assets/queshizhi.png"),
-          router: "/completeMissing",
-        },
         {
-          title: "特征表征",
+          title: "疾病的特征指标表征",
           img: require("../../assets/mutipile.png"),
           router: "/represent",
         },
@@ -194,27 +176,28 @@ export default {
           img: require("../../assets/feiai.png"),
           router: "/visualization",
         },
+        { title: "其他功能", img: require("../../assets/other.png") },
       ],
       diseaseData: [
         {
           name: "胃癌",
-          num: 0,
+          num: 30,
         },
         {
           name: "糖尿病",
-          num: 0,
+          num: 23,
         },
         {
           name: "肺癌",
-          num: 0,
+          num: 56,
         },
         {
           name: "乳腺癌",
-          num: 0,
+          num: 12,
         },
         {
           name: "高血压",
-          num: 0,
+          num: 22,
         },
       ],
     };
@@ -299,22 +282,13 @@ export default {
     },
     text2(percentage){
        return `${this.insAllNum}`;
-    },
-    getStaticDisease(){
-    getRequest("/api/getStaticDisease").then(response=>{
-       for (let item of response.data){
-          this.patientNum+=item.num;
-        }
-        this.diseaseData = response.data;
-      })
     }
-  
   },
   mounted() {
     this.getStatis();
     this.getAllData();
     this.getIncrease();
-    this.getStaticDisease();
+
   },
 };
 </script>
@@ -350,10 +324,9 @@ export default {
 .topBigDiv .left .quickEntryBox .singleBox {
   /*border: 1px red solid;*/
   /*box-sizing: border-box;*/
-  width:90px;
-  height: 90px;
+  width: 80px;
+  height: 80px;
   border-radius: 20%;
-  text-align: center;
 }
 .topBigDiv .left .quickEntryBox .imgStyle {
   width: 90%;
@@ -382,10 +355,6 @@ export default {
   height: 100%;
   width: 33%;
 }
-.clearfix{
-  font-size:1.5em;
-  font:bold
-}
 .clearfix:before,
 .clearfix:after {
   display: table;
@@ -412,5 +381,4 @@ export default {
   justify-content: space-evenly;
   align-items: center;
 }
-
 </style>

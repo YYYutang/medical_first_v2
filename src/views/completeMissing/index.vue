@@ -4,7 +4,7 @@
         <datasetChoose v-if="active == 1" :active="active" :type="4" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
         <characterChoose v-if="active == 2" :active="active" :step="1" :label="label" :type="4" :curentAnalyzeStep="1" @send_feat="getCheackedFeats" @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
         <missingalgo ref="missingalgo" v-if="active == 3" :active="active" :checkedFeats="checkedFeats" :isback="isback" :label="label" @send_method="getMissCompleteMehtod" @send_table_a="getTableA" @send_table_b="getTableB" @send_table_c="getTableC" :tableData1FromParent="tableData1FromParent" :tableData2FromParent="tableData2FromParent" :tableData3FromParent="tableData3FromParent"></missingalgo>
-        <missingoutcome v-if="active == 4" :active="active" :missCompleteMehtod="missCompleteMehtod" :label="label"></missingoutcome>
+        <missingoutcome v-if="active == 4" :active="active" :missCompleteMehtod="missCompleteMehtod" :label="label" :newTaskInfo="newTaskInfo"></missingoutcome>
       <br><div class="stepbutton">
         <el-button size="small" v-if="active!=1" @click="stepBack(active)">上一步</el-button>
         <el-button size="small" type="primary" v-if="active!=4" @click="stepNext(active)"
@@ -12,20 +12,6 @@
         <el-button size="small" type="primary" v-if="active==4" @click="exportFile()"
           >导出</el-button>
       </div>
-      <!-- <el-dialog
-        title="提示"
-        :visible.sync="dialogVisible"
-        width="30%"
-        :before-close="handleClose">
-        <span>请输入文件夹路径</span>
-        <el-input v-model="filePath" placeholder="请输入保存路径"></el-input>
-        <span>请输入导出文件名称</span>
-        <el-input v-model="fileName" placeholder="请输入文件名"></el-input>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="exportFile()">确 定</el-button>
-        </span>
-    </el-dialog> -->
     </el-container>
   </div>
 </template>
@@ -46,6 +32,7 @@ export default {
   data() {
     return {
       isback: false,
+      newTaskInfo: null, 
       tableData1FromParent: [],
       tableData2FromParent: [],
       tableData3FromParent: [],
@@ -66,7 +53,8 @@ export default {
     };
   },
   created(){
-    
+    this.newTaskInfo = this.$route.params
+    console.log("新建任务参数：",this.newTaskInfo)
   },
   methods: {
     open3(msg) {

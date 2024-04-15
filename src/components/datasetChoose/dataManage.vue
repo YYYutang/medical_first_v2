@@ -10,9 +10,10 @@
     </div>
     <div class="bottom_container">
       <div class="left_tree">
-        <el-button type="success" class="add_button"
-          >请选择以下数据集</el-button
-        >
+        <div class="tip_boarder">
+        <span 
+          >请选择以下数据集</span>
+        </div>
         <el-dialog
           title="提示"
           :visible.sync="dialogDiseaseVisible2"
@@ -40,58 +41,11 @@
           :check-on-click-node="true"
           :highlight-current="true"
           @node-click="changeData"
-          @check-change="handleCheckChange"
         >
-          <!-- <span class="custom-tree-node" slot-scope="{ node, data }">
-            <span>{{ node.label }}</span>
-            <span>
-              <el-popconfirm
-                v-if="data.isCommon"
-                confirm-button-text="添加新病种"
-                cancel-button-text="上传数据集"
-                title="请选择添加的文件"
-                cancel-button-type="primary"
-                @confirm="dialogDiseaseVisible = true"
-                @cancel="dialogFormVisible = true"
-              >
-                <el-button
-                  v-if="!data.isLeafs"
-                  icon="el-icon-folder-add"
-                  size="mini"
-                  type="text"
-                  slot="reference"
-                  @click="markNode(data)"
-                >
-                </el-button>
-              </el-popconfirm>
-              <el-popconfirm
-                v-else
-                confirm-button-text="添加新病种"
-                cancel-button-text="筛选数据集"
-                title="请选择添加的文件"
-                cancel-button-type="primary"
-                @confirm="dialogDiseaseVisible = true"
-                @cancel="openAddDataForm(data.path)"
-              >
-                <el-button
-                  v-if="!data.isLeafs"
-                  icon="el-icon-folder-add"
-                  size="mini"
-                  type="text"
-                  slot="reference"
-                  @click="markNode(data)"
-                >
-                </el-button>
-              </el-popconfirm>
-              <el-button
-                icon="el-icon-delete"
-                size="mini"
-                type="text"
-                @click="() => remove(node, data)"
-              >
-              </el-button>
-            </span>
-          </span> -->
+         <span class="custom-tree-node" slot-scope="{ node, data }">
+         <span v-if="data.catLevel == 1" style="font-weight:bold;font-size:15px;color:#252525">{{ node.label }}</span>
+          <span v-else>{{ node.label }}</span>
+          </span>
         </el-tree>
         <!-- <el-dialog
           title="提示"
@@ -481,12 +435,14 @@
         </el-dialog>
       </el-dialog> -->
       <div class="right_table">
-        <el-card class="right_table_topCard">
+        <el-card
+          class="right_table_topCard"
+          v-loading="loadingTableData"
+          element-loading-text="数据量较大，正在努力加载中..."
+        >
           <div class="describe_content">
             <!-- <h3>数据集信息预览</h3> -->
-            <el-button type="success"
-              >数据信息预览</el-button
-            >
+             <div class="tip_boarder">数据信息预览</div>
             <p style="margin-top: 0.5%">
               <i class="el-icon-user"></i>创建人1:
               <span>{{ showDataForm.createUser }}</span>
@@ -499,7 +455,6 @@
           <!-- 显示表数据 -->
           <div class="table_data">
             <el-table
-              v-loading="loadingTableData"
               :data="tableData"
               stripe
               style="width: 100%"
@@ -577,7 +532,7 @@ export default {
   data() {
     return {
       filterLoading: true,
-      loadingTableData: true,
+      loadingTableData: false,
       treeData: [],
       // 获取虚拟表格数据
       // tableData: JSON.parse(JSON.stringify(tableData)),
@@ -971,7 +926,6 @@ export default {
           this.showDataForm.createUser = response.data.createUser;
           this.showDataForm.createTime = response.data.createTime;
           this.showDataForm.classPath = response.data.classPath;
-          this.tableData = [];
         })
         .catch((error) => {
           console.log("错误");
@@ -980,15 +934,20 @@ export default {
     getTableData(tableId, tableName) {
       this.loadingTableData = true;
       this.dataPred = false;
+
+      if (this.tableData.length > 0) {
+        this.tableData = [];
+      }
       getTableData("/api/getTableData", tableId, tableName)
         .then((response) => {
           // 获取表数据
           this.tableData = response.data;
           this.dataPred = true;
-          this.loadingTableData = false;
         })
         .catch((error) => {
           console.log(error);
+        })
+        .finally(() => {
           this.loadingTableData = false;
         });
     },
@@ -1415,7 +1374,7 @@ export default {
 }
 
 .left_tree {
-  height: 660px;
+  height: 100%;
   width: 15%;
   border-radius: 3px;
   border-left: 1px solid #e6e6e6;
@@ -1434,7 +1393,7 @@ export default {
 }
 
 .right_table {
-  height: 660px;
+  height: 100%;
   border: none;
 }
 
@@ -1450,7 +1409,8 @@ export default {
 
 .describe_content {
   display: inline-block;
-  width: 70%;
+  width: 100%;
+  
 }
 
 .describe_content span {
@@ -1547,5 +1507,15 @@ export default {
 }
 body {
   margin: 0;
+}
+.tip_boarder{
+  width:auto;
+  height:50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6e6e6;
+  color:#535353;
+  font-weight: bold;
 }
 </style>

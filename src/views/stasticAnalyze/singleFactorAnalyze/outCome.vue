@@ -10,6 +10,20 @@
       </div>
       <div class="result">
         <h3 style="text-align: center; font-size: 30px; margin-top:20px">分析报告</h3>
+        <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:10px; margin-bottom: 0px; text-align: center;">
+          <p style="margin-top:0px">
+            <i class="el-icon-user"></i>创建人:
+            <span>{{ taskInfo.principal }}</span>
+             <i style="margin-left:20px" class="el-icon-user"></i>参与人员:
+            <span>{{ taskInfo.participants }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务名称:
+            <span>{{ taskInfo.taskName }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务类型:
+            <span>{{ taskInfo.tasktype }}</span>
+             <i style="margin-left:20px" class="el-icon-folder-opened"></i>备注:
+            <span>{{taskInfo.tips}}</span>
+          </p>
+        </div>
         <h3 style="font-size: 20px; margin-left:150px">统计结果</h3>
         <div>
         <el-table
@@ -79,9 +93,10 @@ import { getSingleAnalyze } from "@/api/user";
 import { tabSwitch } from '@/components/mixins/mixin';
 export default defineComponent({
   name: 'outcome2',
-  props: ['active', 'label', 'groupFeat', 'observeFeat'],
+  props: ['active', 'label', 'groupFeat', 'observeFeat','newTaskInfo'],
   data() {
     return {
+         taskInfo:null,
          featureName: '',
          allData: [],
          binData1:[],
@@ -91,9 +106,11 @@ export default defineComponent({
     };
   },
   created() {
-    // 获取任务管理模块传递过来的参数
-    this.taskInfoParam = this.$route.params
-    this.getAllData();
+      this.taskInfoParam = this.$route.params
+      console.log("taskInfoParam:",this.taskInfoParam)
+      this.taskInfo = this.newTaskInfo;
+      if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo;
+      this.getAllData();
   },
 
   methods: {
@@ -108,19 +125,18 @@ export default defineComponent({
     getAllData(){
         let colNames = [];
         let label=null;
-        if(Object.keys(this.taskInfoParam).length===0){
-          colNames.push(this.groupFeat.featureName);
-          colNames.push(this.observeFeat.featureName);
-          label = this.label;
-        }else{
+        if(this.taskInfoParam!=null && this.taskInfoParam.features!=null && this.taskInfoParam.label!=null){
            colNames.push(this.taskInfoParam.features[0]);
            colNames.push(this.taskInfoParam.features[1]);
            label = this.taskInfoParam.label;
+           this.featureName = this.taskInfoParam.features[0]
+        }else{
+          colNames.push(this.groupFeat.featureName);
+          colNames.push(this.observeFeat.featureName);
+          label = this.label;
+          this.featureName = this.groupFeat.featureName;
         }
-        console.log("后端表名：",label)
-        console.log("后端列名：",colNames)
-       console.log(this.binData1)
-        getSingleAnalyze("/api/singleFactorAnalyze",label,colNames.join(",")).then(response=>{ // 传递表名、分组列名、观察列名
+        getSingleAnalyze("/api/singleFactorAnalyze",label,colNames.join(","),this.taskInfo).then(response=>{ // 传递表名、分组列名、观察列名
             // 分析表格数据
             this.tableData = response.data.discreteVos;
             console.log("response",response.data)

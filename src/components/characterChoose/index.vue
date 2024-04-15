@@ -10,6 +10,10 @@
       </div>
       <div class="mainCharacter">
         <div class="left_sidebar">
+           <div class="tip_boarder">
+        <span 
+          >请选择下面的特征类型</span>
+        </div>
             <el-tree ref="tree"
             show-checkbox
             :check-strictly="true"  
@@ -25,14 +29,14 @@
         <div class="right">
             <div class="info">
               <el-alert
-                title="特征下方进度条为特征缺失度"
+                title="特征下方进度条为特征完备度"
                 type="info"
                 center
                 show-icon>
               </el-alert>
             </div>
             <br><br v-if="curentAnalyzeStep==1">            
-            <h2 style="text-align: center" v-if="step==1">选择需要缺失补齐的特征</h2><h2 style="text-align: center; margin-top:-15px" v-if="step==2" class="top">选择需要统计分析的特征</h2>
+            <h2 style="text-align: center" v-if="step==1">选择一个或多个需要缺失补齐的特征</h2><h2 style="text-align: center; margin-top:-15px" v-if="step==2" class="top">选择一个需要描述性分析的特征</h2>
             <!--缺失值补齐，病人画像， 描述性分析的 特征选择-->
             <div class="selectClass" v-if="curentAnalyzeStep==1">
               <h3>文本类型特征</h3>
@@ -65,7 +69,7 @@
             </div>
             <!--单因素分析的特征选择-->
             <div class="selectClassSingle" v-if="curentAnalyzeStep==2">
-              <h3 style="text-align: center; font-size: 24px">选择作为分组依据特征</h3>
+              <h3 style="text-align: center; font-size: 24px">选择一个作为分组依据特征</h3>
               <div class="contain4">
                 <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat!=observeFeaure && feat.discrete && feat.missRate<50">
                     <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeGroup(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
@@ -73,7 +77,7 @@
                 </div>
                 <div class="block invisible" v-for="n in (5 - getGroupFeatLength() % 5) % 5" :key="n.id"></div>
               </div>
-               <h3 style="text-align: center; font-size: 24px">选择需要观察的特征</h3>
+               <h3 style="text-align: center; font-size: 24px">选择一个或多个需要观察的特征</h3>
               <div class="contain5">
                 <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat!=groupFeature && feat.missRate<50">
                     <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeObserve(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
@@ -84,7 +88,7 @@
             </div>
 
             <div class="consistencyAnalyze" v-if="curentAnalyzeStep==3">
-               <h3 style="text-align: center; font-size: 24px">选择作为分组依据特征</h3>
+               <h3 style="text-align: center; font-size: 24px">选择一个作为分组依据特征</h3>
                <div class="contain6">
                 <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat.featureDataType!=3 && feat.missRate<30">  <!--只显示数据类型为数值的字段-->
                     <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeConsis(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
@@ -376,10 +380,10 @@ export default ({
     width: 100%;
     border-top: 1px solid black;
     margin-top: 20px;
-    height: 750px;
+       height: 100vh;
 }
 .top{
-  front-size: 20px;
+  font-size: 20px;
   margin-top: 0px;
 }
 .contain {
@@ -400,6 +404,7 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     overflow-y: auto;
   }
    .contain2 {
@@ -414,6 +419,7 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     overflow-y: auto;
   }
    .contain3 {
@@ -429,6 +435,7 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     overflow-y: auto;
   }
 
@@ -436,7 +443,7 @@ export default ({
     display: flex;
     width: 100%;
     flex-direction: row; /* 按列排版 */
-    height: calc(40% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    height: calc(35% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
     overflow-y: auto;
     flex-wrap: wrap; /* 每行换行 */
     padding: 20px;
@@ -445,12 +452,13 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
   }
   .contain5 {
     display: flex;
     width: 100%;
     flex-direction: row; /* 按列排版 */
-    height: calc(40% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    height: calc(35% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
     // margin-top: 15px;
     margin-bottom: 5px;
     overflow-y: auto;
@@ -460,6 +468,7 @@ export default ({
     border-right: 2px solid #e6e6e6;
     border-top: 2px solid #e6e6e6;
     border-bottom: 2px solid #e6e6e6;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     padding: 20px;
   }
 
@@ -472,7 +481,8 @@ export default ({
     height: 70%;
     overflow-y: auto;
     flex-wrap: wrap;
-    border: #0066cc 2px solid;
+    border: 2px solid #e6e6e6;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     padding: 20px;
     overflow-y: auto;
   }
@@ -482,22 +492,20 @@ export default ({
     text-align: center;
 }
 .left_sidebar {
-    height: 700px;
+    height: 80%;
     width: 15%;
     padding: 5x;
     margin-top: 20px;
     border-radius: 3px;
-    border-left: 1px solid #e6e6e6;
-    border-right: 1px solid #e6e6e6;
-    border-top: 1px solid #e6e6e6;
-    border-bottom: none;
+    border: 1px solid #e6e6e6;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
 }
 .right{
     width: 85%;
     display: flex;
     flex-direction: column;
     // box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    height: 720px;
+    height: 100%;
 }
 
 
@@ -512,19 +520,19 @@ export default ({
 
 .selectClass{
     margin-top: 0px;
-    margin-left: 100px;
+    margin-left: 20px;
     width: 1300px;
     height: 800px;
 }
 .selectClassSingle{
     margin-top: 10px;
-    margin-left: 100px;
+    margin-left: 20px;
     width: 1300px;
     height: 800px;
 }
 .consistencyAnalyze{
     margin-top: 10px;
-    margin-left: 100px;
+    margin-left: 40px;
     width: 1300px;
     height: 800px;
 }
@@ -563,7 +571,16 @@ export default ({
   border-color: #0066cc; /* 设置边框颜色 */
   border-width: 2px; /* 增加边框宽度 */
 }
-
+.tip_boarder{
+  width:auto;
+  height:50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6e6e6;
+  color:#535353;
+  font-weight: bold;
+}
 
 .progress-green {
   background-color: #00cc66; /* 绿色 */
@@ -580,7 +597,11 @@ export default ({
 .progress-dark-red {
   background-color: #cc0000; /* 深红色 */
 }
-
+.add_button {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 
 
 </style>
