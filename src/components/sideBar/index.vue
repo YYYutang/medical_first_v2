@@ -7,13 +7,13 @@
           mode="horizontal"
           active-text-color="#ffd04b"
           background-color="#071135"
-             @select="handleSelect"
+          @select="handleSelect"
         >
           <el-menu-item index="1" style="color: #5292d8; font-size: 20px"
             ><i class="el-icon-box"></i>人群队列数据特征表征软件</el-menu-item
           >
           <!--            <template slot="title">当前服务器：</template>-->
-     <el-menu-item
+          <el-menu-item
             index="2"
             style="float: right; color: #fff; font-size: 14px"
             ><i class="el-icon-close"></i>退出登录</el-menu-item
@@ -21,7 +21,7 @@
           <el-menu-item
             index="3"
             style="float: right; color: #fff; font-size: 14px"
-            ><i class="el-icon-user"></i>欢迎你，{{username}}</el-menu-item
+            ><i class="el-icon-user"></i>欢迎你，{{ username }}</el-menu-item
           >
         </el-menu>
       </el-header>
@@ -37,7 +37,34 @@
             active-text-color="#ffd04b"
             font-size="14px"
           >
-            <el-menu-item index="/dash">
+            <template >
+              <div v-for="item in visibleMenuItems" :key="item.name" >
+              <el-submenu 
+                v-if="item.children && item.children.length"
+                :index="item.path"
+              >
+                <template #title>
+                  <i class="el-icon-menu"></i>
+                  {{ item.name }}</template>
+                <el-menu-item
+                  v-for="subItem in item.children"
+                  :key="subItem.name"
+                  :index="subItem.path"
+                >
+                 <i :class="subItem.icon"></i>
+                  <router-link :to="subItem.path">{{
+                    subItem.name
+                  }}</router-link>
+                </el-menu-item>
+              </el-submenu>
+              <el-menu-item v-else :index="item.path">
+                <router-link :to="item.path">
+                  <i :class="item.icon"></i>
+                  {{ item.name }}</router-link>
+              </el-menu-item>
+              </div>
+            </template>
+            <!-- <el-menu-item index="/dash">
               <i class="el-icon-menu"></i>
               <span slot="title">首页</span>
             </el-menu-item>
@@ -48,20 +75,20 @@
             <el-menu-item index="/taskManage">
               <i class="el-icon-s-data"></i>
               任务管理</el-menu-item
-            >
+            > -->
             <!-- <el-menu-item index="/columnManage2">
               <i class="el-icon-connection"></i>
               字段管理</el-menu-item
             > -->
-                        <el-menu-item index="/userManage">
+            <!-- <el-menu-item index="/userManage">
               <i class="el-icon-s-custom"></i>
               用户管理</el-menu-item
             >
-             <el-menu-item index="/completeMissing">
+            <el-menu-item index="/completeMissing">
               <i class="el-icon-s-custom"></i>
               缺失值处理</el-menu-item
             >
-             <el-menu-item index="/stasticAnalyze">
+            <el-menu-item index="/stasticAnalyze">
               <i class="el-icon-s-custom"></i>
               统计分析</el-menu-item
             >
@@ -72,13 +99,11 @@
             <el-menu-item index="/visualization">
               <i class="el-icon-s-custom"></i>
               病人画像</el-menu-item
-            >
+            > -->
             <div class="menu-footer">
-              <el-menu-item index="/operationManage">
-                  操作日志</el-menu-item
-                >
+              <el-menu-item index="/operationManage"> 操作日志</el-menu-item>
               <el-menu-item index="/introduce"> 软件介绍</el-menu-item>
-              <el-menu-item > 操作手册</el-menu-item>
+              <el-menu-item> 操作手册</el-menu-item>
             </div>
           </el-menu>
         </el-aside>
@@ -88,8 +113,8 @@
       </el-container>
       <el-footer>
         <h1>
-          重庆邮电大学 大数据智能计算创新研发团队 @CopyRight 2020-2023 All Rights
-          Reserved
+          重庆邮电大学 大数据智能计算创新研发团队 @CopyRight 2020-2023 All
+          Rights Reserved
         </h1>
       </el-footer>
     </el-container>
@@ -103,49 +128,70 @@ export default {
   components: { AppMain },
   data() {
     return {
-      activeMenu:'/introduce',
+      activeMenu: "/introduce",
       dialogVisible: false,
-        username:"",
+      username: "",
+      menuItems: [
+        { name: "首页", path: "/dash", roles: ["0", "1"],icon:'el-icon-menu' },
+        {
+          name: "管理",
+          path: "/manage",
+          roles: ["0"],
+          children: [{ name: "用户管理", path: "/userManage", roles: ["0"],icon:'el-icon-s-custom' },
+          { name: "任务管理", path: "/taskManage", roles: ["0"],icon:'el-icon-s-custom' }],
+        },
+      ],
     };
   },
-  created(){
-this.setMenuHighlight();
+  computed: {
+    visibleMenuItems() {
+      const userRoles = sessionStorage.getItem("userrole");
+      return this.menuItems.filter(item => {
+        const hasRole = item.roles.some(role => userRoles.includes(role));
+        if (hasRole && item.children) {
+          // Filter children based on user roles
+          item.children = item.children.filter(child => child.roles.some(role => userRoles.includes(role)));
+        }
+        return hasRole;
+      });
+    },
+  },
+  created() {
+    this.setMenuHighlight();
   },
   methods: {
-     handleSelect(key) {
-      if(key==2){
-      postRequest('/user/logout').then((resp)=>{
-        if(resp.code=="200"){
-          this.$router.replace("/");
-        }
-      })
+    handleSelect(key) {
+      if (key == 2) {
+        postRequest("/user/logout").then((resp) => {
+          if (resp.code == "200") {
+            this.$router.replace("/");
+          }
+        });
       }
     },
     handleOpen(key, keyPath) {
       console.log(key, keyPath);
     },
-    getUserName(){
-      console.log('in')
-       getRequest('index/getUserInfo').then((resp)=>{
-      this.username=resp.data
-       })
+    getUserName() {
+      console.log("in");
+      getRequest("index/getUserInfo").then((resp) => {
+        this.username = resp.data;
+      });
     },
-     setMenuHighlight() {
+    setMenuHighlight() {
       // 如果有直接跳转，比如从一个外部链接或直接输入URL访问
       this.activeMenu = this.$route.path;
     },
   },
-   watch: {
+  watch: {
     // 监听路由变化来更新菜单高亮
     $route(newRoute) {
-     
       this.activeMenu = newRoute.path;
-
-    }
+    },
   },
-  mounted(){
-     this.getUserName();
-  }
+  mounted() {
+    this.getUserName();
+  },
 };
 </script>
 
@@ -173,7 +219,6 @@ this.setMenuHighlight();
   height: calc(100vh - 81px);
 }
 
-
 .main {
   height: calc(100vh - 81px);
 }
@@ -199,10 +244,9 @@ this.setMenuHighlight();
 } */
 
 .el-main {
-    display: block;
-    flex: 1;
-    flex-basis: auto;
-    box-sizing: border-box;
+  display: block;
+  flex: 1;
+  flex-basis: auto;
+  box-sizing: border-box;
 }
-
 </style>

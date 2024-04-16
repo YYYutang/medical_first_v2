@@ -175,7 +175,7 @@ export default {
 
   data() {
     return {
-      captchaUrl: "user/login",
+      captchaUrl: `api/common/kaptcha?timestamp=${new Date().getTime()}`,
       loginForm: {
         username: "",
         password: "",
@@ -212,10 +212,14 @@ export default {
       ],
     };
   },
+  mounted(){
+this.updatecaptcha()
+  },
   methods: {
     ...mapActions(["getTaskList", "getTreeData"]),
     updatecaptcha() {
-      this.captchaUrl = "/captcha?time=" + new Date();
+      console.log('changecaptcha ')
+      this.captchaUrl = `api/common/kaptcha?timestamp=${new Date().getTime()}`
     },
 
     submitlogin() {
@@ -227,13 +231,20 @@ export default {
               this.loading = false;
               console.log(resp);
               if (resp.code == "200") {
-                sessionStorage.setItem("username", resp.data.username);
+                if(resp.data.userStatus==='1'){
+                  console.log('in')
+                  sessionStorage.setItem("username", resp.data.username);
                 sessionStorage.setItem("userid", resp.data.uid);
                 sessionStorage.setItem("userrole", resp.data.role);
-                this.$router.push("/sideBar/SoftwareIntro");
-                this.getTaskList();
-                this.getTreeData();
+                this.$router.push("/first");
                 this.$message.success("登录成功");
+                }
+                else if(resp.data.userStatus==='0'){
+                  this.$message.warning("您的账号待激活，请等待管理员处理");
+                }
+                 else if(resp.data.userStatus==='2'){
+                  this.$message.error("您的账号已被禁用");
+                }
               }
             } else {
               this.$message.error("用户不存在或者密码错误");
