@@ -37,31 +37,35 @@
             active-text-color="#ffd04b"
             font-size="14px"
           >
-            <template >
-              <div v-for="item in visibleMenuItems" :key="item.name" >
-              <el-submenu 
-                v-if="item.children && item.children.length"
-                :index="item.path"
-              >
-                <template #title>
-                  <i class="el-icon-menu"></i>
-                  {{ item.name }}</template>
-                <el-menu-item
-                  v-for="subItem in item.children"
-                  :key="subItem.name"
-                  :index="subItem.path"
+            <template>
+              <div v-for="item in visibleMenuItems" :key="item.name">
+                <el-submenu
+                  v-if="item.children && item.children.length"
+                  :index="item.path"
                 >
-                 <i :class="subItem.icon"></i>
-                  <router-link :to="subItem.path">{{
-                    subItem.name
-                  }}</router-link>
+                  <template #title>
+                    <i class="el-icon-menu"></i>
+                    {{ item.name }}</template
+                  >
+                  <el-menu-item
+                    v-for="subItem in item.children"
+                    :key="subItem.name"
+                    :index="subItem.path"
+                  >
+                    <i :class="subItem.icon"></i>
+                    <router-link :to="subItem.path">{{
+                      subItem.name
+                    }}</router-link>
+                  </el-menu-item>
+                </el-submenu>
+                <el-menu-item v-else :index="item.path">
+                  <template #title>
+                    <router-link :to="item.path">
+                      <i :class="item.icon"></i>
+                      {{ item.name }}</router-link
+                    >
+                  </template>
                 </el-menu-item>
-              </el-submenu>
-              <el-menu-item v-else :index="item.path">
-                <router-link :to="item.path">
-                  <i :class="item.icon"></i>
-                  {{ item.name }}</router-link>
-              </el-menu-item>
               </div>
             </template>
             <!-- <el-menu-item index="/dash">
@@ -132,13 +136,89 @@ export default {
       dialogVisible: false,
       username: "",
       menuItems: [
-        { name: "首页", path: "/dash", roles: ["0", "1"],icon:'el-icon-menu' },
         {
-          name: "管理",
+          name: "首页",
+          path: "/dash",
+          roles: ["0", "1"],
+          icon: "el-icon-menu",
+        },
+        {
+          name: "任务管理",
+          path: "/taskManage",
+         roles: ["0", "1"],
+          icon: "el-icon-s-custom",
+          children:[
+            {
+                name: "历史任务查看",
+              path: "/taskManage",
+          roles: ["0", "1"],
+              icon: "el-icon-s-custom",
+            },
+             {
+                name: "缺失值处理",
+              path: "/completeMissing",
+            roles: ["0", "1"],
+              icon: "el-icon-s-custom",
+            }, {
+                name: "统计分析",
+              path: "/stasticAnalyze",
+         roles: ["0", "1"],
+              icon: "el-icon-s-custom",
+            }, {
+                name: "特征表征",
+              path: "/represent",
+               roles: ["0", "1"],
+              icon: "el-icon-s-custom",
+            }, {
+                name: "病人画像",
+              path: "/visualization",
+              roles: ["0", "1"],
+              icon: "el-icon-s-custom",
+            }
+          ]
+        },
+        {
+          name: "数据管理",
+          path: "/dataManagePublic",
+          roles: ["0","1"],
+          icon: "el-icon-s-custom",
+        },
+        {
+          name: "系统管理",
           path: "/manage",
           roles: ["0"],
-          children: [{ name: "用户管理", path: "/userManage", roles: ["0"],icon:'el-icon-s-custom' },
-          { name: "任务管理", path: "/taskManage", roles: ["0"],icon:'el-icon-s-custom' }],
+          children: [
+            {
+              name: "用户管理",
+              path: "/userManage",
+              roles: ["0"],
+              icon: "el-icon-s-custom",
+            },
+            {
+              name: "信息发布",
+              path: "/inform",
+              roles: ["0"],
+              icon: "el-icon-s-custom",
+            },
+            {
+              name: "数据管理",
+              path: "/dataManageManager",
+              roles: ["0"],
+              icon: "el-icon-s-custom",
+            },
+            {
+              name: "日志查看",
+              path: "/operationManage",
+              roles: ["0"],
+              icon: "el-icon-s-custom",
+            },
+            {
+              name: "病种设置",
+              path: "/illnessManage",
+              roles: ["0"],
+              icon: "el-icon-s-custom",
+            },
+          ],
         },
       ],
     };
@@ -146,11 +226,13 @@ export default {
   computed: {
     visibleMenuItems() {
       const userRoles = sessionStorage.getItem("userrole");
-      return this.menuItems.filter(item => {
-        const hasRole = item.roles.some(role => userRoles.includes(role));
+      return this.menuItems.filter((item) => {
+        const hasRole = item.roles.some((role) => userRoles.includes(role));
         if (hasRole && item.children) {
           // Filter children based on user roles
-          item.children = item.children.filter(child => child.roles.some(role => userRoles.includes(role)));
+          item.children = item.children.filter((child) =>
+            child.roles.some((role) => userRoles.includes(role))
+          );
         }
         return hasRole;
       });
@@ -196,6 +278,10 @@ export default {
 </script>
 
 <style scoped>
+a {
+  color: inherit; /* 继承父元素颜色或指定颜色 */
+  text-decoration: none; /* 去除下划线 */
+}
 .el-icon-mobile-phone {
   color: white;
 }
@@ -214,7 +300,7 @@ export default {
 
 .side {
   background-color: #071135;
-  color: #333;
+  /* color: #333; */
 
   height: calc(100vh - 81px);
 }

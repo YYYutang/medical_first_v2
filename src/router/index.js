@@ -6,8 +6,9 @@ import represent from "@/views/represent.vue";
 import visualization from "@/views/visualization.vue";
 import dataManage from "@/views/dataManage2.vue";
 import introduce from "@/views/introduce/introduce.vue"
-import logIn from "@/views/Login.vue"
+import logIn from "@/views/User/Login.vue"
 import register from "@/views/User/register.vue"
+import forget from "@/views/User/forget.vue"
 import unauthorized from "@/views/404.vue"
 import operationManage from "@/views/operationManage.vue"
 import completeMissing from "@/views/completeMissing/index.vue"
@@ -28,6 +29,9 @@ import singleAnalyze from "@/views/stasticAnalyze/singleFactorAnalyze/index.vue"
 import consistencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
 import singleOutcome from "@/views/stasticAnalyze/singleFactorAnalyze/outCome.vue"
 import userManage from "@/views/manageAll/userManage.vue"
+import inform from "@/views/manageAll/inform.vue"
+import dataManageManager from "@/views/manageAll/dataManager.vue"
+import illnessManage from "@/views/manageAll/illnessManage.vue"
 Vue.use(VueRouter)
 
 const routes = [
@@ -40,6 +44,11 @@ const routes = [
     path: '/register',
     name: 'register',
     component: register
+  },
+  {
+    path: '/forget',
+    name: 'forget',
+    component: forget
   },
   {
     path: '/first',
@@ -80,6 +89,24 @@ const routes = [
       path: '/userManage',
       name: 'userManage',
       component: userManage,
+      meta: { roles: ['0'] },
+    },
+    {
+      path: '/inform',
+      name: 'inform',
+      component: inform,
+      meta: { roles: ['0'] },
+    },
+    {
+      path: '/illnessManage',
+      name: 'illnessManage',
+      component: illnessManage,
+      meta: { roles: ['0'] },
+    },
+    {
+      path: '/dataManageManager',
+      name: 'dataManageManager',
+      component: dataManageManager,
       meta: { roles: ['0'] },
     },
     {
@@ -198,7 +225,7 @@ const routes = [
     ]
   },
 ]
-const whiteList = ['/logIn', '/register', '/unauthorized']
+const whiteList = ['/logIn', '/register', '/unauthorized','/forget']
 
 const router = new VueRouter({
   routes
