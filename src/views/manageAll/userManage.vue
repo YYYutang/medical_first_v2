@@ -334,9 +334,17 @@ export default {
 
   created() {
     this.getUserTable(1);
+    this.getUserAll()
   },
 
   methods: {
+      getUserAll(){
+          getRequest('user/querUser').then((res)=>{
+              if(res){
+                    this.tableData = res;
+              }
+          })
+      },
     getUserTable(pageNum) {
       getRequest("user/allUser?pageNum=" + pageNum).then((res) => {
         if (res) {
@@ -348,9 +356,6 @@ export default {
             selectRole: Number(item.role),
           }));
           this.total = res.total;
-          if (pageNum === 1) {
-            this.tableData = dataWithEditing;
-          }
           this.filterData(); // 加载完数据后进行筛选
              this.currentTotal = res.total;s
          

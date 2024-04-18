@@ -59,13 +59,19 @@
                 ></el-input>
                 <img :src="captchaUrl" @click="updatecaptcha" />
               </el-form-item>
-              <div style="display:flex;justify-content:space-between; margin-top: -15px;">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  margin-top: -15px;
+                "
+              >
                 <el-button type="text" @click="forgetPsw">忘记密码</el-button>
-                <el-button type="text"  @click="register">注册账号</el-button>
+                <el-button type="text" @click="register">注册账号</el-button>
               </div>
               <el-button
                 type="primary"
-                style="width: 100%; font-size: 20px;margin-top:20px"
+                style="width: 100%; font-size: 20px; margin-top: 20px"
                 @click="submitlogin"
                 >登录</el-button
               >
@@ -85,38 +91,44 @@
           <div class="notificationDiv">
             <div class="notification_title">通告栏</div>
             <div class="notification_container">
-              <div v-for="(item, index) in notification" :key="item.id">
-                <li
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    line-height: 15px;
-                    overflow: hidden;
-                  "
-                >
-                  <span
-                    class="notification_content_title"
-                    @click="showDetails(item)"
-                  >
-                    <span
-                      class="scroll-text"
-                      :class="{ scrolling: item.title.split('').length > 25 }"
+              <div :class="{ 'animate-scroll': notification.length > 6 }">
+                <div v-for="(item, index) in notification" :key="item.infoId">
+                  <ul>
+                    <li
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        line-height: 15px;
+                        overflow: hidden;
+                      "
                     >
-                      {{ item.title }}</span
-                    >
-                  </span>
-                  <span style="padding-right: 20px">{{
-                    item.create_time
-                  }}</span>
-                </li>
-                <el-divider></el-divider>
+                      <span
+                        class="notification_content_title"
+                        @click="showDetails(item)"
+                      >
+                        <span
+                          class="scroll-text"
+                          :class="{
+                            scrolling: item.title.split('').length > 25,
+                          }"
+                        >
+                          {{ item.title }}</span
+                        >
+                      </span>
+                      <span style="padding-right: 20px">{{
+                        item.createTime
+                      }}</span>
+                    </li>
+                  </ul>
+                  <el-divider></el-divider>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <el-dialog
-          title="详细信息"
+          title="通告详细信息"
           :visible.sync="dialogVisible"
           width="50%"
           center
@@ -184,7 +196,7 @@
 </template>
 
 <script>
-import { postRequest } from "@/utils/api";
+import { getRequest, postRequest } from "@/utils/api";
 import { mapActions } from "vuex";
 export default {
   name: "Login",
@@ -206,40 +218,58 @@ export default {
         password: [{ required: true, message: "请输入密码", trigger: "blur" }],
         code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
       },
-      notification: [
-        {
-          id: "1",
-          title: "我们将在4.18暂停服务",
-          content: "敬请期待",
-          create_time: "2024-04-15 22:21",
-        },
-        {
-          id: "2",
-          title: "我们将在4.22恢复服务",
-          content: "敬请期待",
-          create_time: "2024-04-15 22:38",
-        },
-        {
-          id: "3",
-          title:
-            "我们的系统主要面向当前医生的需求，因此我们需要做一些适应性修改，以确保它更好地服务医生的需求",
-          content:
-            "我们的系统主要面向当前医生的需求，因此我们需要做一些适应性修改，以确保它更好地服务医生的需求我们的系统主要面向当前医生的需求，因此我们需要做一些适应性修改，以确保它更好地服务医生的需求我们的系统主要面向当前医生的需求，因此我们需要做一些适应性修改，以确保它更好地服务医生的需求",
-          create_time: "2024-04-15 22:38",
-        },
-      ],
+      notification: [],
       selectedNotification: {},
       dialogVisible: false,
     };
+  },
+  created() {
+    this.getNotification();
   },
   mounted() {
     this.updatecaptcha();
   },
   methods: {
-    ...mapActions(["getTaskList", "getTreeData"]),
+
     showDetails(item) {
       this.selectedNotification = item;
       this.dialogVisible = true;
+    },
+    convertToBeijingTime(isoString) {
+      // 解析 ISO 字符串为 Date 对象
+      const date = new Date(isoString);
+
+      // 调整时区到北京时间，UTC+8
+      const beijingTime = new Date(date.getTime() + 8 * 60 * 60 * 1000); // 添加8小时的毫秒数
+
+      // 使用 Intl.DateTimeFormat 格式化输出
+      const formatter = new Intl.DateTimeFormat("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Shanghai",
+      });
+
+      return formatter
+        .format(beijingTime)
+        .replace(/\//g, "-")
+        .replace(", ", " ");
+    },
+    getNotification() {
+      getRequest("notice/queryNotices").then((res) => {
+        if (res) {
+          const temp = res.map((item) => ({
+            ...item,
+            createTime: this.convertToBeijingTime(item.createTime),
+          }));
+          this.notification = temp;
+       
+        }
+      });
     },
     handleClose(done) {
       console.log("close");
@@ -247,7 +277,7 @@ export default {
       done(); // 必须调用 done()，否则对话框不会关闭
     },
     updatecaptcha() {
-      console.log("changecaptcha ");
+     
       this.captchaUrl = `api/common/kaptcha?timestamp=${new Date().getTime()}`;
     },
 
@@ -286,9 +316,9 @@ export default {
     register() {
       this.$router.push("/register");
     },
-    forgetPsw(){
-      this.$router.push('/forget')
-    }
+    forgetPsw() {
+      this.$router.push("/forget");
+    },
     // backToPlatform() {
     //   window.location.href = "http://10.16.48.219:8000";
     // },
@@ -343,7 +373,6 @@ li {
   flex: 0.45;
   padding-left: 30px;
   padding-right: 30px;
-
 }
 .notificationDiv {
   flex: 0.55;
@@ -352,7 +381,8 @@ li {
   flex-direction: column;
   align-items: center;
   height: 550px;
-    border-left: 1px dashed #aaaaac;
+  border-left: 1px dashed #aaaaac;
+
 }
 .loginTitle {
   margin: 0px auto 40px auto;
@@ -436,6 +466,8 @@ img.png {
 .notification_container {
   flex: 0.75;
   width: 100%;
+  height: 450px;
+    overflow: hidden;
 }
 .collapse {
   overflow: auto;
@@ -465,6 +497,7 @@ img.png {
   display: inline-block;
   overflow: hidden;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .scrolling {
@@ -486,5 +519,20 @@ img.png {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+.animate-scroll {
+  animation: scroll-up 30s linear infinite;
+}
+
+@keyframes scroll-up {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+    150% {
+    transform: translateY(0%);
+  }
 }
 </style>

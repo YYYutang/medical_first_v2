@@ -164,9 +164,17 @@ export default {
 
   created() {
     this.getInformTable(1);
+    this.getAllInform()
   },
 
   methods: {
+      getAllInform(){
+          getRequest('notice/queryNotices').then((res)=>{
+
+            this.tableData = res;
+       
+          })
+      },
     convertToBeijingTime(isoString) {
       // 解析 ISO 字符串为 Date 对象
       const date = new Date(isoString);
@@ -204,18 +212,6 @@ export default {
 
           this.total = res.total;
           this.currentTotal = res.total;
-          if (pageNum === 1) {
-            this.tableData = dataWithEditing;
-          }
-          //   if (this.formInline.role || this.formInline.userStatus) {
-          //     console.log("this.formInline.role", this.formInline.role);
-          //     console.log(
-          //       "this.formInline.userStatus",
-          //       this.formInline.userStatus
-          //     );
-          //   } else {
-          //     this.currentInformList = dataWithEditing;
-          //   }
           this.currentInformList = dataWithEditing;
         }
       });
@@ -254,9 +250,10 @@ export default {
             .includes(searchTitleLower);
           return titleMatches || contentMatches;
         });
-        console.log(filterData);
+  
         // 将过滤结果赋值给 currentInformList
         this.currentInformList = filterData;
+         this.currentTotal = filterData.length;
       }
     },
     handleInput() {
