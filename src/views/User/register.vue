@@ -71,7 +71,7 @@
                     placeholder="请重复输入密码"
                   ></el-input>
                 </el-form-item>
-                <el-form-item prop="question1" label="安全密保问题一">
+                <!-- <el-form-item prop="question1" label="安全密保问题一">
                   <el-select
                     v-model="registerForm.question1"
                     placeholder="请选择第一个安全密保问题"
@@ -136,7 +136,38 @@
                     v-model="registerForm.answer3"
                     placeholder="请输入问题三的答案"
                   ></el-input>
-                </el-form-item>
+                </el-form-item> -->
+                <div v-for="n in 3" :key="n">
+                  <el-form-item
+                    :label="`安全密保问题${n}`"
+                    :prop="`question${n}`"
+                  >
+                    <el-select
+                      v-model="registerForm['question' + n]"
+                      :placeholder="`请选择第${n}个安全密保问题`"
+                      style="width: 100%"
+                     @change="() => handleSelectChange(n)"
+                    >
+                      <el-option
+                        v-for="item in availableQuestions(n)"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.label"
+                      ></el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item
+                    :label="`安全密保答案${n}`"
+                    :prop="`answer${n}`"
+                  >
+                    <el-input
+                      type="text"
+                      auto-complete="false"
+                      v-model="registerForm['answer' + n]"
+                      :placeholder="`请输入问题${n}的答案`"
+                    ></el-input>
+                  </el-form-item>
+                </div>
                 <el-button
                   type="primary"
                   style="width: 100%"
@@ -303,12 +334,17 @@ export default {
       // 手动触发校验
       this.$refs.registerForm.validateField("username");
     },
+ handleSelectChange(n) {
+  this.$nextTick(() => {
+    this.$refs.registerForm.validateField(`question${n}`);
+  });
+},
     checkUsernameExist(rule, value, callback) {
       if (!value) {
         return callback();
       }
       getRequest("user/querUserNameExist?userName=" + value).then((res) => {
-        console.log('res',res);
+        console.log("res", res);
         if (res.code == 500) {
           callback(new Error("用户名已经存在"));
         } else {
@@ -325,6 +361,19 @@ export default {
     //     return res;
     //   });
     // },
+    availableQuestions(index) {
+      // 返回未被当前选择以外的其他输入选中的问题
+      const selected = [
+        this.registerForm.question1,
+        this.registerForm.question2,
+        this.registerForm.question3,
+      ];
+      return this.questionOptions.filter(
+        (option) =>
+          !selected.includes(option.label) ||
+          this.registerForm["question" + index] === option.label
+      );
+    },
     subitRegister() {
       this.$refs.registerForm.validate((valid) => {
         if (valid) {

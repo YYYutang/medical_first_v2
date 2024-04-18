@@ -22,30 +22,122 @@
       </div>
       <div class="rightContainer">
         <div class="forgetContainer">
+          <el-button
+            type="text"
+            @click="returnLogin"
+            style="
+              align-self: flex-start;
+              margin-left: 20px;
+              color: gray;
+              font-size: 15px;
+            "
+            ><返回</el-button
+          >
           <div class="step">
-            <el-steps :active="1" align-center>
-              <el-step title="步骤1"></el-step>
-              <el-step title="步骤2"></el-step>
-              <el-step title="步骤3"></el-step>
+            <el-steps :active="active" align-center>
+              <el-step title="输入用户名"></el-step>
+              <el-step title="输入安全密保问题"></el-step>
+              <el-step title="重置密码"></el-step>
             </el-steps>
           </div>
-          <div v-if="active==1">
-            <el-form  ref="forgetForm1"
-                :model="forgetForm1"
-                :rules="rules"
-                style="font-size: 30px"
-                label-width="120px">
-             <el-form-item prop="username" label="用户名">
+          <div v-if="active == 1">
+            <el-form
+              ref="forgetForm1"
+              :model="forgetForm1"
+              :rules="rules"
+              label-position="left"
+              style="font-size: 30px; width: 360px"
+              label-width="80px"
+            >
+              <el-form-item prop="username" label="用户名">
+                <el-input
+                  type="text"
+                  auto-complete="false"
+                  v-model="forgetForm1.username"
+                  placeholder="请输入您的用户名"
+                  @change="debouncedCheckUsername"
+                ></el-input>
+              </el-form-item>
+            </el-form>
+          </div>
+          <div v-if="active == 2">
+            <el-form
+              ref="forgetForm2"
+              :model="forgetForm2"
+              :rules="rules2"
+              label-position="left"
+              style="font-size: 15px; width: 360px"
+              label-width="80px"
+            >
+              <div v-for="(item, index) in questions" :key="index">
+                <div class="questionClass">问题{{ index + 1 }}:{{ item }}</div>
+                <el-form-item
+                  :prop="'q' + (index + 1)"
+                  :label="'答案' + (index + 1)"
+                >
                   <el-input
                     type="text"
                     auto-complete="false"
-                    v-model="forgetForm1.username"
-                    placeholder="请输入用户名"
+                    v-model="forgetForm2['q' + (index + 1)]"
+                    placeholder="请输入答案"
                   ></el-input>
                 </el-form-item>
+              </div>
             </el-form>
           </div>
-          <el-button style="margin-top: 12px" @click="next">下一步</el-button>
+          <div v-if="active == 3">
+            <el-form
+              ref="forgetForm3"
+              :model="forgetForm3"
+              :rules="rules3"
+              label-position="left"
+              style="font-size: 15px; width: 360px"
+              label-width="120px"
+            >
+              <el-form-item prop="password" label="新密码">
+                <el-input
+                  type="password"
+                  auto-complete="false"
+                  v-model="forgetForm3.password"
+                  placeholder="请输入新密码"
+                ></el-input>
+              </el-form-item>
+              <div style="margin-top:30px;">
+                <el-form-item prop="repsw" label="重复新密码" >
+                <el-input
+                  type="password"
+                  auto-complete="false"
+                  v-model="forgetForm3.repsw"
+                  placeholder="请重复新密码"
+                ></el-input>
+              </el-form-item>
+              </div>
+            </el-form>
+          </div>
+          <div class="buttons">
+            <el-button
+              style="margin-top: 12px"
+              v-if="active > 1"
+              @click="before"
+              type="primary"
+              plain
+              >上一步</el-button
+            >
+            <el-button
+              style="margin-top: 12px"
+              v-if="active < 3"
+              @click="next"
+              type="primary"
+              >下一步</el-button
+            >
+            <el-button
+              style="margin-top: 12px"
+              v-if="active == 3"
+              @click="submit"
+              type="primary"
+              >提交</el-button
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -102,33 +194,173 @@
 </template>
 
 <script>
-import { postRequest } from "@/utils/api";
+import { postRequest, getRequest } from "@/utils/api";
 import { mapActions } from "vuex";
+import _ from "lodash";
 export default {
-  name: "Login",
+  name: "forget",
 
   data() {
+     let checkPwd2 = (rule, value, callback) => {
+      if (value.trim().length == 0) {
+        callback(new Error("请确认密码不能为空"));
+      } else if (value != this.forgetForm3.password) {
+        callback(new Error("两次密码不一致"));
+      } else {
+        callback();
+      }
+    };
+    let checkPwd1 = (rule, value, callback) => {
+      if (value.trim().length == 0) {
+        callback(new Error("请确认密码不能为空"));
+      } else {
+        // 例如，密码需要至少 8 个字符，包含字母和数字
+        if (!/^(?![a-zA-Z]+$)(?!\d+$)(?![^\da-zA-Z\s]+$).{8,}$/.test(value)) {
+          callback(
+            new Error(
+              "密码至少需要8个字符，且包含字母、数字、特殊字符串任意两种"
+            )
+          );
+        } else {
+          callback();
+        }
+      }
+    };
     return {
       loading: false,
       checked: true,
       active: 1,
-      forgetForm1:[
-        {username:''},
-      ],
+      forgetForm1: [{ username: "" }],
+      forgetForm2: [{ q1: "", q2: "", q3: "" }],
+      forgetForm3: [{ password: "", repsw: "" }],
       rules: {
         username: [
           { required: true, message: "请输入用户名", trigger: "blur" },
+          { validator: this.checkUsernameExist, trigger: "manual" },
         ],
-        password: [{ required: true, message: "请输入密码", trigger: "blur" }],
-        code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
       },
+      rules2: {
+        q1: [{ required: true, message: "请输入答案", trigger: "blur" }],
+        q2: [{ required: true, message: "请输入答案", trigger: "blur" }],
+        q3: [{ required: true, message: "请输入答案", trigger: "blur" }],
+      },
+      rules3: {
+        password: [{ required: true, message: "请输入密码", trigger: "blur" },
+          { validator: checkPwd1, trigger: "blur" },],
+        repsw: [ { required: true, message: "请输入密码", trigger: "blur" },
+          { validator: checkPwd2, trigger: "blur" }],
+      },
+      questions: [],
     };
+  },
+  created() {
+    // 创建防抖函数，这里设置了500毫秒的延迟
+
+    this.debouncedCheckUsername = _.debounce(this.validateUsername, 500);
   },
   mounted() {},
   methods: {
-    next() {
-      if (this.active++ > 2) this.active = 0;
+    before() {
+      if (this.active > 1) this.active--;
     },
+    returnLogin() {
+      this.$router.push("/");
+    },
+    next() {
+      if (this.active === 1) {
+        this.$refs.forgetForm1.validate((valid) => {
+          if (valid) {
+            getRequest(
+              "user/queryQuestions?username=" + this.forgetForm1.username
+            ).then((res) => {
+              this.questions = res.data;
+              console.log("question", this.questions);
+            });
+
+            this.active++;
+          } else {
+            this.$message.error("请检查输入！");
+            return false;
+          }
+        });
+      }
+      if (this.active === 2) {
+        this.$refs.forgetForm2.validate((valid) => {
+          if (valid) {
+            this.customValidation()
+          
+          }
+        });
+      }
+     
+    },
+    customValidation() {
+      if (this.active === 2) {
+        const params = {
+          username: this.forgetForm1.username,
+          q1: this.questions[0] + ":" + this.forgetForm2.q1,
+          q2: this.questions[1] + ":" + this.forgetForm2.q2,
+          q3: this.questions[2] + ":" + this.forgetForm2.q3,
+        };
+    
+        postRequest("user/verify", params).then((res) => {
+   
+          if (res.code === 200) {
+            this.$message.success(`${res.msg}`);
+               this.active++;
+  
+          } else {
+            this.$message.error(`${res.msg}`);
+  
+          }
+        });
+      }
+    },
+    validateUsername() {
+      // 手动触发校验
+      if (this.active === 1) {
+        this.$refs.forgetForm1.validateField("username");
+      }
+    },
+    checkUsernameExist(rule, value, callback) {
+      if (!value) {
+        return callback();
+      }
+      getRequest("user/querUserNameExist?userName=" + value).then((res) => {
+        console.log("res", res);
+        if (res.code == 200) {
+          callback(new Error("用户名未注册，请确认输入的是否正确"));
+        } else {
+          callback();
+        }
+      });
+    },
+    submit(){
+       if(this.active===3){
+         this.$refs.forgetForm3.validate((valid) => {
+           if(valid){
+             const params={
+               username:this.forgetForm1.username,
+               password:this.forgetForm3.password
+             }
+             postRequest('user/updatePwd',params).then((res)=>{
+               console.log('res',res)
+               if(res){
+               if(res.code===200){
+                   this.$message.success("密码修改成功");
+                  this.returnLogin()
+               }
+               else{
+                 this.$message.error("密码修改失败！");
+               }
+               }else{
+                 this.$message.error("服务器发生错误，请稍后再试");
+               }
+             })
+           }
+         });
+      }
+    }
   },
 };
 </script>
@@ -169,14 +401,14 @@ li {
   /* margin: 20px 10px; */
   margin-bottom: 150px;
   width: 500px;
-  height: 550px;
+  height: 450px;
   background: white;
   border: 1px solid #eaeaee;
   box-shadow: 0 0 25px #cac6c6;
   display: flex;
   align-items: center;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: space-between;
 }
 /* .step{
   width:70%;
@@ -254,66 +486,17 @@ img.png {
   display: flex;
   align-items: center;
 }
-.notification_title {
-  font-size: 30px;
-  font-weight: bold;
-  flex: 0.25;
-  justify-content: center;
-  align-items: center;
+.buttons {
   display: flex;
-}
-.notification_container {
-  flex: 0.75;
-  width: 100%;
+  margin-bottom: 10px;
 }
 .collapse {
   overflow: auto;
   flex: 0.75;
   width: 100%;
 }
-.notification_content_title {
-  padding-left: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  cursor: pointer;
-  max-width: 250px;
-}
-@keyframes scroll {
-  0% {
-    transform: translateX(250px);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-  200% {
-    transform: translateX(250px);
-  }
-}
 
-.scroll-text {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.scrolling {
-  animation: scroll 10s linear infinite;
-}
-
-.notification_content_title:hover .scroll-text {
-  animation-play-state: running;
-}
-
-.selectedNotificationTitle {
-  font-size: 30px;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-}
-.selectedNotificationContent {
-  font-size: 17px;
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
+.questionClass {
+  margin-bottom: 10px;
 }
 </style>

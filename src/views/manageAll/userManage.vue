@@ -1,23 +1,52 @@
 <template>
   <div>
-    <el-input
-      placeholder="请输入用户名称"
-      v-model="searchUser"
-      class="user_input"
-      clearable
-      @clear="getUserTable(1)"
-       @input="handleInput"
-    >
-      <i slot="prefix" class="el-input__icon el-icon-search"></i>
-    </el-input>
+    <div class="searchByCondition">
+      <el-form :inline="true" :model="formInline" class="demo-form-inline">
+        <el-form-item label="筛选用户权限">
+          <el-select v-model="formInline.role" placeholder="用户权限">
+            <el-option
+              v-for="option in options"
+              :label="option.label"
+              :value="option.value"
+              :key="option.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="筛选用户状态">
+          <el-select v-model="formInline.selectStatus" placeholder="用户状态">
+            <el-option
+              v-for="status in statusOptions"
+              :label="status.label"
+              :value="status.value"
+              :key="status.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onFilter">查询</el-button>
+          <el-button @click="clearFilter">清除条件</el-button>
+        </el-form-item>
+      </el-form>
+      <div class="searchByUserName">
+        <el-input
+          placeholder="请输入用户名称"
+          v-model="searchUser"
+          class="user_input"
+          clearable
+          @clear="getUserTable(1)"
+          @input="handleInput"
+        >
+          <i slot="prefix" class="el-input__icon el-icon-search"></i>
+        </el-input>
 
-    <el-button
-      icon="el-icon-search"
-      circle
-      class="user_search_btn"
-      @click="searchUserInData()"
-    ></el-button>
-
+        <el-button
+          icon="el-icon-search"
+          circle
+          class="user_search_btn"
+          @click="searchUserInData()"
+        ></el-button>
+      </div>
+    </div>
     <el-divider></el-divider>
 
     <el-card class="user_list_card">
@@ -32,15 +61,22 @@
         > -->
       </div>
 
-      <el-table :data="currentUserList" stripe style="width: 100%" >
-        <el-table-column prop="username" label="用户名称" width="300" align="center">
+      <el-table :data="currentUserList" stripe style="width: 100%">
+        <el-table-column
+          prop="username"
+          label="用户名称"
+          width="200"
+          align="center"
+        >
         </el-table-column>
-        <el-table-column label="用户权限" width="250"  align="center">
+        <el-table-column label="用户权限" width="250" align="center">
           <template slot-scope="scope">
-            <div v-if="scope.row.editing">
+            <div v-show="scope.row.editing">
               <el-select
                 v-model="scope.row.selectRole"
-                :placeholder="scope.row.role?options[scope.row.role].label:null"
+                :placeholder="
+                  scope.row.role ? options[scope.row.role].label : null
+                "
               >
                 <template v-for="item in options">
                   <el-option
@@ -57,7 +93,7 @@
                 </template>
               </el-select>
             </div>
-            <div v-else>
+            <div v-show="!scope.row.editing">
               <!-- 默认显示状态文本，点击可以切换到编辑模式 -->
               <el-tag :type="getRoleTagType(scope.row.role)">{{
                 options[scope.row.role].label
@@ -65,14 +101,33 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="注册时间" width="400"  align="center">
+        <el-table-column
+          prop="createTime"
+          label="注册时间"
+          width="300"
+          align="center"
+        >
         </el-table-column>
-        <el-table-column label="用户状态" width="250"  align="center">
+        <el-table-column label="可上传容量（MB）" width="250" align="center">
           <template slot-scope="scope">
-            <div v-if="scope.row.editing">
+            <div v-show="scope.row.editing">
+              <el-input v-model="scope.row.uploadSize" size="small"></el-input>
+            </div>
+            <div v-show="!scope.row.editing">
+              {{ scope.row.uploadSize }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="用户状态" width="200" align="center">
+          <template slot-scope="scope">
+            <div v-show="scope.row.editing">
               <el-select
                 v-model="scope.row.selectStatus"
-                :placeholder="scope.row.userStatus!=null?statusOptions[scope.row.userStatus].label:null"
+                :placeholder="
+                  scope.row.userStatus != null
+                    ? statusOptions[scope.row.userStatus].label
+                    : null
+                "
               >
                 <template v-for="item in statusOptions">
                   <el-option
@@ -89,7 +144,7 @@
                 </template>
               </el-select>
             </div>
-            <div v-else>
+            <div v-show="!scope.row.editing">
               <!-- 默认显示状态文本，点击可以切换到编辑模式 -->
               <el-tag :type="getTagType(scope.row.userStatus)">{{
                 statusOptions[scope.row.userStatus].label
@@ -97,13 +152,12 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="400"  align="center">
+        <el-table-column label="操作" width="400" align="center">
           <template slot-scope="scope">
             <el-button
               type="primary"
               icon="el-icon-edit"
               @click="toggleEditing(scope.row)"
-              
             >
               {{ scope.row.editing ? "保存" : "编辑" }}</el-button
             >
@@ -133,7 +187,7 @@
         :current-page="this.currentPage"
         :page-size="10"
         layout="total, prev, pager, next, jumper"
-        :total="this.total"
+        :total="this.currentTotal"
         style="margin-top: 2%; margin-left: 3%"
       >
       </el-pagination>
@@ -198,6 +252,7 @@
             </el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item label="注册时间" label-width="120" size="medium">
           <el-input
             v-model="showUserForm.createTime"
@@ -220,17 +275,16 @@ import { resetForm } from "@/components/mixins/mixin";
 export default {
   mixins: [resetForm],
 
-  watch: {
-   
-  },
+  watch: {},
 
   data() {
     return {
       searchUser: "",
       tableData: [],
       total: 0,
-      pageNum:1,
-      currentPage:1,
+      currentTotal: 0,
+      pageNum: 1,
+      currentPage: 1,
       currentUserList: [],
       addUserDialogVisible: false,
       addUserForm: {
@@ -255,6 +309,10 @@ export default {
           value: 1,
         },
       ],
+      formInline: {
+        role: "",
+        selectStatus: "",
+      },
       statusOptions: [
         {
           label: "待激活",
@@ -274,26 +332,35 @@ export default {
 
   created() {
     this.getUserTable(1);
- 
   },
 
   methods: {
     getUserTable(pageNum) {
-      getRequest("user/allUser?pageNum="+pageNum).then((res) => {
+      getRequest("user/allUser?pageNum=" + pageNum).then((res) => {
         if (res) {
-            console.log('pageNum',pageNum)
+          console.log("pageNum", pageNum);
           const dataWithEditing = res.data.map((item) => ({
             ...item,
             editing: false,
-            selectStatus:Number(item.userStatus),
-            selectRole:Number(item.role)
+            selectStatus: Number(item.userStatus),
+            selectRole: Number(item.role),
           }));
-          this.total=res.total;
-          if(pageNum===1){
-          this.tableData = dataWithEditing;
+          this.total = res.total;
+          this.currentTotal = res.total;
+          if (pageNum === 1) {
+            this.tableData = dataWithEditing;
           }
-          this.currentUserList=dataWithEditing
-          console.log('currentUserList',this.currentUserList)
+          if (this.formInline.role || this.formInline.userStatus) {
+            console.log("this.formInline.role", this.formInline.role);
+            console.log(
+              "this.formInline.userStatus",
+              this.formInline.userStatus
+            );
+            this.onFilter();
+          } else {
+            this.currentUserList = dataWithEditing;
+          }
+          console.log("currentUserList", this.currentUserList);
         }
       });
     },
@@ -306,37 +373,57 @@ export default {
     saveChanges(row) {
       // 在这里实现保存数据到服务器的逻辑
       // 假设保存成功，更新userStatus显示
-      const params={
-          uid:row.uid,
-          status: row.selectStatus,
-          role:row.selectRole
-      }
-      postRequest(
-        "user/updateStatus",params
-      ).then((res) => {
+      const params = {
+        uid: row.uid,
+        status: row.selectStatus,
+        role: row.selectRole,
+        uploadSize: row.uploadSize,
+      };
+      postRequest("user/updateStatus", params).then((res) => {
         if (res.code == 200) {
-          console.log("修改成功");
-          this.getUserTable(1)
-    //            row.userStatus = Number(row.selectStatus);
-    //   row.role = Number(row.selectRole);
+          this.$message.success("修改成功");
+        } else {
+          this.$message.warning("修改失败！");
+          this.getUserTable(1);
         }
       });
- 
     },
-    searchUserInData(){
-        if(!this.searchUser){
-            this.getUserTable(1)
-        }else{
-        let filterData=this.tableData.filter((user)=>{return user.username.toLowerCase().includes(this.searchUser.toLowerCase());})
-        this.currentUserList=filterData
-        }
+    searchUserInData() {
+      if (!this.searchUser) {
+        this.getUserTable(1);
+      } else {
+        let filterData = this.tableData.filter((user) => {
+          return user.username
+            .toLowerCase()
+            .includes(this.searchUser.toLowerCase());
+        });
+        this.currentUserList = filterData;
+      }
     },
-    handleInput(){
-        if (!this.searchUser.trim()) {
-      this.getUserTable(1);
-    }
+    handleInput() {
+      if (!this.searchUser.trim()) {
+        this.getUserTable(1);
+      }
     },
-
+    onFilter() {
+      console.log("in");
+      this.currentUserList = this.tableData.filter((user) => {
+          console.log('user.userStatus',user.userStatus)
+          console.log('this.formInline.selectStatus',this.formInline.selectStatus)
+        return (
+          (this.formInline.role === "" || user.role == this.formInline.role) &&
+          (this.formInline.selectStatus === "" ||
+            user.userStatus == this.formInline.selectStatus)
+        );
+      });
+      this.currentTotal = this.currentUserList.length;
+    },
+    clearFilter() {
+      this.currentUserList = this.tableData;
+      this.formInline.role=''
+      this.formInline.selectStatus=''
+      this.currentTotal = this.total;
+    },
     handleCurrentChange(val) {
       this.currentPage = val;
       this.getUserTable(val);
@@ -390,24 +477,22 @@ export default {
     //   this.addUserForm.password = "";
     // },
     deleteUser(row) {
-          const params={
-          uid:row.uid,
-          status: row.selectStatus
-      }
-        postRequest(
-        "user/delUser",params
-      ).then((res) => {
+      const params = {
+        uid: row.uid,
+        status: row.selectStatus,
+      };
+      postRequest("user/delUser", params).then((res) => {
         if (res.code == 200) {
           console.log("删除成功");
-           this.$message.success("删除用户成功");
-           this.getUserTable()
-        }else {
+          this.$message.success("删除用户成功");
+          this.getUserTable();
+        } else {
           this.$message.error("删除用户失败");
           this.getUserTable();
         }
       });
- 
     },
+
     // getInfoUser(uid) {
     //   getRequest(`user/getInfo/${uid}`).then((res) => {
     //     if (res.code == 200) {
@@ -439,10 +524,17 @@ export default {
 </script>
 
 <style scoped>
-.user_input {
-  width: 20%;
+.searchByCondition {
+  display: flex;
+  height: 40px;
+  justify-content: space-between;
 }
-
+.searchByUserName {
+  width: 25%;
+}
+.user_input {
+  width: 80%;
+}
 .user_search_btn {
   margin-left: 1%;
 }
