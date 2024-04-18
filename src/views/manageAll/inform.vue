@@ -1,128 +1,74 @@
 <template>
   <div>
-    <el-input
-      placeholder="请输入通知标题"
-      v-model="searchUser"
-      class="user_input"
-      clearable
-      @clear="getUserTable(1)"
-      @input="handleInput"
-    >
-      <i slot="prefix" class="el-input__icon el-icon-search"></i>
-    </el-input>
+    <div class="searchByUserName">
+      <el-input
+        placeholder="请输入您想搜索的通知标题或内容"
+        v-model="searchTitle"
+        class="user_input"
+        clearable
+        @clear="getInformTable(1)"
+        @input="handleInput"
+      >
+        <i slot="prefix" class="el-input__icon el-icon-search"></i>
+      </el-input>
 
-    <el-button
-      icon="el-icon-search"
-      circle
-      class="user_search_btn"
-      @click="searchUserInData()"
-    ></el-button>
-
+      <el-button
+        icon="el-icon-search"
+        circle
+        class="user_search_btn"
+        @click="searchInformInData()"
+      ></el-button>
+    </div>
     <el-divider></el-divider>
 
     <el-card class="user_list_card">
       <div slot="header" class="clearfix">
-        <span>用户列表</span>
-        <!-- <el-button
+        <span>通告列表</span>
+        <el-button
           type="success"
           round
-          style="margin-left: 90%"
-          @click="addUserDialogVisible = true"
-          >添加用户</el-button
-        > -->
+          style="margin-left: 80%"
+          @click="addInformDialogVisible = true"
+          >发布通告</el-button
+        >
       </div>
 
-      <el-table :data="currentUserList" stripe style="width: 100%">
-        <el-table-column
-          prop="username"
-          label="用户名称"
-          width="200"
-          align="center"
-        >
-        </el-table-column>
-        <el-table-column label="用户权限" width="250" align="center">
+      <el-table :data="currentInformList" stripe style="width: 100%"  :header-cell-style="{ backgroundColor: '#e8e5e5', color: 'black', fontWeight: 'bold'}">
+        <el-table-column label="通告标题" width="300" align="center">
           <template slot-scope="scope">
             <div v-show="scope.row.editing">
-              <el-select
-                v-model="scope.row.selectRole"
-                :placeholder="
-                  scope.row.role ? options[scope.row.role].label : null
-                "
-              >
-                <template v-for="item in options">
-                  <el-option
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  >
-                    <template v-slot:default>
-                      <el-tag :type="getRoleTagType(item.value)">{{
-                        item.label
-                      }}</el-tag>
-                    </template>
-                  </el-option>
-                </template>
-              </el-select>
+              <el-input v-model="scope.row.title" size="small"></el-input>
             </div>
             <div v-show="!scope.row.editing">
-              <!-- 默认显示状态文本，点击可以切换到编辑模式 -->
-              <el-tag :type="getRoleTagType(scope.row.role)">{{
-                options[scope.row.role].label
-              }}</el-tag>
+              {{ scope.row.title }}
             </div>
           </template>
         </el-table-column>
         <el-table-column
-          prop="createTime"
-          label="注册时间"
+          label="发布人"
+          prop="username"
+          width="250"
+          align="center"
+        >
+        </el-table-column>
+        <el-table-column
+          prop="updateTime"
+          label="最新发布时间"
           width="300"
           align="center"
         >
         </el-table-column>
-        <el-table-column label="可上传容量（MB）" width="250" align="center">
+        <el-table-column label="通告内容" width="300" align="center">
           <template slot-scope="scope">
             <div v-show="scope.row.editing">
-              <el-input v-model="scope.row.uploadSize" size="small"></el-input>
+              <el-input v-model="scope.row.content" size="small"></el-input>
             </div>
             <div v-show="!scope.row.editing">
-              {{ scope.row.uploadSize }}
+              {{ scope.row.content }}
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="用户状态" width="200" align="center">
-          <template slot-scope="scope">
-            <div v-show="scope.row.editing">
-              <el-select
-                v-model="scope.row.selectStatus"
-                :placeholder="
-                  scope.row.userStatus != null
-                    ? statusOptions[scope.row.userStatus].label
-                    : null
-                "
-              >
-                <template v-for="item in statusOptions">
-                  <el-option
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  >
-                    <template v-slot:default>
-                      <el-tag :type="getTagType(item.value)">{{
-                        item.label
-                      }}</el-tag>
-                    </template>
-                  </el-option>
-                </template>
-              </el-select>
-            </div>
-            <div v-show="!scope.row.editing">
-              <!-- 默认显示状态文本，点击可以切换到编辑模式 -->
-              <el-tag :type="getTagType(scope.row.userStatus)">{{
-                statusOptions[scope.row.userStatus].label
-              }}</el-tag>
-            </div>
-          </template>
-        </el-table-column>
+
         <el-table-column label="操作" width="400" align="center">
           <template slot-scope="scope">
             <el-button
@@ -138,8 +84,8 @@
               cancel-button-text="取消"
               icon="el-icon-info"
               icon-color="red"
-              title="确定删除该用户吗？"
-              @confirm="deleteUser(scope.row)"
+              title="确定删除该通告吗？"
+              @confirm="deleteInform(scope.row)"
             >
               <el-button
                 type="danger"
@@ -152,96 +98,47 @@
           </template>
         </el-table-column>
       </el-table>
-
+      <div class="pagination">
       <el-pagination
         @current-change="handleCurrentChange"
         :current-page="this.currentPage"
         :page-size="10"
         layout="total, prev, pager, next, jumper"
-        :total="this.total"
+        :total="this.currentTotal"
         style="margin-top: 2%; margin-left: 3%"
       >
       </el-pagination>
+      </div>
     </el-card>
 
-    <!-- <el-dialog title="新增用户" :visible.sync="addUserDialogVisible">
-      <el-form :model="addUserForm" ref="addUserRef" :inline="true">
-        <el-form-item label="用户名称" label-width="120">
-          <el-input
-            v-model="addUserForm.username"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="用户密码" label-width="120">
-          <el-input
-            v-model="addUserForm.password"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialog()">取 消</el-button>disabled
-        <el-button type="primary" @click="addUser()">确 定</el-button>
-      </div>
-    </el-dialog> -->
-
-    <el-dialog title="编辑用户" :visible.sync="editUserDialogVisible">
-      <el-form :model="showUserForm" ref="editUserRef">
-        <el-form-item label="用户名称" label-width="120">
-          <el-input
-            v-model="showUserForm.username"
-            autocomplete="off"
-            disabled
-            size="medium"
-          ></el-input>
-        </el-form-item>
-
-        <el-tooltip
-          class="item"
-          effect="dark"
-          content="由于密码进行加密操作，此处为密文"
-          placement="top-start"
-        >
-          <el-form-item label="用户密码" label-width="120">
+    <el-dialog title="新增通告" :visible.sync="addInformDialogVisible">
+      <div class="addInformcontent">
+        <el-form :model="addInformForm" ref="addInformForm">
+          <el-form-item label="通告标题" label-width="120">
             <el-input
-              v-model="showUserForm.password"
+              v-model="addInformForm.title"
               autocomplete="off"
-              size="medium"
-              class="pwd_input"
             ></el-input>
           </el-form-item>
-        </el-tooltip>
-
-        <el-form-item label="用户权限" label-width="120">
-          <el-select v-model="showUserForm.role" placeholder="请选择">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="注册时间" label-width="120" size="medium">
-          <el-input
-            v-model="showUserForm.createTime"
-            autocomplete="off"
-            disabled
-          ></el-input>
-        </el-form-item>
-      </el-form>
+          <el-form-item label="通告内容" label-width="120">
+            <el-input
+              type="textarea"
+              v-model="addInformForm.content"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="editUserDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="confirmEditUser()">确 定</el-button>
+        <el-button @click="closeDialog()">取 消</el-button>
+        <el-button type="primary" @click="addInform()">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getRequest, postRequest, saveParentDisease } from "@/api/user";
+import { getRequest, postRequest } from "@/api/user";
 import { resetForm } from "@/components/mixins/mixin";
 export default {
   mixins: [resetForm],
@@ -250,73 +147,76 @@ export default {
 
   data() {
     return {
-      searchUser: "",
+      searchTitle: "",
       tableData: [],
       total: 0,
+      currentTotal: 0,
       pageNum: 1,
       currentPage: 1,
-      currentUserList: [],
-      addUserDialogVisible: false,
-      addUserForm: {
-        username: "",
-        password: "",
+      currentInformList: [],
+      addInformDialogVisible: false,
+      addInformForm: {
+        title: "",
+        content: "",
       },
-      showUserForm: {
-        uid: "",
-        username: "",
-        password: "",
-        role: "",
-        createTime: "",
-      },
-      editUserDialogVisible: false,
-      options: [
-        {
-          label: "管理员",
-          value: 0,
-        },
-        {
-          label: "普通用户",
-          value: 1,
-        },
-      ],
-      statusOptions: [
-        {
-          label: "待激活",
-          value: 0,
-        },
-        {
-          label: "正常",
-          value: 1,
-        },
-        {
-          label: "禁用",
-          value: 2,
-        },
-      ],
     };
   },
 
   created() {
-    this.getUserTable(1);
+    this.getInformTable(1);
   },
 
   methods: {
-    getUserTable(pageNum) {
-      getRequest("user/allUser?pageNum=" + pageNum).then((res) => {
+    convertToBeijingTime(isoString) {
+      // 解析 ISO 字符串为 Date 对象
+      const date = new Date(isoString);
+
+      // 调整时区到北京时间，UTC+8
+      const beijingTime = new Date(date.getTime() + 8 * 60 * 60 * 1000); // 添加8小时的毫秒数
+
+      // 使用 Intl.DateTimeFormat 格式化输出
+      const formatter = new Intl.DateTimeFormat("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Shanghai",
+      });
+
+      return formatter
+        .format(beijingTime)
+        .replace(/\//g, "-")
+        .replace(", ", " ");
+    },
+    getInformTable(pageNum) {
+      getRequest(
+        "notice/allNotices?pageNum=" + pageNum + "&pageSize=" + 10
+      ).then((res) => {
         if (res) {
-          console.log("pageNum", pageNum);
-          const dataWithEditing = res.data.map((item) => ({
+          const dataWithEditing = res.list.map((item) => ({
             ...item,
+            updateTime: this.convertToBeijingTime(item.updateTime), // 格式化时间为北京时间
             editing: false,
-            selectStatus: Number(item.userStatus),
-            selectRole: Number(item.role),
           }));
+
           this.total = res.total;
+          this.currentTotal = res.total;
           if (pageNum === 1) {
             this.tableData = dataWithEditing;
           }
-          this.currentUserList = dataWithEditing;
-          console.log("currentUserList", this.currentUserList);
+          //   if (this.formInline.role || this.formInline.userStatus) {
+          //     console.log("this.formInline.role", this.formInline.role);
+          //     console.log(
+          //       "this.formInline.userStatus",
+          //       this.formInline.userStatus
+          //     );
+          //   } else {
+          //     this.currentInformList = dataWithEditing;
+          //   }
+          this.currentInformList = dataWithEditing;
         }
       });
     },
@@ -329,150 +229,108 @@ export default {
     saveChanges(row) {
       // 在这里实现保存数据到服务器的逻辑
       // 假设保存成功，更新userStatus显示
-      const params = {
-        uid: row.uid,
-        status: row.selectStatus,
-        role: row.selectRole,
-        uploadSize: row.uploadSize,
-      };
-      postRequest("user/updateStatus", params).then((res) => {
+
+      postRequest("notice/updateNotice", row).then((res) => {
         if (res.code == 200) {
           this.$message.success("修改成功");
-        }
-        else{
-             this.$message.warning("修改失败！");
-              this.getUserTable(1);
+        } else {
+          this.$message.warning("修改失败！");
+          this.getInformTable(1);
         }
       });
     },
-    searchUserInData() {
-      if (!this.searchUser) {
-        this.getUserTable(1);
+    searchInformInData() {
+      if (!this.searchTitle) {
+        this.getInformTable(1);
       } else {
-        let filterData = this.tableData.filter((user) => {
-          return user.username
+        // 将用户输入转化为小写一次，然后重用这个结果，减少重复计算
+        const searchTitleLower = this.searchTitle.toLowerCase();
+        let filterData = this.tableData.filter((inform) => {
+          const titleMatches = inform.title
             .toLowerCase()
-            .includes(this.searchUser.toLowerCase());
+            .includes(searchTitleLower);
+          const contentMatches = inform.content
+            .toLowerCase()
+            .includes(searchTitleLower);
+          return titleMatches || contentMatches;
         });
-        this.currentUserList = filterData;
+        console.log(filterData);
+        // 将过滤结果赋值给 currentInformList
+        this.currentInformList = filterData;
       }
     },
     handleInput() {
-      if (!this.searchUser.trim()) {
-        this.getUserTable(1);
+      if (!this.searchTitle.trim()) {
+        this.getInformTable(1);
       }
     },
 
     handleCurrentChange(val) {
       this.currentPage = val;
-      this.getUserTable(val);
-    },
-    getTagType(val) {
-      if (val === 0 || val === "0") {
-        return "warning";
-      }
-      if (val === 1 || val === "1") {
-        return "success";
-      }
-      if (val === 2 || val === "2") {
-        return "danger";
-      }
-    },
-    getRoleTagType(val) {
-      if (val === 0 || val === "0") {
-        return "success";
-      }
-      if (val === 1 || val === "1") {
-        return "";
-      }
+      this.getInformTable(val);
     },
 
-    // pagehelper() {
-    //   getRequest(
-    //     `user/selectByPage?pageNum=${this.params.page}&pageSize=${this.params.size}&searchUser=${this.searchUser}`
-    //   ).then((res) => {
-    //     if (res) {
-    //       this.total = res.data.total;
-    //       this.currentUserList = res.data.list;
-    //     }
-    //   });
-    // },
-    // addUser() {
-    //   postRequest("/user/addUser", this.addUserForm).then((res) => {
-    //     if (res.code == 200) {
-    //       this.$message.success("新增用户成功");
-    //       this.closeDialog();
-    //       this.pagehelper();
-    //     } else {
-    //       this.$message.error("新增用户失败");
-    //       this.closeDialog();
-    //       this.pagehelper();
-    //     }
-    //   });
-    // },
-    // closeDialog() {
-    //   this.addUserDialogVisible = false;
-    //   this.addUserForm.username = "";
-    //   this.addUserForm.password = "";
-    // },
-    deleteUser(row) {
-      const params = {
-        uid: row.uid,
-        status: row.selectStatus,
-      };
-      postRequest("user/delUser", params).then((res) => {
+    deleteInform(row) {
+      postRequest("notice/delNotice", row).then((res) => {
         if (res.code == 200) {
-          console.log("删除成功");
-          this.$message.success("删除用户成功");
-          this.getUserTable();
+          this.$message.success("删除通告成功");
+          this.getInformTable(1);
         } else {
-          this.$message.error("删除用户失败");
-          this.getUserTable();
+          this.$message.error("删除通告失败");
+          this.getInformTable(1);
         }
       });
     },
-    // getInfoUser(uid) {
-    //   getRequest(`user/getInfo/${uid}`).then((res) => {
-    //     if (res.code == 200) {
-    //       this.editUserDialogVisible = true;
-    //       this.showUserForm.username = res.data.username;
-    //       this.showUserForm.password = res.data.password;
-    //       this.showUserForm.role = res.data.role;
-    //       this.showUserForm.createTime = res.data.createTime;
-    //       this.showUserForm.uid = res.data.uid;
-    //     } else {
-    //       this.$message.error("获取用户信息失败");
-    //       this.pagehelper();
-    //     }
-    //   });
-    // },
-    // confirmEditUser() {
-    //   postRequest("user/edit", this.showUserForm).then((res) => {
-    //     if (res.code == 200) {
-    //       this.$message.success("修改用户成功");
-    //       this.pagehelper();
-    //     } else {
-    //       this.$message.error("修改用户失败");
-    //       this.pagehelper();
-    //     }
-    //   });
-    // },
+    addInform() {
+      const params = {
+        title: this.addInformForm.title,
+        content: this.addInformForm.content,
+        uid: sessionStorage.getItem("userid"),
+        username: sessionStorage.getItem("username"),
+      };
+      postRequest("notice/insertNotice", params).then((res) => {
+        if (res.code == 200) {
+          this.$message.success("发布通告成功");
+          this.closeDialog();
+          this.getInformTable(1);
+        } else {
+          this.$message.error("发布通告失败");
+          this.closeDialog();
+          this.getInformTable(1);
+        }
+      });
+    },
+    closeDialog() {
+      this.addInformDialogVisible = false;
+      this.addInformForm.title = "";
+      this.addInformForm.content = "";
+    },
   },
 };
 </script>
 
 <style scoped>
-.user_input {
-  width: 20%;
+.searchByCondition {
+  display: flex;
+  height: 40px;
+  justify-content: space-between;
 }
-
+.searchByUserName {
+  width: 25%;
+}
+.user_input {
+  width: 80%;
+}
 .user_search_btn {
   margin-left: 1%;
 }
-.table-input-container {
-  height: 40px; /* 或其他适当的固定高度，与 el-input 高度一致 */
+.addInformcontent {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
+}
+.pagination{
+     display: flex;
+  justify-content: center; 
 }
 </style>

@@ -68,44 +68,7 @@
                 </el-menu-item>
               </div>
             </template>
-            <!-- <el-menu-item index="/dash">
-              <i class="el-icon-menu"></i>
-              <span slot="title">首页</span>
-            </el-menu-item>
-            <el-menu-item index="/dataManagePublic">
-              <i class="el-icon-s-data"></i>
-              数据管理</el-menu-item
-            >
-            <el-menu-item index="/taskManage">
-              <i class="el-icon-s-data"></i>
-              任务管理</el-menu-item
-            > -->
-            <!-- <el-menu-item index="/columnManage2">
-              <i class="el-icon-connection"></i>
-              字段管理</el-menu-item
-            > -->
-            <!-- <el-menu-item index="/userManage">
-              <i class="el-icon-s-custom"></i>
-              用户管理</el-menu-item
-            >
-            <el-menu-item index="/completeMissing">
-              <i class="el-icon-s-custom"></i>
-              缺失值处理</el-menu-item
-            >
-            <el-menu-item index="/stasticAnalyze">
-              <i class="el-icon-s-custom"></i>
-              统计分析</el-menu-item
-            >
-            <el-menu-item index="/represent">
-              <i class="el-icon-data-line"></i>
-              特征表征</el-menu-item
-            >
-            <el-menu-item index="/visualization">
-              <i class="el-icon-s-custom"></i>
-              病人画像</el-menu-item
-            > -->
             <div class="menu-footer">
-              <el-menu-item index="/operationManage"> 操作日志</el-menu-item>
               <el-menu-item index="/introduce"> 软件介绍</el-menu-item>
               <el-menu-item> 操作手册</el-menu-item>
             </div>

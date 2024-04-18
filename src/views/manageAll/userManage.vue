@@ -61,7 +61,7 @@
         > -->
       </div>
 
-      <el-table :data="currentUserList" stripe style="width: 100%">
+      <el-table :data="currentUserList" stripe style="width: 100%"  :header-cell-style="{ backgroundColor: '#e8e5e5', color: 'black', fontWeight: 'bold'}">
         <el-table-column
           prop="username"
           label="用户名称"
@@ -181,7 +181,7 @@
           </template>
         </el-table-column>
       </el-table>
-
+    <div class="pagination">
       <el-pagination
         @current-change="handleCurrentChange"
         :current-page="this.currentPage"
@@ -191,6 +191,7 @@
         style="margin-top: 2%; margin-left: 3%"
       >
       </el-pagination>
+    </div>
     </el-card>
 
     <!-- <el-dialog title="新增用户" :visible.sync="addUserDialogVisible">
@@ -272,6 +273,7 @@
 <script>
 import { getRequest, postRequest, saveParentDisease } from "@/api/user";
 import { resetForm } from "@/components/mixins/mixin";
+// import { filter } from 'vue/types/umd';
 export default {
   mixins: [resetForm],
 
@@ -346,21 +348,12 @@ export default {
             selectRole: Number(item.role),
           }));
           this.total = res.total;
-          this.currentTotal = res.total;
           if (pageNum === 1) {
             this.tableData = dataWithEditing;
           }
-          if (this.formInline.role || this.formInline.userStatus) {
-            console.log("this.formInline.role", this.formInline.role);
-            console.log(
-              "this.formInline.userStatus",
-              this.formInline.userStatus
-            );
-            this.onFilter();
-          } else {
-            this.currentUserList = dataWithEditing;
-          }
-          console.log("currentUserList", this.currentUserList);
+          this.filterData(); // 加载完数据后进行筛选
+             this.currentTotal = res.total;s
+         
         }
       });
     },
@@ -371,8 +364,7 @@ export default {
       row.editing = !row.editing; // 切换编辑状态
     },
     saveChanges(row) {
-      // 在这里实现保存数据到服务器的逻辑
-      // 假设保存成功，更新userStatus显示
+
       const params = {
         uid: row.uid,
         status: row.selectStatus,
@@ -388,17 +380,26 @@ export default {
         }
       });
     },
-    searchUserInData() {
-      if (!this.searchUser) {
-        this.getUserTable(1);
-      } else {
-        let filterData = this.tableData.filter((user) => {
-          return user.username
-            .toLowerCase()
-            .includes(this.searchUser.toLowerCase());
-        });
-        this.currentUserList = filterData;
-      }
+
+    filterData() {
+
+      let filteredData = this.tableData.filter((user) => {
+
+        const matchesRole = this.formInline.role!== ""
+          ? Number(user.role) === Number(this.formInline.role)
+          : true;
+        const matchesStatus = this.formInline.selectStatus!== ""
+          ? Number(user.userStatus) === Number(this.formInline.selectStatus)
+          : true;
+        const matchesName = this.searchUser
+          ? user.username.toLowerCase().includes(this.searchUser.toLowerCase())
+          : true;
+        
+        return matchesRole && matchesStatus && matchesName;
+      });
+     
+      this.currentUserList = filteredData;
+      this.currentTotal = filteredData.length;
     },
     handleInput() {
       if (!this.searchUser.trim()) {
@@ -406,23 +407,19 @@ export default {
       }
     },
     onFilter() {
-      console.log("in");
-      this.currentUserList = this.tableData.filter((user) => {
-          console.log('user.userStatus',user.userStatus)
-          console.log('this.formInline.selectStatus',this.formInline.selectStatus)
-        return (
-          (this.formInline.role === "" || user.role == this.formInline.role) &&
-          (this.formInline.selectStatus === "" ||
-            user.userStatus == this.formInline.selectStatus)
-        );
-      });
-      this.currentTotal = this.currentUserList.length;
+      this.filterData();
     },
+    searchUserInData() {
+      this.filterData();
+    },
+ 
+
     clearFilter() {
       this.currentUserList = this.tableData;
-      this.formInline.role=''
-      this.formInline.selectStatus=''
+      this.formInline.role = "";
+      this.formInline.selectStatus = "";
       this.currentTotal = this.total;
+      this.filterData();
     },
     handleCurrentChange(val) {
       this.currentPage = val;
@@ -537,5 +534,9 @@ export default {
 }
 .user_search_btn {
   margin-left: 1%;
+}
+.pagination{
+     display: flex;
+  justify-content: center; 
 }
 </style>

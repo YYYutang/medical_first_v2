@@ -10,7 +10,7 @@ import logIn from "@/views/User/Login.vue"
 import register from "@/views/User/register.vue"
 import forget from "@/views/User/forget.vue"
 import unauthorized from "@/views/404.vue"
-import operationManage from "@/views/operationManage.vue"
+import operationManage from "@/views/manageAll/operationManage.vue"
 import completeMissing from "@/views/completeMissing/index.vue"
 import characterChoose from "@/components/characterChoose/index.vue"
 import datasetChoose from "@/components/datasetChoose/index3.vue"
@@ -241,21 +241,20 @@ router.beforeEach((to, from, next) => {
     let isAuthorized = false; // 初始化权限标志为false
 
     if (record.meta.roles) {
-      console.log('record', record)
-      console.log('Required Roles for this route:', record.meta.roles);
+     
       // 检查用户角色是否在路由允许的角色列表中
       if (record.meta.roles.includes(userRoles)) {
         isAuthorized = true; // 如果找到匹配的角色，设置权限标志为true
       }
     }
     if (isAuthorized) {
-      console.log('Access Granted');
+    
       next(); // 用户有权限，允许访问
     } else if (to.matched.some(record => record.meta.roles)) {
-      console.log('Access Denied');
+   
       next({ path: '/unauthorized' }); // 用户无权限，重定向到未授权页面
     } else {
-      console.log('No Roles Required, Access Granted');
+     
       next(); // 如果没有定义roles元数据，允许所有用户访问
     }
   }
