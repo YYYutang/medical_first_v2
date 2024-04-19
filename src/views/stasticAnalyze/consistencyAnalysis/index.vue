@@ -2,10 +2,11 @@
   <div>
     <el-container >
         <div class="outcontainer">
-          <datasetChoose v-if="active == 1" class="con_datasetChoose" :active='active' :type="3" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
-          <characterChoose v-if="active == 2" :active='active' :analyzeStep="3" :type="2" :label="label" @send_feat="getCheackedFeats" :curentAnalyzeStep="3" 
+          <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
+          <datasetChoose v-if="active == 2" class="con_datasetChoose" :active='active' :type="3" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
+          <characterChoose v-if="active == 3" :active='active' :analyzeStep="3" :type="2" :label="label" @send_feat="getCheackedFeats" :curentAnalyzeStep="3" 
           @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
-          <conssitencyOutcome v-if="active == 3" :active='active' :label="label" :checkedFeats="checkedFeats" ref="childComponentRef" :newTaskInfo="newTaskInfo"></conssitencyOutcome>
+          <conssitencyOutcome v-if="active == 4" :active='active' :label="label" :checkedFeats="checkedFeats" ref="childComponentRef" :newTaskInfo="newTaskInfo" :createTaskInfo="createTaskInfo"></conssitencyOutcome>
         <div class="stepbutton">
           <el-button size="small" v-if="active != 1" @click="stepBack(active)"
             >上一步</el-button
@@ -13,14 +14,14 @@
           <el-button
             size="small"
             type="primary"
-            v-if="active != 3"
+            v-if="active != 4"
             @click="stepNext(active)"
             >下一步</el-button
           >
           <el-button
             size="small"
             type="primary"
-            v-if="active == 3"
+            v-if="active == 4"
             @click="exportContent()"
             >导出</el-button
           >
@@ -34,6 +35,7 @@ import characterChoose from "@/components/characterChoose/index.vue";
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import conssitencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
 import html2canvas from "html2canvas";
+import taskInfo from "@/components/TaskInfo.vue"
 /*描述性统计分析页面*/
 export default {
   name: "outcome",
@@ -42,6 +44,7 @@ export default {
     characterChoose,
     datasetChoose,
     conssitencyOutcome,
+    taskInfo
   },
   data() {
     return {
@@ -51,12 +54,18 @@ export default {
       label: '',
       active: 1,
       checkedFeats: [],
+      createTaskInfo: null
     };
   },
   created(){
     this.newTaskInfo = this.$route.params;
   },
   methods: {
+     getTaskInfo(data){
+      this.createTaskInfo = data;
+      this.createTaskInfo.tasktype="一致性验证"
+      console.log("获取到任务信息",this.createTaskInfo)
+    },
     open3() {
       this.$message({
         message: '请选择要处理的指标！',
@@ -95,14 +104,21 @@ export default {
     },
     stepBack(active) {
       this.active--;
-      if(active === 2) {
+      if(active === 3) {
         // 将 this.selectTreeNode 传递给子组件 characterChoose
         this.$refs.characterChoose.selectTreeNode = this.selectTreeNode;
         this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
       }
     },
     stepNext(active) {
-      if(this.active == 2 && (this.checkedFeats==null || this.checkedFeats.length==0))
+      if(active == 1){
+        this.$refs.taskInfo.extStep(); // 假设子组件有一个名为 nextStep 的方法
+        if (this.createTaskInfo.taskName.length < 1 || this.createTaskInfo.principal.length < 1) {
+          this.$message("请填写任务名称和负责人");
+          return;
+        }
+      }
+      if(this.active == 3 && (this.checkedFeats==null || this.checkedFeats.length==0))
       {
         this.open3();
       }else{

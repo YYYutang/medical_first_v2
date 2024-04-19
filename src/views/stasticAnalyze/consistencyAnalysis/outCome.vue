@@ -141,7 +141,7 @@ import { postRequest, getRequest } from '@/utils/api';
 import { singleFactorAnalyze } from "@/api/user"
 export default defineComponent({
   name: 'outcome2',
-  props: ['active', 'label', 'checkedFeats','newTaskInfo'],
+  props: ['active', 'label', 'checkedFeats','newTaskInfo','createTaskInfo'],
   data() {
     return {
          allData: [],
@@ -181,7 +181,7 @@ export default defineComponent({
   created() {
     this.taskInfoParam = this.$route.params
     console.log("taskInfoParam:",this.taskInfoParam)
-    this.taskInfo = this.newTaskInfo;
+    this.taskInfo = this.createTaskInfo;
     if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo;
     this.getAllData();
   },

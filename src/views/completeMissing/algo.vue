@@ -77,9 +77,6 @@
   </div>
 </template>
 <script>
-/*算法选择页面*/
-// import { getIndicatorInfo } from "@/api/user.js"
-// import { tabSwitch } from "@/components/mixins/mixin";
 import { postRequest } from "@/utils/api";
 export default ({
     name:'missingalgo',
@@ -94,8 +91,10 @@ export default ({
     },
     created(){
       if(this.isback==false) {
+        console.log("不是返回：")
         this.getCheckedIndicatorInfo();
       }else{
+        console.log("是返回")
         if(this.tableData1FromParent.length>0) this.tableData1 = this.tableData1FromParent;
         if(this.tableData2FromParent.length>0) this.tableData2 = this.tableData2FromParent;
         if(this.tableData3FromParent.length>0) this.tableData3 = this.tableData3FromParent;

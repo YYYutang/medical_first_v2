@@ -2,8 +2,9 @@
   <div>
     <el-container>
       <div class="outcontainer">
+        <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
         <datasetChoose
-          v-if="active == 1"
+          v-if="active == 2"
           :active="active"
           :type="3"
           class="des_datasetChoose"
@@ -11,7 +12,7 @@
           :showDataManageStep="(showDataManageStep = true)"
         ></datasetChoose>
         <characterChoose
-          v-if="active == 2"
+          v-if="active == 3"
           :active="active"
           :type="2"
           :step="2"
@@ -22,28 +23,29 @@
            @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"
         ></characterChoose>
         <describeOutcome
-          v-if="active == 3"
+          v-if="active == 4"
           :active="active"
           :label="label"
           :checkedFeats="checkedFeats"
           ref="childComponentRef"
           :newTaskInfo="newTaskInfo"
+          :createTaskInfo="createTaskInfo"
         ></describeOutcome>
         <div class="stepbutton">
-          <el-button size="small" v-if="active != 1" @click="stepBack(active)"
+          <el-button size="small" v-if="active!=1" @click="stepBack(active)"
             >上一步</el-button
           >
           <el-button
             size="small"
             type="primary"
-            v-if="active != 3"
+            v-if="active != 4"
             @click="stepNext(active)"
             >下一步</el-button
           >
           <el-button
             size="small"
             type="primary"
-            v-if="active == 3"
+            v-if="active == 4"
             @click="exportContent()"
             >导出</el-button
           >
@@ -58,6 +60,7 @@ import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import taskInfo from "@/components/TaskInfo.vue"
 /*描述性统计分析页面*/
 export default {
   name: "outcome",
@@ -66,6 +69,7 @@ export default {
     characterChoose,
     datasetChoose,
     describeOutcome,
+    taskInfo
   },
   data() {
     return {
@@ -75,12 +79,18 @@ export default {
       label: "",
       active: 1,
       checkedFeats: [],
+      createTaskInfo: null
     };
   },
   created(){
     this.newTaskInfo = this.$route.params;
   },
   methods: {
+     getTaskInfo(data){
+      this.createTaskInfo = data;
+      this.createTaskInfo.tasktype="描述性分析"
+      console.log("获取到任务信息",this.createTaskInfo)
+    },
     open3(msg) {
         this.$message({
           message: msg,
@@ -105,17 +115,26 @@ export default {
     },
     stepBack(active) {
       this.active--;
-      if(active === 2) {
+      if(active === 3) {
         // 将 this.selectTreeNode 传递给子组件 characterChoose
         this.$refs.characterChoose.selectTreeNode = this.selectTreeNode;
         this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
       }
     },
     stepNext(active) {
-      if(this.active == 2 && (this.checkedFeats==null || this.checkedFeats.length==0)){
+      if(active == 1){
+        this.$refs.taskInfo.extStep(); // 假设子组件有一个名为 nextStep 的方法
+        if (this.createTaskInfo.taskName.length < 1 || this.createTaskInfo.principal.length < 1) {
+          this.$message("请填写任务名称和负责人");
+          return;
+        }
+      }
+      if(this.active == 3 && (this.checkedFeats==null || this.checkedFeats.length==0)){
         this.open3("请选择需要分析的指标！")
-      }else if(this.active == 2 && (this.checkedFeats[0].missRate>30)){
+        return;
+      }else if(this.active == 3 && (this.checkedFeats[0].missRate>30)){
         this.open3("数据异常，无法分析！")
+        return;
       }else{
         this.active++;
       }

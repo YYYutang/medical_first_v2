@@ -93,7 +93,7 @@ import { getSingleAnalyze } from "@/api/user";
 import { tabSwitch } from '@/components/mixins/mixin';
 export default defineComponent({
   name: 'outcome2',
-  props: ['active', 'label', 'groupFeat', 'observeFeat','newTaskInfo'],
+  props: ['active', 'label', 'groupFeat', 'observeFeat','newTaskInfo','createTaskInfo'],
   data() {
     return {
          taskInfo:null,
@@ -108,7 +108,7 @@ export default defineComponent({
   created() {
       this.taskInfoParam = this.$route.params
       console.log("taskInfoParam:",this.taskInfoParam)
-      this.taskInfo = this.newTaskInfo;
+      this.taskInfo = this.createTaskInfo;
       if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo;
       this.getAllData();
   },

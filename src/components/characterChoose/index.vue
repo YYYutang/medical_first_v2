@@ -2,6 +2,7 @@
     <div class="contain">
       <div class="step">
         <el-steps :active="active" align-center>
+          <el-step title="任务信息"></el-step>
           <el-step title="选择数据"></el-step>
           <el-step title="特征选择"></el-step>
           <el-step title="方法选择" v-if="type==4"></el-step>
@@ -36,65 +37,69 @@
               </el-alert>
             </div>
             <br><br v-if="curentAnalyzeStep==1">            
-            <h2 style="text-align: center" v-if="step==1">选择一个或多个需要缺失补齐的特征</h2><h2 style="text-align: center; margin-top:-15px" v-if="step==2" class="top">选择一个需要描述性分析的特征</h2>
-            <!--缺失值补齐，病人画像， 描述性分析的 特征选择-->
+            <h2 style="text-align: center" v-if="step==1">选择需要缺失值补齐的特征</h2><h2 style="text-align: center; margin-top:-15px" v-if="step==2" class="top">选择一个需要描述性分析的特征</h2>
+            <!--缺失值补齐 描述性分析的 特征选择-->
             <div class="selectClass" v-if="curentAnalyzeStep==1">
-              <h3>文本类型特征</h3>
+              <!-- <h4>文本离散类型特征</h4> -->
+              <p><strong>文本离散类型特征</strong></p>
               <div class="contain3">
-                <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==3">
-                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
-                    <!-- <el-progress :percentage="feat.missRate" :stroke-width=8 style="width: 100px;" class="custom-progress" ></el-progress> -->
+                <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==3  && feat.missRate!=100">
+                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size"> <span style="font-family: 宋体, SimSun, serif;font-size: 14px">{{ feat.label }}</span></el-checkbox>
                     <el-progress :percentage="Math.round(100 - feat.missRate)" :stroke-width=8 :format="format" :color="getProgressStatus(feat.missRate)" style="width: 100px;"></el-progress>
                 </div>
-                <div class="block invisible" v-for="n in (5 - countVisibleFeatures(3) % 5) % 5" :key="n.id"></div>
+                <div class="block invisible" v-for="n in (6 - countVisibleFeatures(3) % 6) % 6" :key="n.id"></div>
               </div>
-              <h3>连续数字类型特征</h3>
+              <!-- <h4>连续数字类型特征</h4> -->
+              <p><strong>连续数字类型特征</strong></p>
               <div class="contain1">
-                <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==1">
-                  <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
+                <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==1 && feat.missRate!=100">
+                  <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size"><span style="font-family: 宋体, SimSun, serif;font-size: 14px">{{ feat.label }}</span></el-checkbox>
                   <!-- <el-progress :percentage="feat.missRate" :stroke-width=8 style="width: 120px;" class="custom-progress" :color="getProgressColor(feat.missRate)"></el-progress> -->
                   <el-progress :percentage="Math.round(100 - feat.missRate)" :format="format" :color="getProgressStatus(feat.missRate)" style="width: 100px;"></el-progress>
                 </div>
-              <div class="block invisible" v-for="n in (5 - countVisibleFeatures(1) % 5 % 5) % 5" :key="n.id"></div>
+              <div class="block invisible" v-for="n in (6 - countVisibleFeatures(1) % 6) % 6" :key="n.id"></div>
               </div>
-              <h3>离散数字类型特征</h3>
+              <!-- <h4>离散数字类型特征</h4> -->
+              <p><strong>离散数字类型特征</strong></p>
               <div class="contain2">
-                <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==2">
-                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
+                <div class="block" v-for="feat in featureData" :key="feat.id" v-if="feat.featureDataType==2 && feat.missRate!=100">
+                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChange(feat)" class="checkbox-font-size"><span style="font-family: 宋体, SimSun, serif;font-size: 14px">{{ feat.label }}</span></el-checkbox>
                     <!-- <el-progress :percentage="feat.missRate" :stroke-width=8 style="width: 120px;" class="custom-progress" :color="getProgressColor(feat.missRate)"></el-progress> -->
                     <el-progress :percentage="Math.round(100 - feat.missRate)" :format="format" :color="getProgressStatus(feat.missRate)" style="width: 100px;"></el-progress>
                 </div>
-                <div class="block invisible" v-for="n in (5 - countVisibleFeatures(2) % 5% 5) % 5" :key="n.id"></div>
+                <div class="block invisible" v-for="n in (6- countVisibleFeatures(2) % 6) % 6" :key="n.id"></div>
               </div>
             </div>
             <!--单因素分析的特征选择-->
             <div class="selectClassSingle" v-if="curentAnalyzeStep==2">
-              <h3 style="text-align: center; font-size: 24px">选择一个作为分组依据特征</h3>
+              <!-- <h4 style="text-align: center; font-size: 24px">选择一个作为分组依据特征</h4> -->
+              <p style="text-align: center;"><strong>选择一个作为分组依据特征</strong></p>
               <div class="contain4">
-                <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat!=observeFeaure && feat.discrete && feat.missRate<50">
-                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeGroup(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
+                <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat!=observeFeaure && feat.discrete && feat.missRate<50 && feat.rangeSize ==2 ">
+                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeGroup(feat)" class="checkbox-font-size"><span style="font-family: 宋体, SimSun, serif;font-size: 14px">{{ feat.label }}</span></el-checkbox>
                     <el-progress :percentage="Math.round(100 - feat.missRate)" :format="format" :color="getProgressStatus(feat.missRate)" style="width: 100px;"></el-progress>
                 </div>
-                <div class="block invisible" v-for="n in (5 - getGroupFeatLength() % 5) % 5" :key="n.id"></div>
+                <div class="block invisible" v-for="n in (6 - getGroupFeatLength() % 6) % 6" :key="n.id"></div>
               </div>
-               <h3 style="text-align: center; font-size: 24px">选择一个或多个需要观察的特征</h3>
+              <p style="text-align: center;"><strong>选择一个需要分析的特征</strong></p>
               <div class="contain5">
-                <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat!=groupFeature && feat.missRate<50">
-                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeObserve(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
+                <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat!=groupFeature && feat.missRate<50 && !feat.discrete && feat.featureDataType!=3">
+                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeObserve(feat)" class="checkbox-font-size"><span style="font-family: 宋体, SimSun, serif;font-size: 14px">{{ feat.label }}</span></el-checkbox>
                     <el-progress :percentage="Math.round(100 - feat.missRate)" :format="format" :color="getProgressStatus(feat.missRate)" style="width: 100px;"></el-progress>
                 </div>
-                <div class="block invisible" v-for="n in (5 - getObserveFeatLength() % 5) % 5" :key="n.id"></div>
+                <div class="block invisible" v-for="n in (6 - getObserveFeatLength() % 6) % 6" :key="n.id"></div>
               </div>
             </div>
 
             <div class="consistencyAnalyze" v-if="curentAnalyzeStep==3">
-               <h3 style="text-align: center; font-size: 24px">选择一个作为分组依据特征</h3>
+               <!-- <h3 style="text-align: center; font-size: 24px">选择一个作为分组依据特征</h3> -->
+               <p style="text-align: center;"><strong>选择一个作为分组依据特征</strong></p>
                <div class="contain6">
                 <div class="block" v-for="(feat,index) in featureData" :key="index" v-if="feat.featureDataType!=3 && feat.missRate<30">  <!--只显示数据类型为数值的字段-->
-                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeConsis(feat)" class="checkbox-font-size">{{feat.label}}</el-checkbox>
+                    <el-checkbox v-model="feat.cheack" @change="handleCheckboxChangeConsis(feat)" class="checkbox-font-size"><span style="font-family: 宋体, SimSun, serif;font-size: 14px">{{ feat.label }}</span></el-checkbox>
                     <el-progress :percentage="Math.round(100 - feat.missRate)" :format="format" :color="getProgressStatus(feat.missRate)" style="width: 100px;"></el-progress>
                 </div>
-                <div class="block invisible" v-for="n in (5 - getConsistencyAnalyzeLength() % 5) % 5" :key="n.id"></div>
+                <div class="block invisible" v-for="n in (6 - getConsistencyAnalyzeLength() % 6) % 6" :key="n.id"></div>
               </div>
             </div>
           </div>
@@ -171,7 +176,6 @@ export default ({
       }
     },
     created(){
-      console.log("分组依据：",this.observeFeatFromParent)
       this.isDescribe=this.describeAna==true?true:false;
       this.groupFeature= {};
       this.observeFeaure={};
@@ -194,19 +198,22 @@ export default ({
         this.observeFeaure = this.observeFeatFromParent;
       }
       if(this.groupFeatFromParent!=null) this.groupFeature = this.groupFeatFromParent;
-
-      // if(this.analyzeStep!=null){
-      //   this.curentAnalyzeStep = this.analyzeStep;
-      // }
-      
     },
     methods:{
+       open3(msg) {
+        this.$message({
+          message: msg,
+          type: 'warning'
+        });
+      },
       getConsistencyAnalyzeLength(){
         var len = this.featureData.length;
         for(let i=0; i<this.featureData.length; i++){
-          if(this.featureData[i].featureDataType==3 || this.featureData[i].missingRate>=30) len -=1 ;
+          if(this.featureData[i].featureDataType==3 || this.featureData[i].missRate>=30) len -=1 ;
         }
+        console.log("len:",len)
         return len;
+
       },
       getProgressStatus(missingRate) {
         if (missingRate < 30) {
@@ -233,22 +240,23 @@ export default ({
         }
       },
       getGroupFeatLength(){
-        let count = 2;
+        let count = 0;
         for(let i=0; i<this.featureData.length; i++) {
-          if (this.featureData[i].discrete && this.featureData[i].missingRate<50) count+=1;
+          if (this.featureData[i].discrete && this.featureData[i].missRate<50 && this.featureData[i].rangeSize==2) count+=1;
         }
-        if(this.observeFeaure!={}) {
-          return count-1;
-        }else {
-          return count;
-          }
+        return count;
+        // if(this.observeFeaure!={}) {
+        //   return count-1;
+        // }else {
+        //   return count;
+        //   }
       },
       getObserveFeatLength(){
         var len = this.featureData.length;
         for(let i=0; i<this.featureData.length; i++){
-          if(this.featureData[i].missingRate>=50) len -=1 ;
+          if(this.featureData[i].missRate>=50 || this.featureData[i].discrete || this.featureData[i].featureDataType==3) len -=1 ;
         }
-        if(this.groupFeature!={}) len=-1;
+        // if(this.groupFeature!={}) len=-1;
         return len;
       },
       handleCheckboxChangeGroup(feat){
@@ -299,7 +307,9 @@ export default ({
         this.$emit("send_feat",this.checkedFeats)
       },
       countVisibleFeatures(val) {
-        return this.featureData.filter(feat => feat.featureDataType == val).length;
+        let len = this.featureData.filter(feat => feat.featureDataType == val && feat.missRate!=100).length;
+        console.log("len",len)
+        return len;
       },
       handleCheckboxChange(feat){
         // 发送给父组件
@@ -312,7 +322,12 @@ export default ({
             }
           }else{  // 不包含
             if(feat.cheack) { // 选中状态
-              this.checkedFeats.push(feat);
+              if(feat.missRate==0 || feat.missRate==100){
+                this.open3("该特征不可插补！")
+                feat.cheack=false;
+              }else{
+                this.checkedFeats.push(feat);
+              }
             }
           }
         }else{ // 描述性分析  描述性分析只能选择一个复选框
@@ -341,7 +356,10 @@ export default ({
         }
         else{
         getIndicators("/api/getIndicators",types, this.tableName).then(response=>{
+
           this.featureData = response.data;
+          console.log("特征信息位：",this.featureData)
+    
           // 给父组件传递参数
           this.$emit("send_indicators",this.featureData)
         }).catch(error=>{
@@ -358,7 +376,6 @@ export default ({
    
         // 将选中的树节点传递给父节点
         this.$emit("sendTreeNode",this.defaultCheckedKeys)
-        console.log('(this.selectedNode.join(",")',this.selectedNode.join(","))
         this.getIndicatorsFromBackEnd(this.selectedNode.join(","));
       },
       getIndicatorCategory(){
@@ -367,7 +384,6 @@ export default ({
         })
       }
     },
-
     mounted(){
     }
 
@@ -380,7 +396,6 @@ export default ({
 //   margin-bottom: 0px;
 //   font-size: 15px; /* 修改字体大小 */
 // }
-
 .mainCharacter {
     display: flex;
     width: 100%;
@@ -402,7 +417,8 @@ export default ({
     display: flex;
     width: 100%;
     flex-direction: row; /* 按列排版 */
-    height: calc(29% - 20px);/* 每个容器宽度为父容器的1/3，减去间距 */
+    // height: calc(29% - 20px);/* 每个容器宽度为父容器的1/3，减去间距 */
+    height: auto;
     padding: 10px;
     flex-wrap: wrap; /* 每行换行 */
     border-radius: 3px;
@@ -417,7 +433,8 @@ export default ({
     display: flex;
      width: 100%;
     flex-direction: row; /* 按列排版 */
-    height: calc(29% - 20px); /* 每个容器宽度为父容器的1/3，减去间距 */
+    // height: calc(29% - 20px); /* 每个容器宽度为父容器的1/3，减去间距 */
+    height: auto;
     padding: 10px;
     flex-wrap: wrap; /* 每行换行 */
     border-radius: 3px;
@@ -432,7 +449,8 @@ export default ({
     display: flex;
     width: 100%;
     flex-direction: row; /* 按列排版 */
-    height: calc(29% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    // height: calc(39% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    height: auto;
     padding: 10px;
     overflow-y: auto;
     flex-wrap: wrap; /* 每行换行 */
@@ -449,7 +467,8 @@ export default ({
     display: flex;
     width: 100%;
     flex-direction: row; /* 按列排版 */
-    height: calc(35% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    // height: calc(35% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    height: auto;
     overflow-y: auto;
     flex-wrap: wrap; /* 每行换行 */
     padding: 20px;
@@ -464,7 +483,8 @@ export default ({
     display: flex;
     width: 100%;
     flex-direction: row; /* 按列排版 */
-    height: calc(35% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    // height: calc(35% - 20px);; /* 每个容器宽度为父容器的1/3，减去间距 */
+    height: auto;
     // margin-top: 15px;
     margin-bottom: 5px;
     overflow-y: auto;
@@ -484,7 +504,8 @@ export default ({
     flex-direction: row;
     margin-top: 30px;
     margin-bottom: 5px;
-    height: 70%;
+    // height: 70%;
+    height: auto;
     overflow-y: auto;
     flex-wrap: wrap;
     border: 2px solid #e6e6e6;
@@ -543,8 +564,8 @@ export default ({
     height: 800px;
 }
 .block {
-    flex: 20%; /* 每个块占据1/6的行宽 */
-    height: 70px;
+    flex: 16.66%; /* 每个块占据1/6的行宽 */
+    height: 50px;
     align-items: center; 
 }
 .block2 {

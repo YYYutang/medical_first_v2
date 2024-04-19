@@ -1,5 +1,15 @@
 <template>
+
   <div id="mainBox">
+    <div class="step">
+      <el-steps :active="1" align-center>
+        <el-step title="任务信息"></el-step>
+        <el-step title="选择数据"></el-step>
+        <el-step title="特征选择"></el-step>
+        <el-step title="方法选择" v-if="type == 4"></el-step>
+        <el-step title="结果展示"></el-step>
+      </el-steps>
+    </div>
     <el-form
       ref="taskInfoForm"
       :model="taskInfoForm"
@@ -21,7 +31,7 @@
         </template>
         <el-input v-model="taskInfoForm.principal"></el-input>
       </el-form-item>
-      <el-form-item prop="principal" class="inputBox shortItem">
+      <!-- <el-form-item prop="principal" class="inputBox shortItem">
         <template slot="label">
           <span class="lineStyle">▍</span>
           <span>任务类型</span>
@@ -35,7 +45,7 @@
         >
         </el-option>
       </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item prop="participants" class="inputBox shortItem">
         <template slot="label">
           <span class="lineStyle">▍</span>
@@ -53,7 +63,7 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="resetForm('taskInfoForm')" round>重置</el-button>
-        <el-button type="primary" @click="next()" round>下一步</el-button>
+        <!-- <el-button type="primary" @click="next()" round>下一步</el-button> -->
       </el-form-item>
     </el-form>
   </div>
@@ -67,12 +77,7 @@ import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
 export default {
   name: "TaskInfo",
   mixins: [resetForm, vuex_mixin],
-  props: {
-    moduleName: {
-      type: String,
-      default: "disFactor",
-    },
-  },
+  props: ['active','createTaskInfo'],
   watch: {},
   computed: {},
   data() {
@@ -92,18 +97,27 @@ export default {
 
   // TODO:初始化两遍，还可把数据放到localStorage里解决这个问题
   created() {
-    this.init();
+    
+  },
+  mounted(){
+    console.log("当前任务信息",this.createTaskInfo)
+    if(this.createTaskInfo!=null && this.createTaskInfo.taskName!=null) {
+      console.log("开始复制",this.createTaskInfo)
+      this.taskInfoForm = this.createTaskInfo
+    }
   },
 
   methods: {
     ...mapMutations("disFactor",["ChangeStep","ChangeTaskInfo"]),
-    init() {
-      //和vuex内数据同步
-      console.log("当前模块名👉", this.moduleName);
-      this.taskInfoForm.taskName = this.m_taskName;
-      this.taskInfoForm.principal = sessionStorage.getItem("username");
-      this.taskInfoForm.participants = this.m_participants;
-      this.tips = this.m_tips;
+    // init() {
+    //   //和vuex内数据同步
+    //   this.taskInfoForm.taskName = this.m_taskName;
+    //   this.taskInfoForm.principal = sessionStorage.getItem("username");
+    //   this.taskInfoForm.participants = this.m_participants;
+    //   this.tips = this.m_tips;
+    // },
+    extStep() {
+      this.$emit('send_taskInfo', this.taskInfoForm);
     },
 
     next() {
@@ -114,8 +128,6 @@ export default {
         this.$message("请填写任务名称和负责人和任务类型");
         return;
       }
-      // this.m_changeTaskInfo(this.taskInfoForm);
-      // this.m_changeStep(2);
       if(this.taskInfoForm.tasktype==="缺失值补齐"){
         this.$router.push({ name: 'completeMissing', params: this.taskInfoForm});
       } else if(this.taskInfoForm.tasktype==="描述性分析"){

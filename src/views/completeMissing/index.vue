@@ -1,15 +1,17 @@
 <template>
   <div>
     <el-container class="outcontainer2">
-        <datasetChoose v-if="active == 1" :active="active" :type="4" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
-        <characterChoose v-if="active == 2" :active="active" :step="1" :label="label" :type="4" :curentAnalyzeStep="1" @send_feat="getCheackedFeats" @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
-        <missingalgo ref="missingalgo" v-if="active == 3" :active="active" :checkedFeats="checkedFeats" :isback="isback" :label="label" @send_method="getMissCompleteMehtod" @send_table_a="getTableA" @send_table_b="getTableB" @send_table_c="getTableC" :tableData1FromParent="tableData1FromParent" :tableData2FromParent="tableData2FromParent" :tableData3FromParent="tableData3FromParent"></missingalgo>
-        <missingoutcome v-if="active == 4" :active="active" :missCompleteMehtod="missCompleteMehtod" :label="label" :newTaskInfo="newTaskInfo"></missingoutcome>
+        <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
+        <datasetChoose v-if="active == 2" :active="active" :type="4" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
+        <characterChoose v-if="active == 3" :active="active" :step="1" :label="label" :type="4" :curentAnalyzeStep="1" @send_feat="getCheackedFeats" @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
+        <missingalgo ref="missingalgo" v-if="active == 4" :active="active" :checkedFeats="checkedFeats" :isback="isback" :label="label" @send_method="getMissCompleteMehtod" @send_table_a="getTableA" @send_table_b="getTableB" @send_table_c="getTableC" :tableData1FromParent="tableData1FromParent" :tableData2FromParent="tableData2FromParent" :tableData3FromParent="tableData3FromParent"></missingalgo>
+        <missingoutcome v-if="active == 5" :active="active" :missCompleteMehtod="missCompleteMehtod" :label="label" :newTaskInfo="newTaskInfo" :createTaskInfo="createTaskInfo"></missingoutcome>
+     
       <br><div class="stepbutton">
         <el-button size="small" v-if="active!=1" @click="stepBack(active)">上一步</el-button>
-        <el-button size="small" type="primary" v-if="active!=4" @click="stepNext(active)"
+        <el-button size="small" type="primary" v-if="active!=5" @click="stepNext(active)"
           >下一步</el-button>
-        <el-button size="small" type="primary" v-if="active==4" @click="exportFile()"
+        <el-button size="small" type="primary" v-if="active==5" @click="exportFile()"
           >导出</el-button>
       </div>
     </el-container>
@@ -21,6 +23,7 @@ import characterChoose from "@/components/characterChoose/index.vue";
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import missingalgo from "@/views/completeMissing/algo.vue";
 import missingoutcome from "@/views/completeMissing/outcome.vue";
+import taskInfo from "@/components/TaskInfo.vue"
 /*缺失值补齐根页面*/
 export default {
   components: {
@@ -28,6 +31,7 @@ export default {
     datasetChoose,
     missingalgo,
     missingoutcome,
+    taskInfo
   },
   data() {
     return {
@@ -46,7 +50,7 @@ export default {
       checkedFeats: [],
       missCompleteMehtod: [],
       folderPath: '',
-      
+      createTaskInfo: null,
       form:{
           imgSavePath:""
       },
@@ -57,6 +61,11 @@ export default {
     console.log("新建任务参数：",this.newTaskInfo)
   },
   methods: {
+    getTaskInfo(data){
+      this.createTaskInfo = data;
+      this.createTaskInfo.tasktype="缺失值补齐"
+      console.log("获取到任务信息",this.createTaskInfo)
+    },
     open3(msg) {
         this.$message({
           message: msg,
@@ -139,7 +148,7 @@ export default {
         this.$refs.characterChoose.selectTreeNode = this.selectTreeNode;
         this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
       }
-      if(this.active == 3){
+      if(this.active == 4){
         console.log("开始回退")
         this.isback = true;
         this.$refs.missingalgo.tableData1FromParent = this.tableData1FromParent;
@@ -148,23 +157,35 @@ export default {
       }
     },
     stepNext(active) {
+      if(active == 1){
+        this.$refs.taskInfo.extStep(); // 假设子组件有一个名为 nextStep 的方法
+        if (this.createTaskInfo.taskName.length < 1 || this.createTaskInfo.principal.length < 1) {
+          this.$message("请填写任务名称和负责人");
+          return;
+        }
+      }
       let flag1 = false;
       let flag2 = false;
       for(let i=0; i<this.checkedFeats.length; i++){
         if(this.checkedFeats[i].missRate==100) flag1 = true;
         if((this.checkedFeats[i].missRate==0)) flag2 = true;
       }
-      if(this.active == 2 && (this.checkedFeats==null || this.checkedFeats.length==0)) {
+
+      if(this.active == 3 && (this.checkedFeats==null || this.checkedFeats.length==0)) {
         // 判断是否选择数据
           this.characterChooseVisiable = true;
           this.open3('请选择要填充的指标！');
-      }else if(this.active == 2 && flag1==true){
+          return;
+      }else if(this.active == 3 && flag1==true){
         this.open3("存在缺失率高达100%的特征，无法补齐，请重新选择！")
-      }else if(this.active == 2 && flag2==true){
+        return;
+      }else if(this.active == 3 && flag2==true){
         this.open3("存在已经没有缺失的特征，不需要补齐，请重新选择！")
+        return;
       }else{
          this.active++;
-        if(this.active == 3) this.isback = false;
+        if(this.active == 4) this.isback = false;
+        return;
       }
     },
     handleDataFromChild(label){

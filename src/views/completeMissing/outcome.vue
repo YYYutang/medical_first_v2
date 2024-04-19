@@ -10,7 +10,7 @@
         </el-steps>
       </div>
       <div>
-        <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:10px; margin-bottom: 0px;">
+        <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:20px; margin-bottom: 0px;" class="center">
           <p style="margin-top:0px">
             <i class="el-icon-user"></i>创建人:
             <span>{{ taskInfo.principal }}</span>
@@ -49,12 +49,15 @@
 import { postRequest } from "@/utils/api";
 
 /*特征选择页面*/
+/**
+ * 只需要判断两个参数 1、任务管理直接跳转查看结果 taskInfoParam  2、创建任务流程过来 createTaskInfo
+ */
 export default ({
     name:'outcome',
-    props:['active','missCompleteMehtod','label','newTaskInfo'],
+    props:['active','missCompleteMehtod','label','createTaskInfo'],
     data(){
         return{
-          taskInfo: null,
+          taskInfo: null,  // 展示任务信息
           taskInfoParam: {},
           tableData: []
         }
@@ -62,8 +65,9 @@ export default ({
     created(){
         // 加载任务管理传递的参数
       this.taskInfoParam = this.$route.params // 任务管理直接查看结果的参数
-      this.taskInfo = this.newTaskInfo;
-      if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo;
+      console.log("任务管理过来的传递信息：",this.taskInfoParam)
+      this.taskInfo = this.createTaskInfo;
+      if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo; //
       this.fillData();
     },
     mounted(){
@@ -72,18 +76,18 @@ export default ({
       fillData(){
         let dataFillMethodVo = {};
         console.log("taskInfoParam",this.taskInfoParam)
-        if(this.taskInfoParam!=={} && this.taskInfoParam!==null && this.taskInfoParam.label!=null){ // 判断是否是从任务管理直接调过来
+        if(this.taskInfoParam!=={} && this.taskInfoParam!==null && this.taskInfoParam.label!=null){ // 判断是从任务管理直接调过来
           console.log("开始创建参数....")
           dataFillMethodVo = {
             missCompleteMethod: this.taskInfoParam.missCompleteMethods,
             tableName: this.taskInfoParam.label,
             newTaskInfo: this.newTaskInfo
           }
-        }else{
+        }else{  // 判断不是从任务管理直接调过来
           dataFillMethodVo = {
             missCompleteMethod: this.missCompleteMehtod,
             tableName: this.label,
-            newTaskInfo: this.newTaskInfo
+            newTaskInfo: this.createTaskInfo
           };
         }
         console.log("传递给后端的参数：",dataFillMethodVo)

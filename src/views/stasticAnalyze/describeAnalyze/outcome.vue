@@ -131,7 +131,7 @@ import { tabSwitch } from '@/components/mixins/mixin';
 /*特征选择页面*/
 export default ({
     name:'outcome',
-    props:['active', 'label', 'checkedFeats','newTaskInfo'],
+    props:['active', 'label', 'checkedFeats','newTaskInfo','createTaskInfo'],
     data(){
         return{
          taskInfo: {
@@ -172,27 +172,8 @@ export default ({
     created(){
        this.taskInfoParam = this.$route.params
        console.log("taskInfoParam:",this.taskInfoParam)
-       this.taskInfo = this.newTaskInfo;
+       this.taskInfo = this.createTaskInfo;
        if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo;
-       
-      //  if(this.newTaskInfo!=null && this.newTaskInfo.participants!=null){// 在任务管理处创建任务
-      //     console.log("封装1")
-      //     // this.taskInfo.participants = this.newTaskInfo.participants;
-      //     // this.taskInfo.principal = this.newTaskInfo.principal;
-      //     // this.taskInfo.taskName = this.newTaskInfo.taskName;
-      //     // this.taskInfo.tasktype = this.newTaskInfo.tasktype;
-      //     // this.taskInfo.tips = this.newTaskInfo.tips;
-      //     this.taskInfo = this.newTaskInfo
-      //  }
-      //  if(this.taskInfo.participants == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) { // 直接从任务管理处调过来
-      //   console.log("封装参数")
-      //   // this.taskInfo.participants = this.taskInfoParam.taskInfo.participants;
-      //   // this.taskInfo.principal = this.taskInfoParam.taskInfo.principal;
-      //   // this.taskInfo.taskName = this.taskInfoParam.taskInfo.taskName;
-      //   // this.taskInfo.tasktype = this.taskInfoParam.taskInfo.tasktype;
-      //   // this.taskInfo.tips = this.taskInfoParam.taskInfo.tips;
-      //   this.taskInfo = this.taskInfoParam.taskInfo
-      //  }
        this.requestFormData();
     },
     methods: {

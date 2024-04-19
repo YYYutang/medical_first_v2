@@ -73,10 +73,20 @@
             </el-option>
           </el-select>
         </div>
-        <el-button @click="clearFilter">清除</el-button>
-        <el-button size="medium" type="primary" @click="creatTask()"
+        <el-button @click="clearFilter" style="margin-right: 20px">清除</el-button>
+        <!-- <el-button size="medium" type="primary" @click="creatTask()"
           >新建任务</el-button
-        >
+        > -->
+        <el-dropdown @command="handleCommand">
+          <el-button  type="primary">
+            新建任务<i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item v-for="item in taskItem" :key="item.id" :command="item">
+                {{ item.name }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
 
       <!--===============================    卡片组     ==============================================================-->
@@ -180,7 +190,7 @@
           <div>
             <div v-for="(item, index) in result.parameters" :key="index">
               <span
-                >{{ result.parameters[index] }}：{{
+                >{{ result.parameters[index] }}:{{
                   result.parametersv[index]
                 }}</span
               >
@@ -239,15 +249,38 @@ export default {
       diseaseName: "",
       cardLoading: false,
       noTaskData:false,
+      taskItem: [
+        { id: 1, name: '缺失值补齐' },
+        { id: 2, name: '描述性分析' },
+        { id: 3, name: '单因素分析' },
+        { id: 4, name: '一致性验证' },
+        { id: 5, name: '疾病特征表征' },
+        {id:6, name: '病人画像'}
+      ]
     };
   },
   methods: {
     handleSelectChange() {
       this.filterTask();
     },
-    creatTask() {
-      this.$router.push({ name: "taskInfo", params: this.typeList });
+     handleCommand(task) {
+      if(task.name==="缺失值补齐"){
+        this.$router.push({ name: 'completeMissing'});
+      } else if(task.name==="描述性分析"){
+        this.$router.push({ name: 'describeAnalyze'});
+      }else if(task.name==="一致性验证"){
+        this.$router.push({ name: 'consistencyAnalyze'});
+      }else if(task.name==="单因素分析"){
+        this.$router.push({ name: 'singleAnalyze'});
+      }else if(task.name==="疾病特征表征"){
+        this.$router.push({ name: 'represent'});
+      }else if(task.name==="病人画像")
+        this.$router.push({ name: 'visualization'});
     },
+    // createTask(task) {
+    //   alert("sssds")
+  
+    // },
     filterTask(newPage) {
       this.cardLoading = false;
       getTaskNumber(
@@ -450,22 +483,24 @@ export default {
     handleCheck(row) {
       console.log("当前任务：", row);
       this.curTaskInfo = row;
-      getRequest(`Task/getOne/${row.id}`).then((res) => {
-        if (res.code == 200) {
-          this.result = res.data;
-          console.log(JSON.stringify(this.result));
-          if (
-            this.result.parameters != null &&
-            this.result.parametersv != null
-          ) {
-            this.result.parameters = this.result.parameters.split(",");
-            this.result.parametersv = this.result.parametersv.split(",");
-          }
-          this.resultDialogShow = true;
-        } else {
-          this.$message.error("查看任务失败");
-        }
-      });
+      this.getTaskDetail();
+      // getRequest(`Task/getOne/${row.id}`).then((res) => {
+      //   if (res.code == 200) {
+      //     this.result = res.data;
+      //     console.log(JSON.stringify(this.result));
+      //     if (
+      //       this.result.parameters != null &&
+      //       this.result.parametersv != null
+      //     ) {
+      //       this.result.parameters = this.result.parameters.split(",");
+      //       this.result.parametersv = this.result.parametersv.split(",");
+      //     }
+      //     this.resultDialogShow = true;
+      //   } else {
+      //     this.$message.error("查看任务失败");
+      //   }
+      // });
+
     },
     handleDelete(row) {
       getRequest(`Task/delete/${row.id}`).then((res) => {
