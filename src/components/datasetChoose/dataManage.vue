@@ -1146,8 +1146,6 @@ export default {
     },
     submitCharacterCondition() {
       this.filterLoading = true;
-      console.log("this.addDataForm.characterList");
-      console.log(this.addDataForm.characterList);
       if (
         this.addDataForm.dataName == null ||
         this.addDataForm.dataName == ""

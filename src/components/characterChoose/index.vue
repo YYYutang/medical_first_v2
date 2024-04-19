@@ -341,9 +341,7 @@ export default ({
         }
         else{
         getIndicators("/api/getIndicators",types, this.tableName).then(response=>{
-
           this.featureData = response.data;
-    
           // 给父组件传递参数
           this.$emit("send_indicators",this.featureData)
         }).catch(error=>{
@@ -360,6 +358,7 @@ export default ({
    
         // 将选中的树节点传递给父节点
         this.$emit("sendTreeNode",this.defaultCheckedKeys)
+        console.log('(this.selectedNode.join(",")',this.selectedNode.join(","))
         this.getIndicatorsFromBackEnd(this.selectedNode.join(","));
       },
       getIndicatorCategory(){

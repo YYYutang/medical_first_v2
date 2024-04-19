@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-container class="con">
+    <el-container>
       <el-header class="header">
         <el-menu
           class="el-menu-demo"
@@ -18,11 +18,23 @@
             style="float: right; color: #fff; font-size: 14px"
             ><i class="el-icon-close"></i>退出登录</el-menu-item
           >
-          <el-menu-item
+          <!-- <el-menu-item
             index="3"
             style="float: right; color: #fff; font-size: 14px"
             ><i class="el-icon-user"></i>欢迎你，{{ username }}</el-menu-item
-          >
+          > -->
+          <el-dropdown style="float: right; color: #fff; font-size: 14px">
+            <span class="el-dropdown-link" style="cursor: pointer">
+              <i class="el-icon-user"></i>欢迎你，{{ username
+              }}<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item @click.native="goToProfile"
+                >个人中心</el-dropdown-item
+              >
+              <!-- 可以添加更多的下拉选项 -->
+            </el-dropdown-menu>
+          </el-dropdown>
         </el-menu>
       </el-header>
       <el-container>
@@ -108,43 +120,46 @@ export default {
         {
           name: "任务管理",
           path: "/taskManage",
-         roles: ["0", "1"],
-          icon: "el-icon-s-custom",
-          children:[
-            {
-                name: "历史任务查看",
-              path: "/taskManage",
           roles: ["0", "1"],
-              icon: "el-icon-s-custom",
+          icon: "el-icon-s-order",
+          children: [
+            {
+              name: "历史任务查看",
+              path: "/taskManage",
+              roles: ["0", "1"],
+              icon: "el-icon-s-promotion",
             },
-             {
-                name: "缺失值处理",
+            {
+              name: "缺失值处理",
               path: "/completeMissing",
-            roles: ["0", "1"],
-              icon: "el-icon-s-custom",
-            }, {
-                name: "统计分析",
+              roles: ["0", "1"],
+              icon: "el-icon-s-data",
+            },
+            {
+              name: "统计分析",
               path: "/stasticAnalyze",
-         roles: ["0", "1"],
-              icon: "el-icon-s-custom",
-            }, {
-                name: "特征表征",
+              roles: ["0", "1"],
+              icon: "el-icon-s-marketing",
+            },
+            {
+              name: "特征表征",
               path: "/represent",
-               roles: ["0", "1"],
-              icon: "el-icon-s-custom",
-            }, {
-                name: "病人画像",
+              roles: ["0", "1"],
+              icon: "el-icon-data-line",
+            },
+            {
+              name: "病人画像",
               path: "/visualization",
               roles: ["0", "1"],
               icon: "el-icon-s-custom",
-            }
-          ]
+            },
+          ],
         },
         {
           name: "数据管理",
           path: "/dataManagePublic",
-          roles: ["0","1"],
-          icon: "el-icon-s-custom",
+          roles: ["0", "1"],
+          icon: "el-icon-s-tools",
         },
         {
           name: "系统管理",
@@ -155,31 +170,31 @@ export default {
               name: "用户管理",
               path: "/userManage",
               roles: ["0"],
-              icon: "el-icon-s-custom",
+              icon: "el-icon-user",
             },
             {
               name: "信息发布",
               path: "/inform",
               roles: ["0"],
-              icon: "el-icon-s-custom",
+              icon: "el-icon-message",
             },
             {
               name: "数据管理",
               path: "/dataManageManager",
               roles: ["0"],
-              icon: "el-icon-s-custom",
+              icon: "el-icon-s-check",
             },
             {
               name: "日志查看",
               path: "/operationManage",
               roles: ["0"],
-              icon: "el-icon-s-custom",
+              icon: "el-icon-date",
             },
             {
               name: "病种设置",
               path: "/illnessManage",
               roles: ["0"],
-              icon: "el-icon-s-custom",
+              icon: "el-icon-view",
             },
           ],
         },
@@ -205,6 +220,9 @@ export default {
     this.setMenuHighlight();
   },
   methods: {
+    goToProfile(){
+      this.$router.push('/userCenter'); // 假设你的路由中有个人中心的配置
+    },
     handleSelect(key) {
       if (key == 2) {
         postRequest("/user/logout").then((resp) => {

@@ -14,7 +14,11 @@
                   class="imgStyle"
                   style="border-radius: 15px"
                 />
-                <div style="font-size:large;font-weight:bold;margin-top:10px">{{ item.title }}</div>
+                <div
+                  style="font-size: large; font-weight: bold; margin-top: 10px"
+                >
+                  {{ item.title }}
+                </div>
               </div>
             </div>
           </div>
@@ -35,8 +39,10 @@
                     :percentage="100"
                     :format="text"
                   ></el-progress>
-                  <el-statistic  :value="dataAllNum">
-                     <template slot="title"> <span style="font-size:20px;font:bold">数据总量</span> </template>
+                  <el-statistic :value="dataAllNum">
+                    <template slot="title">
+                      <span style="font-size: 20px; font: bold">数据总量</span>
+                    </template>
                     <template slot="suffix"> 条 </template>
                   </el-statistic>
                 </div>
@@ -46,26 +52,29 @@
                   <el-progress
                     type="circle"
                     :percentage="100"
-                      :format="text2"
+                    :format="text2"
                   ></el-progress>
-                  <el-statistic   :value="insAllNum">
-                     <template slot="title"> <span style="font-size:20px;font:bold">指标总量</span> </template>
+                  <el-statistic :value="insAllNum">
+                    <template slot="title">
+                      <span style="font-size: 20px; font: bold">指标总量</span>
+                    </template>
                     <template slot="formatter"> {{ insAllNum }}</template>
                     <template slot="suffix"> 个 </template>
                   </el-statistic>
                 </div>
               </el-col>
-                <el-col :span="6" id="data_sta">
+              <el-col :span="6" id="data_sta">
                 <div>
                   <el-progress
                     type="circle"
                     :percentage="effectiveall"
                   ></el-progress>
-                  <el-statistic
-                    :value="effectiveall"
-                    :precision="2"
-                  >
-                   <template slot="title"> <span style="font-size:20px;font:bold">总体有效率</span> </template>
+                  <el-statistic :value="effectiveall" :precision="2">
+                    <template slot="title">
+                      <span style="font-size: 20px; font: bold"
+                        >总体有效率</span
+                      >
+                    </template>
                     <template slot="suffix">% </template>
                   </el-statistic>
                 </div>
@@ -77,13 +86,16 @@
                     :percentage="missingAll"
                   ></el-progress>
                   <el-statistic
-      
                     group-separator=","
                     :precision="2"
                     decimal-separator="."
                     :value="missingAll"
                   >
-                   <template slot="title"> <span style="font-size:20px;font:bold">总体缺失率</span> </template>
+                    <template slot="title">
+                      <span style="font-size: 20px; font: bold"
+                        >总体缺失率</span
+                      >
+                    </template>
                     <template slot="suffix">% </template>
                   </el-statistic>
                 </div>
@@ -95,7 +107,7 @@
     </div>
     <div class="bottomBigDiv">
       <div class="left">
-        <el-card>
+        <el-card style="height:500px">
           <div slot="header" class="clearfix">
             <span class="lineStyle">▍</span><span>病种数据统计</span>
           </div>
@@ -109,7 +121,9 @@
               <el-progress
                 :text-inside="true"
                 :stroke-width="28"
-               :percentage="parseFloat(((item.num * 100) / patientNum).toFixed(2))"
+                :percentage="
+                  parseFloat(((item.num * 100) / patientNum).toFixed(2))
+                "
                 style="margin-top: 10px"
               ></el-progress>
             </div>
@@ -119,9 +133,10 @@
       <div class="mid">
         <el-card>
           <div slot="header" class="clearfix">
-            <span class="lineStyle">▍</span><span>系统数据信息</span>
+            <span class="lineStyle">▍</span><span>各类指标缺失情况</span>
           </div>
-          <el-table :data="tableData2" stripe style="width: 100%" height="400">
+          <div id="indicators" style="width: 500px; height: 400px"></div>
+          <!-- <el-table :data="tableData2" stripe style="width: 100%" height="400">
             <el-table-column prop="tableName" label="数据表" width="100">
             </el-table-column>
             <el-table-column prop="tableOrigin" label="数据来源" width="180">
@@ -130,7 +145,7 @@
             </el-table-column>
             <el-table-column prop="tableDate" label="创建时间">
             </el-table-column>
-          </el-table>
+          </el-table> -->
         </el-card>
       </div>
       <div class="right">
@@ -146,13 +161,14 @@
 </template>
 
 <script>
-import { getRequest } from "@/utils/api";
+import { getRequest, getIndicators } from "@/api/user";
 import storage from "@/utils/storage";
 export default {
   name: "index",
   data() {
     return {
       mychart: {},
+      mychart2: {},
       tableData2: [],
       dataAllNum: 2,
       insAllNum: 0,
@@ -162,24 +178,41 @@ export default {
       patientNum: 200,
       xdata: [],
       ydata: [],
-
+      labelData: [],
+      missingData: [],
+      selectTableName: "copd",
+      selectType: [
+        {
+          label: "人口学指标",
+          value: 0,
+        },
+        {
+          label: "生理学指标",
+          value: 1,
+        },
+          {
+          label: "社会学指标",
+          value: 2,
+        },
+      ],
+      selectTypeValue:'人口学指标',
       quickEntry: [
         {
           title: "数据管理",
           img: require("../../assets/dataManage.png"),
           router: "/dataManagePublic",
         },
-         {
+        {
           title: "任务管理",
           img: require("../../assets/other.png"),
           router: "/taskManage",
         },
-          {
+        {
           title: "统计分析",
           img: require("../../assets/tongji.png"),
           router: "/stasticAnalyze",
         },
-         {
+        {
           title: "缺失值处理",
           img: require("../../assets/queshizhi.png"),
           router: "/completeMissing",
@@ -255,6 +288,17 @@ export default {
 
       option && this.mychart.setOption(option);
     },
+    getIndicatorsFromBackEnd(types, tableName) {
+
+      getIndicators("/api/getIndicators", types, tableName)
+        .then((response) => {
+          this.labelData = response.data.map((item) => item.label);
+          console.log(" this.labelData ", this.labelData);
+          this.missingData = response.data.map((item) => item.missRate);
+          this.drawIndicators();
+        })
+        .catch((error) => {});
+    },
     getAllData() {
       getRequest("/index/getAllData").then((response) => {
         if (response) {
@@ -297,24 +341,76 @@ export default {
     text(percentage) {
       return `${this.dataAllNum}`;
     },
-    text2(percentage){
-       return `${this.insAllNum}`;
+    text2(percentage) {
+      return `${this.insAllNum}`;
     },
-    getStaticDisease(){
-    getRequest("/api/getStaticDisease").then(response=>{
-       for (let item of response.data){
-          this.patientNum+=item.num;
+    getStaticDisease() {
+      getRequest("/api/getStaticDisease").then((response) => {
+        for (let item of response.data) {
+          this.patientNum += item.num;
         }
         this.diseaseData = response.data;
-      })
-    }
-  
+      });
+    },
+    drawIndicators() {
+      var chartDom = document.getElementById("indicators");
+      this.mychart2 = this.$echarts.init(chartDom);
+      let option2 = {
+        title: {
+          text: this.selectTableName+'表的'+this.selectTypeValue+'字段',
+          left: 10,
+        },
+
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
+        },
+        grid: {
+          bottom: 90,
+        },
+        dataZoom: [
+          {
+            type: "inside",
+          },
+          {
+            type: "slider",
+          },
+        ],
+        xAxis: {
+          data: this.labelData,
+          silent: false,
+          splitLine: {
+            show: false,
+          },
+          splitArea: {
+            show: false,
+          },
+        },
+        yAxis: {
+          splitArea: {
+            show: false,
+          },
+        },
+        series: [
+          {
+            type: "bar",
+            data: this.missingData,
+            // Set `large` for large data amount
+            large: true,
+          },
+        ],
+      };
+      option2 && this.mychart2.setOption(option2);
+    },
   },
   mounted() {
     this.getStatis();
     this.getAllData();
     this.getIncrease();
     this.getStaticDisease();
+    this.getIndicatorsFromBackEnd("人口学指标", "copd");
   },
 };
 </script>
@@ -345,12 +441,12 @@ export default {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  margin-top:20px
+  margin-top: 20px;
 }
 .topBigDiv .left .quickEntryBox .singleBox {
   /*border: 1px red solid;*/
   /*box-sizing: border-box;*/
-  width:90px;
+  width: 90px;
   height: 90px;
   border-radius: 20%;
   text-align: center;
@@ -382,9 +478,9 @@ export default {
   height: 100%;
   width: 33%;
 }
-.clearfix{
-  font-size:1.5em;
-  font:bold
+.clearfix {
+  font-size: 1em;
+  font: bold;
 }
 .clearfix:before,
 .clearfix:after {
@@ -412,5 +508,4 @@ export default {
   justify-content: space-evenly;
   align-items: center;
 }
-
 </style>

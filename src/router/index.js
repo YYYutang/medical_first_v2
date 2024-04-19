@@ -20,7 +20,7 @@ import stasticAnalyze from "@/views/stasticAnalyze/index.vue"
 import describeAnalyze from "@/views/stasticAnalyze/describeAnalyze/index.vue"
 import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue"
 import columnManage2 from "@/views/tableManage.vue"
-import dataManagePublic from "@/views/dataManagePublic.vue"
+import dataManagePublic from "@/views/dataManageNormal.vue"
 import taskManage from "@/views/taskManage.vue"
 import taskInfo from "@/components/TaskInfo.vue"
 import consistencyAnalyze from "@/views/stasticAnalyze/consistencyAnalysis/index.vue"
@@ -32,6 +32,7 @@ import userManage from "@/views/manageAll/userManage.vue"
 import inform from "@/views/manageAll/inform.vue"
 import dataManageManager from "@/views/manageAll/dataManager.vue"
 import illnessManage from "@/views/manageAll/illnessManage.vue"
+import userCenter from "@/views/User/userCenter.vue"
 Vue.use(VueRouter)
 
 const routes = [
@@ -219,8 +220,12 @@ const routes = [
       component: unauthorized,
       meta: { roles: ['1', '0'] },
     },
-
-
+    {
+      path: '/userCenter',
+      name: 'userCenter',
+      component: userCenter,
+      meta: { roles: ['1', '0'] },
+    },
 
     ]
   },

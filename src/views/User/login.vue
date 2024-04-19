@@ -297,12 +297,11 @@ export default {
                   sessionStorage.setItem("userrole", resp.data.role);
                   this.$router.push("/first");
                   this.$message.success("登录成功");
-                } else if (resp.data.userStatus === "0") {
-                  this.$message.warning("您的账号待激活，请等待管理员处理");
-                } else if (resp.data.userStatus === "2") {
-                  this.$message.error("您的账号已被禁用");
-                }
+                } 
               }
+              else{
+                  this.$message.warning(`${resp.msg}`);
+                } 
             } else {
               this.$message.error("用户不存在或者密码错误");
             }

@@ -212,6 +212,7 @@ export default {
 
           this.total = res.total;
           this.currentTotal = res.total;
+          this.tableData = dataWithEditing;
           this.currentInformList = dataWithEditing;
         }
       });
