@@ -31,21 +31,6 @@
         </template>
         <el-input v-model="taskInfoForm.principal"></el-input>
       </el-form-item>
-      <!-- <el-form-item prop="principal" class="inputBox shortItem">
-        <template slot="label">
-          <span class="lineStyle">▍</span>
-          <span>任务类型</span>
-        </template>
-        <el-select v-model="taskInfoForm.tasktype" placeholder="请选择" @change="handleSelectChange">
-        <el-option
-          v-for="item in typeList"
-          :key="item"
-          :label="item"
-          :value="item"
-        >
-        </el-option>
-      </el-select>
-      </el-form-item> -->
       <el-form-item prop="participants" class="inputBox shortItem">
         <template slot="label">
           <span class="lineStyle">▍</span>
@@ -74,10 +59,11 @@
 import { resetForm } from "@/components/mixins/mixin.js";
 import vuex_mixin from "@/components/mixins/vuex_mixin";
 import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
+import { getRequest } from "@/utils/api";
 export default {
   name: "TaskInfo",
   mixins: [resetForm, vuex_mixin],
-  props: ['active','createTaskInfo'],
+  props: ['active','createTaskInfo', 'tasktype'],
   watch: {},
   computed: {},
   data() {
@@ -90,17 +76,43 @@ export default {
         principal: "",
         tasktype: "",
         participants: "",
-        tips: ""
+        tips: "",
       },
+      username: ""
     };
   },
 
   // TODO:初始化两遍，还可把数据放到localStorage里解决这个问题
   created() {
-    
+    if (this.tasktype === 1) { // 描述性分析
+    this.getUserName().then(() => {
+      console.log("方法内：")
+      this.taskInfoForm.taskName = this.username + "_描述性分析_" + this.getDatatime()
+      this.taskInfoForm.principal = this.username
+    });
+  } else if (this.tasktype === 2) { // 单因素分析
+    console.log("开始获取用户信息2")
+    this.getUserName().then(() => {
+      this.taskInfoForm.taskName = this.username + "_单因素分析_" + this.getDatatime()
+      this.taskInfoForm.principal = this.username
+    });
+  } else if (this.tasktype === 3) { // 一致性验证
+    console.log("开始获取用户信息3")
+    this.getUserName().then(() => {
+      this.taskInfoForm.taskName = this.username + "_一致性验证_" + this.getDatatime()
+      this.taskInfoForm.principal = this.username
+    });
+  }
+  else if(this.tasktype == 4){
+    this.getUserName().then(() => {
+      this.taskInfoForm.taskName = this.username + "_缺失值补齐_" + this.getDatatime()
+      this.taskInfoForm.principal = this.username
+    });
+  }
   },
+  
   mounted(){
-    console.log("当前任务信息",this.createTaskInfo)
+    console.log("taskType:",this.tasktype)
     if(this.createTaskInfo!=null && this.createTaskInfo.taskName!=null) {
       console.log("开始复制",this.createTaskInfo)
       this.taskInfoForm = this.createTaskInfo
@@ -108,6 +120,50 @@ export default {
   },
 
   methods: {
+    getDatatime(){
+      // 创建一个 Date 对象，它将包含当前的日期和时间
+      var currentDate = new Date();
+      // 获取年份
+      var year = currentDate.getFullYear();
+      // 获取月份（注意：月份是从 0 开始的，所以需要加上 1）
+      var month = currentDate.getMonth() + 1;
+      month = month < 10 ? '0' + month : month; // 补零
+      // 获取日期
+      var date = currentDate.getDate();
+      date = date < 10 ? '0' + date : date; // 补零
+      // 获取小时
+      var hours = currentDate.getHours();
+      hours = hours < 10 ? '0' + hours : hours; // 补零
+      // 获取分钟
+      var minutes = currentDate.getMinutes();
+      minutes = minutes < 10 ? '0' + minutes : minutes; // 补零
+      // 获取秒数
+      var seconds = currentDate.getSeconds();
+      seconds = seconds < 10 ? '0' + seconds : seconds; // 补零
+      // 组合成字符串
+      var currentDateTimeString = year + "/" + month + "/" + date + " " + hours + ":" + minutes + ":" + seconds;
+      return currentDateTimeString;
+    },
+    // getUserName() {
+    //   getRequest("index/getUserInfo").then((resp) => {
+    //     // alert("name:",resp.data)
+    //     console.log("用户信息：", resp)
+    //     this.username = resp.data;
+    //     console.log("name:",this.username)
+    //   });
+    // },
+    getUserName() {
+    return new Promise((resolve, reject) => {
+      getRequest("index/getUserInfo").then((resp) => {
+        console.log("用户信息：", resp)
+        this.username = resp.data;
+        console.log("name:", this.username)
+        resolve(); // 用户名获取成功后调用 resolve()
+      }).catch((error) => {
+        reject(error); // 获取用户名失败时调用 reject()
+      });
+    });
+  },
     ...mapMutations("disFactor",["ChangeStep","ChangeTaskInfo"]),
     // init() {
     //   //和vuex内数据同步

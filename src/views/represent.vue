@@ -67,12 +67,20 @@
     <el-container id="maintest">
       <div id="step" v-show="showStep">
         <el-steps :active="active" align-center>
+          <el-step title="任务信息"></el-step>
           <el-step title="选择数据"></el-step>
           <el-step title="选择属性"></el-step>
           <el-step title="算法选择"></el-step>
         </el-steps>
       </div>
       <div id="stepcontain" v-show="showStep">
+        <taskInfo
+          v-if="active == 1"
+          :active="active"
+          ref="taskInfo"
+          @send_taskInfo="getTaskInfo"
+          :createTaskInfo="createTaskInfo"
+        ></taskInfo>
         <datasetChoose
           v-show="dataSelectForm.isShow"
           :showDataManageStep="(showDataManageStep = false)"
@@ -657,7 +665,7 @@ export default {
           this.dataInOptions = [];
         }
         let formName = this.formArray[stepIndex];
-        console.log('formName',formName)
+        console.log("formName", formName);
         if (formName == "outcome") {
           this.newShow = false;
           this.oldShow = false;

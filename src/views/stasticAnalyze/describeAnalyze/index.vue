@@ -2,7 +2,7 @@
   <div>
     <el-container>
       <div class="outcontainer">
-        <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
+        <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo" :tasktype="1"></taskInfo>
         <datasetChoose
           v-if="active == 2"
           :active="active"
@@ -42,13 +42,17 @@
             @click="stepNext(active)"
             >下一步</el-button
           >
-          <el-button
-            size="small"
-            type="primary"
-            v-if="active == 4"
-            @click="exportContent()"
-            >导出</el-button
+          <el-button v-if="active == 4" size="small" type="primary" @click="showOptions = true">导出</el-button>
+          <!-- 使用 el-dialog 组件作为弹出框 -->
+          <el-dialog
+            title="选项"
+            :visible.sync="showOptions"
+            width="30%"
+            :close-on-click-modal="false"
           >
+            <el-button @click="exportContent">导出为图片</el-button>
+            <el-button @click="downloadPDF">导出为pdf</el-button>
+          </el-dialog>
         </div>
       </div>
     </el-container>
@@ -79,7 +83,8 @@ export default {
       label: "",
       active: 1,
       checkedFeats: [],
-      createTaskInfo: null
+      createTaskInfo: null,
+      showOptions: false
     };
   },
   created(){
@@ -149,28 +154,53 @@ export default {
         link.href = imageUrl;
         link.download = "image.png";
         link.click();
+        this.showOptions = false
       } catch (error) {
         console.error("Error capturing image:", error);
       }
     },
 
-    downloadPDF() {
+    // downloadPDF() {
+    //   try {
+    //     const divToCapture = this.$refs.childComponentRef.$el.querySelector(".outcome");
+    //     const divContent = divToCapture.innerHTML;
+    //     const doc = new jsPDF();
+    //     doc.html(divContent, {
+    //       callback: function (doc) {
+    //         doc.save("document.pdf");
+    //       },
+    //       x: 10,
+    //       y: 10,
+    //     });
+    //     this.showOptions = false
+    //   } catch (error) {
+    //     console.error("Error generating PDF:", error);
+    //   }
+    // },
+    async downloadPDF() {
       try {
-        const divToCapture =
-          this.$refs.childComponentRef.$el.querySelector(".outcome");
-        const divContent = divToCapture.innerHTML;
-        const doc = new jsPDF();
-        doc.html(divContent, {
-          callback: function (doc) {
-            doc.save("document.pdf");
-          },
-          x: 10,
-          y: 10,
-        });
+          const divToCapture = this.$refs.childComponentRef.$el.querySelector(".outcome");
+          const canvas = await html2canvas(divToCapture);
+
+          // 创建PDF对象
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/png');
+
+          // 设置PDF页尺寸
+          const imgWidth = 210; // A4尺寸，单位mm
+          const imgHeight = canvas.height * imgWidth / canvas.width;
+
+          // 将Canvas图像添加到PDF
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+          // 下载PDF
+          pdf.save("content.pdf");
+          
+          this.showOptions = false;
       } catch (error) {
-        console.error("Error generating PDF:", error);
+          console.error("Error capturing image:", error);
       }
-    },
+    }
   },
   mounted() {},
 };

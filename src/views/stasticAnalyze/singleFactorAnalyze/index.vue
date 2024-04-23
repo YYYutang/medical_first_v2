@@ -2,7 +2,7 @@
   <div>
     <el-container>
       <div class="outcontainer3">
-         <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
+         <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo" :tasktype="2"></taskInfo>
         <datasetChoose
           v-if="active == 2"
           :active="active"
@@ -45,13 +45,24 @@
             @click="stepNext(active)"
             >下一步</el-button
           >
-          <el-button
+          <!-- <el-button
             size="small"
             type="primary"
             v-if="active == 4"
             @click="exportContent()"
             >导出</el-button
+          > -->
+          <el-button v-if="active == 4" size="small" type="primary" @click="showOptions = true">导出</el-button>
+          <!-- 使用 el-dialog 组件作为弹出框 -->
+          <el-dialog
+            title="选项"
+            :visible.sync="showOptions"
+            width="30%"
+            :close-on-click-modal="false"
           >
+            <el-button @click="exportContent">导出为图片</el-button>
+            <el-button @click="downloadPDF">导出为pdf</el-button>
+          </el-dialog>
         </div>
       </div>
     </el-container>
@@ -62,6 +73,7 @@ import characterChoose from "@/components/characterChoose/index.vue";
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import singleOutCome from "@/views/stasticAnalyze/singleFactorAnalyze/outCome.vue";
 import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import taskInfo from "@/components/TaskInfo.vue"
 /*描述性统计分析页面*/
 export default {
@@ -75,6 +87,7 @@ export default {
   },
   data() {
     return {
+      showOptions: false,
       newTaskInfo: null,
       selectTreeNode: [],
       featureDataFromParent: [],
@@ -109,10 +122,34 @@ export default {
     getSelectTreeNode(data){
       this.selectTreeNode = data;
     },
+    async downloadPDF() {
+      try {
+        const divToCapture = this.$refs.childComponentRef.$el.querySelector(".result");
+          const canvas = await html2canvas(divToCapture);
+
+          // 创建PDF对象
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/png');
+
+          // 设置PDF页尺寸
+          const imgWidth = 210; // A4尺寸，单位mm
+          const imgHeight = canvas.height * imgWidth / canvas.width;
+
+          // 将Canvas图像添加到PDF
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+          // 下载PDF
+          pdf.save("content.pdf");
+          
+          this.showOptions = false;
+      } catch (error) {
+          console.error("Error capturing image:", error);
+      }
+    },
     async exportContent() {
       try {
         const divToCapture =
-          this.$refs.childComponentRef.$el.querySelector(".result");
+        this.$refs.childComponentRef.$el.querySelector(".result");
         const canvas = await html2canvas(divToCapture);
         const imageUrl = canvas.toDataURL();
         const link = document.createElement("a");

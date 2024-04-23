@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-container class="outcontainer2">
-        <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
+        <taskInfo v-if="active==1" :tasktype="4" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
         <datasetChoose v-if="active == 2" :active="active" :type="4" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
         <characterChoose v-if="active == 3" :active="active" :step="1" :label="label" :type="4" :curentAnalyzeStep="1" @send_feat="getCheackedFeats" @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
         <missingalgo ref="missingalgo" v-if="active == 4" :active="active" :checkedFeats="checkedFeats" :isback="isback" :label="label" @send_method="getMissCompleteMehtod" @send_table_a="getTableA" @send_table_b="getTableB" @send_table_c="getTableC" :tableData1FromParent="tableData1FromParent" :tableData2FromParent="tableData2FromParent" :tableData3FromParent="tableData3FromParent"></missingalgo>

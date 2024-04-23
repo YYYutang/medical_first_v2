@@ -139,7 +139,8 @@ export default ({
             principal: "",
             tasktype: "",
             participants: "",
-            tips: ""
+            tips: "",
+            pieName: ""
          },
          discrete: true,
          tableData: [],
@@ -197,7 +198,8 @@ export default ({
           if(response.data.discrete==true){ // 离散
             let data = []
             let pieD = []
-            let head = {variable: '文本变量 - '+featureName}
+            let head = {variable: featureName+'(文本变量)'}
+            this.pieName = featureName+'(文本变量)'
             data.push(head)
             console.log("featureName:",featureName)
             if(featureName==="sexcode"){
@@ -293,7 +295,8 @@ export default ({
       // 指定图表的配置项和数据
       const option = {
         title: {
-          text: '文本变量',
+          // text: '文本变量',
+          text: this.pieName,
           left: 'center',
           top: '40px'
         },

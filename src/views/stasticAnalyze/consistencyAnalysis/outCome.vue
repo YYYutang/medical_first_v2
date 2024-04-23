@@ -25,6 +25,12 @@
           </p>
         </div>
         <h3 style="font-size: 30px; margin-top:20px; margin-left: 100px; margin-bottom: 20px">ICC</h3>
+        <div style="width: 80%; margin: 0 auto; margin-bottom: 20px">
+            <p>ICC（Intraclass Correlation Coefficient，组内相关系数）是一种用于衡量一致性或重复性的统计指标。在统计学中，ICC通常用于评估不同评价者（观察者）对同一目标的测量结果之间的一致性或一致性。<br/><br/>
+              ICC1是Intraclass Correlation Coefficient（组内相关系数）的一种计算方法，也称为one-way random-effects mode（单因素随机效应模型）。它用于评估单个观察者在不同时间或条件下对同一目标进行测量的一致性或可靠性。<br/><br/>
+              ICC2是一种Intraclass Correlation Coefficient（组内相关系数）的计算方法，也称为two-way random-effects mode（双因素随机效应模型）。它用于评估多个观察者对同一目标进行测量的一致性或可靠性。
+            </p>
+        </div>
         <h3 style="font-size: 20px; margin-left:150px">统计结果</h3>
         <div>
         <el-table
@@ -244,7 +250,7 @@ export default defineComponent({
 
 .result {
     display: flex;
-    height: 600px;
+    height: auto;
     width: 1500px;
     margin-right: 80px;
     flex-direction: column;

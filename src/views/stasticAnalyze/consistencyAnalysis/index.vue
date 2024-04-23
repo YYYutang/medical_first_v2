@@ -2,7 +2,7 @@
   <div>
     <el-container >
         <div class="outcontainer">
-          <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo"></taskInfo>
+          <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo" :tasktype="3"></taskInfo>
           <datasetChoose v-if="active == 2" class="con_datasetChoose" :active='active' :type="3" @send_data="handleDataFromChild" :showDataManageStep="showDataManageStep=true"></datasetChoose>
           <characterChoose v-if="active == 3" :active='active' :analyzeStep="3" :type="2" :label="label" @send_feat="getCheackedFeats" :curentAnalyzeStep="3" 
           @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"></characterChoose>
@@ -18,13 +18,24 @@
             @click="stepNext(active)"
             >下一步</el-button
           >
-          <el-button
+          <!-- <el-button
             size="small"
             type="primary"
             v-if="active == 4"
             @click="exportContent()"
             >导出</el-button
+          > -->
+             <el-button v-if="active == 4" size="small" type="primary" @click="showOptions = true">导出</el-button>
+          <!-- 使用 el-dialog 组件作为弹出框 -->
+          <el-dialog
+            title="选项"
+            :visible.sync="showOptions"
+            width="30%"
+            :close-on-click-modal="false"
           >
+            <el-button @click="exportContent">导出为图片</el-button>
+            <el-button @click="downloadPDF">导出为pdf</el-button>
+          </el-dialog>
         </div>
       </div>
     </el-container>
@@ -35,6 +46,7 @@ import characterChoose from "@/components/characterChoose/index.vue";
 import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import conssitencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
 import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import taskInfo from "@/components/TaskInfo.vue"
 /*描述性统计分析页面*/
 export default {
@@ -48,6 +60,7 @@ export default {
   },
   data() {
     return {
+      showOptions: false,
       newTaskInfo: null,
       featureDataFromParent: [],
       selectTreeNode: [],
@@ -78,6 +91,30 @@ export default {
     getSelectTreeNode(data){
       console.log("选中的树节点：",data)
       this.selectTreeNode = data;
+    },
+    async downloadPDF() {
+      try {
+          const divToCapture = this.$refs.childComponentRef.$el.querySelector(".result");
+          const canvas = await html2canvas(divToCapture);
+
+          // 创建PDF对象
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/png');
+
+          // 设置PDF页尺寸
+          const imgWidth = 210; // A4尺寸，单位mm
+          const imgHeight = canvas.height * imgWidth / canvas.width;
+
+          // 将Canvas图像添加到PDF
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+          // 下载PDF
+          pdf.save("content.pdf");
+          
+          this.showOptions = false;
+      } catch (error) {
+          console.error("Error capturing image:", error);
+      }
     },
     async exportContent() {
       try {
