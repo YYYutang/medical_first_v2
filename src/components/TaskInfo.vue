@@ -109,6 +109,12 @@ export default {
       this.taskInfoForm.principal = this.username
     });
   }
+  else if(this.tasktype == 5){
+    this.getUserName().then(() => {
+      this.taskInfoForm.taskName = this.username + "_特征表征_" + this.getDatatime()
+      this.taskInfoForm.principal = this.username
+    });
+  }
   },
   
   mounted(){

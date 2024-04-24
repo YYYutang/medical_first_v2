@@ -1,6 +1,20 @@
 <template>
   <div>
-    <div>
+    <div class="outcome">
+        <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:20px; margin-bottom: 0px;" class="center">
+          <p style="margin-top:0px">
+            <i class="el-icon-user"></i>创建人:
+            <span>{{ taskInfo.principal }}</span>
+             <i style="margin-left:20px" class="el-icon-user"></i>参与人员:
+            <span>{{ taskInfo.participants }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务名称:
+            <span>{{ taskInfo.taskName }}</span>
+            <i style="margin-left:20px" class="el-icon-folder-opened"></i>任务类型:
+            <span>{{ taskInfo.tasktype }}</span>
+             <i style="margin-left:20px" class="el-icon-folder-opened"></i>备注:
+            <span>{{taskInfo.tips}}</span>
+          </p>
+        </div>
       <div class="table">
         <p class="text">原始数据统计量:</p>
         <br />
@@ -117,7 +131,7 @@ import { getRequest } from "@/utils/api";
 
 export default {
   name: "oldData",
-  props: ["dataAll", "dataName", "statisData", "dataColumns"],
+  props: ["dataAll", "dataName", "statisData", "dataColumns",'createTaskInfo'],
   data() {
     return {
       dataInfo: [],
@@ -129,8 +143,10 @@ export default {
       statisColumn: [],
       column: [],
       statis: [],
-      dataCondition: 0,
+      dataCondition: '5',
       changeDataLoading:false,
+       taskInfo: null,  // 展示任务信息
+          taskInfoParam: {},
     };
   },
   methods: {
@@ -243,10 +259,21 @@ export default {
   },
   created() {
     this.dealdata();
+     this.taskInfoParam = this.$route.params // 任务管理直接查看结果的参数
+      console.log("任务管理过来的传递信息：",this.taskInfoParam)
+      this.taskInfo = this.createTaskInfo;
+      if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo; //
+
   },
 };
 </script>
 <style scoped>
+.outcome{
+    display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
 .table {
   display: flex;
   justify-content: center;

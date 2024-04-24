@@ -35,8 +35,8 @@ export default {
         confirmNewPass:"",
       },
       uid: sessionStorage.getItem("uid")
-        ? parseInt(sessionStorage.getItem("uid"))
-        : 0,
+          ? sessionStorage.getItem("uid")
+          : "",
       user: sessionStorage.getItem("user")
           ? sessionStorage.getItem("user")
           : "",
@@ -94,8 +94,6 @@ export default {
           username: this.user,
           password: sha256(this.form.originPass).toString()
         };
-
-
         postRequest(`/user/VerifyPas`,requestBody
         ).then(res => {
           if (res.data === false) {

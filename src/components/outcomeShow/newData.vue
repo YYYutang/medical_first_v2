@@ -1,9 +1,28 @@
 <template>
   <div>
     <div id="maintest">
-      <div>
-        <div class="table1" >
-
+      <div class="outcome">
+        <div
+          v-if="taskInfo != null && taskInfo.principal != null"
+          style="margin-top: 20px; margin-bottom: 20px"
+          class="center"
+        >
+          <p style="margin-top: 0px">
+            <i class="el-icon-user"></i>创建人:
+            <span>{{ taskInfo.principal }}</span>
+            <i style="margin-left: 20px" class="el-icon-user"></i>参与人员:
+            <span>{{ taskInfo.participants }}</span>
+            <i style="margin-left: 20px" class="el-icon-folder-opened"></i
+            >任务名称:
+            <span>{{ taskInfo.taskName }}</span>
+            <i style="margin-left: 20px" class="el-icon-folder-opened"></i
+            >任务类型:
+            <span>{{ taskInfo.tasktype }}</span>
+            <i style="margin-left: 20px" class="el-icon-folder-opened"></i>备注:
+            <span>{{ taskInfo.tips }}</span>
+          </p>
+        </div>
+        <div class="table1">
           <p class="text">选择的原始数据:</p>
           <br />
           <el-table
@@ -30,7 +49,7 @@
             >
             </el-table-column>
           </el-table>
-      
+
           <br />
           <el-pagination
             background
@@ -99,6 +118,7 @@ export default {
     "columnName",
     "dataName",
     "dataNewColumns",
+    "createTaskInfo",
   ],
   data() {
     return {
@@ -110,6 +130,8 @@ export default {
       dataChooseNow: [],
       dataNewNow: [],
       tableHeight: 400,
+      taskInfo: null, // 展示任务信息
+      taskInfoParam: {},
     };
   },
   methods: {
@@ -120,6 +142,12 @@ export default {
         title: {
           text: "主成分分析得分",
           left: "center",
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
         },
         xAxis: {
           type: "category",
@@ -167,17 +195,17 @@ export default {
           {
             name: "PCA",
             type: "bar",
-            data: [7, 6],
+            data: [this.dataColumn.length, this.dataColumn.length - 1],
           },
           {
             name: "ICA",
             type: "bar",
-            data: [7, 5],
+            data: [this.dataColumn.length, this.dataColumn.length - 2],
           },
           {
             name: "因子分析",
             type: "bar",
-            data: [7, 4],
+            data: [this.dataColumn.length, this.dataColumn.length - 2],
           },
         ],
       };
@@ -186,10 +214,11 @@ export default {
     },
     dealdata() {
 
-      this.dataColumn = this.columnName;
       this.allPage = this.dataChoose.total * 10;
       this.dataChooseNow = this.dataChoose.data;
-      console.log('dataChooseNow',this.dataChooseNow)
+       this.dataColumn = Object.keys(this.dataChooseNow[0]);
+      console.log("dataChooseNow", this.dataChooseNow);
+      console.log("columnName", this.columnName);
       // this.allPage2=this.dataNew.total*10;
       // this.dataNewNow=this.dataNew.data;
 
@@ -222,12 +251,37 @@ export default {
     // },
   },
   mounted() {
-    this.drawChart();
     this.dealdata();
+    this.drawChart();
+  },
+  watch: {
+    chartDatay: {
+      handler(newVal) {
+        this.drawChart();
+      },
+      deep: true,
+    },
+  },
+  created() {
+    this.taskInfoParam = this.$route.params; // 任务管理直接查看结果的参数
+    console.log("任务管理过来的传递信息：", this.taskInfoParam);
+    this.taskInfo = this.createTaskInfo;
+    if (
+      this.taskInfo == null &&
+      this.taskInfoParam != null &&
+      this.taskInfoParam.taskInfo != null
+    )
+      this.taskInfo = this.taskInfoParam.taskInfo; //
   },
 };
 </script>
 <style scoped>
+.outcome {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
 #maintest {
   display: flex;
   flex-direction: column;
@@ -239,7 +293,7 @@ export default {
 }
 
 .table1 {
-   width: 1400px;
+  width: 1400px;
   display: flex;
   justify-content: center;
   flex-direction: column;

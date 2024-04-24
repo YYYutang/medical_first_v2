@@ -578,6 +578,7 @@ import { getTableDes, getTableData } from "@/api/tableDescribe.js";
 import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
 import { disOptions } from "@/components/tab/constData.js";
 import { resetForm, debounce } from "@/components/mixins/mixin.js";
+import * as XLSX from 'xlsx';
 let id = 1000;
 
 export default {
@@ -815,36 +816,71 @@ export default {
         type: "success",
       });
     },
+    // exportData() {
+    //   console.log("提交选择的字段：", this.selectedFields);
+    //   this.exportDialogVisible = false; // 关闭导出对话框
+    //   getRequest("/api/getTableDataByFields", {
+    //     tableName: this.tableName,
+    //     featureList: this.selectedFields.join(","),
+    //   })
+    //     .then((response) => {
+    //       if (response.code != "200") this.open4("导出失败！");
+    //       else {
+    //         let blob = new Blob([response.data], { type: "text/csv" });
+    //         // 创建 Data URI
+    //         const dataUri = window.URL.createObjectURL(blob);
+    //         // 创建隐藏的 <a> 标签
+    //         const link = document.createElement("a");
+    //         link.href = dataUri;
+    //         link.download = this.tableName + "_export.csv"; // 下载文件的名称
+    //         // 将 <a> 标签添加到页面中并模拟点击
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         // 下载完成后移除 <a> 标签
+    //         document.body.removeChild(link);
+
+    //         this.open2("数据导出成功");
+    //       }
+    //     })
+    //     .catch((error) => {
+    //       this.open4("导出失败", error);
+    //     });
+    // },
     exportData() {
-      console.log("提交选择的字段：", this.selectedFields);
+   console.log('inexport')
       this.exportDialogVisible = false; // 关闭导出对话框
       getRequest("/api/getTableDataByFields", {
         tableName: this.tableName,
         featureList: this.selectedFields.join(","),
-      })
-        .then((response) => {
-          if (response.code != "200") this.open4("导出失败！");
-          else {
-            let blob = new Blob([response.data], { type: "text/csv" });
-            // 创建 Data URI
-            const dataUri = window.URL.createObjectURL(blob);
-            // 创建隐藏的 <a> 标签
-            const link = document.createElement("a");
-            link.href = dataUri;
-            link.download = this.tableName + "_export.csv"; // 下载文件的名称
-            // 将 <a> 标签添加到页面中并模拟点击
-            document.body.appendChild(link);
-            link.click();
-            // 下载完成后移除 <a> 标签
-            document.body.removeChild(link);
+      }).then((response) => {
+        if (response.code != "200") {
+          this.open4("导出失败！");
+          return;
+        }
+        // 解析返回的CSV数据
+        console.log("下载数据为：", response.data);
+        const csvData = response.data;
+        // 将CSV数据解析为二维数组
+        const csvArray = csvData.split('\n').map(row => row.split(','));
 
-            this.open2("数据导出成功");
-          }
-        })
-        .catch((error) => {
-          this.open4("导出失败", error);
-        });
+        // 创建Workbook
+        setTimeout(() => {
+          const workbook = XLSX.utils.book_new();
+          // 将数据填充到Worksheet中
+          const worksheet = XLSX.utils.aoa_to_sheet(csvArray);
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+          // 将Workbook保存为Excel文件
+          XLSX.writeFile(workbook, `${this.tableName}_export.xlsx`);
+
+          this.open2("数据导出成功");
+        }, 100); // 延迟执行100毫秒，可以根据需要调整延迟时间
+      }).catch((error) => {
+        console.log(error);
+        this.open4("导出失败", error);
+      });
     },
+
     headerCellStyle() {
       return {
         backgroundColor: "#f0f0f0",
@@ -1415,6 +1451,7 @@ export default {
       getRequest("/DataTable/getInfoByTableName", {
         tableName: tablename,
       }).then((res) => {
+    
         this.patientTable = res.data;
         console.log("patientTable:" + res.data);
         this.getData_loading = false;

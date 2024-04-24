@@ -369,6 +369,8 @@ import { getTableDes, getTableData } from "@/api/tableDescribe.js";
 import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
 import { disOptions } from "@/components/tab/constData.js";
 import { resetForm, debounce } from "@/components/mixins/mixin.js";
+import * as XLSX from 'xlsx';
+
 let id = 1000;
 
 export default {
@@ -603,47 +605,81 @@ export default {
       this.selectedFields = [];
       this.csvDialogVisible = false;
     },
-    toCSV() {
-      // 发送请求给后端，传递表名和选定的字段
-      getRequest(`/api/getInfoByTableName/${this.showDataForm.tableName}`).then(
-        (res) => {
-          const header = this.selectedFields.join(",") + "\n";
-          const data = res.data;
-          // 构建数据行
-          const rows = data
-            .map((row) => {
-              const values = this.selectedFields.map((field) => {
-                return this.formatCSVValue(row[field]);
-              });
-              return values.join(",");
-            })
-            .join("\n");
+    // toCSV() {
+    //   // 发送请求给后端，传递表名和选定的字段
+    //   getRequest(`/api/getInfoByTableName/${this.showDataForm.tableName}`).then(
+    //     (res) => {
+    //       const header = this.selectedFields.join(",") + "\n";
+    //       const data = res.data;
+    //       // 构建数据行
+    //       const rows = data
+    //         .map((row) => {
+    //           const values = this.selectedFields.map((field) => {
+    //             return this.formatCSVValue(row[field]);
+    //           });
+    //           return values.join(",");
+    //         })
+    //         .join("\n");
 
-          // 合并表头和数据行
-          const csvContent = header + rows;
+    //       // 合并表头和数据行
+    //       const csvContent = header + rows;
 
-          // 创建 Blob 对象
-          const blob = new Blob([csvContent], { type: "text/csv" });
+    //       // 创建 Blob 对象
+    //       const blob = new Blob([csvContent], { type: "text/csv" });
 
-          // 创建 URL
-          const url = window.URL.createObjectURL(blob);
+    //       // 创建 URL
+    //       const url = window.URL.createObjectURL(blob);
 
-          // 创建 a 标签
-          const link = document.createElement("a");
+    //       // 创建 a 标签
+    //       const link = document.createElement("a");
 
-          // 设置下载属性
-          link.href = url;
-          link.download = this.showDataForm.tableName + ".csv";
+    //       // 设置下载属性
+    //       link.href = url;
+    //       link.download = this.showDataForm.tableName + ".csv";
 
-          // 模拟点击下载
-          link.click();
+    //       // 模拟点击下载
+    //       link.click();
 
-          // 释放资源
-          window.URL.revokeObjectURL(url);
-          this.csvDialogVisible = false;
-          this.selectedFields = [];
+    //       // 释放资源
+    //       window.URL.revokeObjectURL(url);
+    //       this.csvDialogVisible = false;
+    //       this.selectedFields = [];
+    //     }
+    //   );
+    // },
+    toCSV(){
+      console.log(XLSX)
+      this.exportDialogVisible = false; // 关闭导出对话框
+      getRequest("/api/getTableDataByFields", {
+        tableName: this.showDataForm.tableName,
+        featureList: this.selectedFields.join(","),
+      }).then((response) => {
+        if (response.code != "200") {
+          this.open4("导出失败！");
+          return;
         }
-      );
+        // 解析返回的CSV数据
+        console.log("下载数据为：", response.data);
+        const csvData = response.data;
+        // 将CSV数据解析为二维数组
+        const csvArray = csvData.split('\n').map(row => row.split(','));
+
+        // 创建Workbook
+        setTimeout(() => {
+          const workbook = XLSX.utils.book_new();
+          // 将数据填充到Worksheet中
+          const worksheet = XLSX.utils.aoa_to_sheet(csvArray);
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+          // 将Workbook保存为Excel文件
+          XLSX.writeFile(workbook, `${this.tableName}_export.xlsx`);
+
+          this.open2("数据导出成功");
+        }, 100); // 延迟执行100毫秒，可以根据需要调整延迟时间
+      }).catch((error) => {
+        console.log(error);
+        this.open4("导出失败", error);
+      });
     },
     formatCSVValue(value) {
       // 处理特殊字符
@@ -838,10 +874,19 @@ export default {
       this.showDataForm.tableName = label;
       getTableDes("/api/tableDescribe", id)
         .then((response) => {
-          let res = JSON.parse(response.data);
+          let res = response.data;
+          //  this.showDataForm={
+          //    ...this.showDataForm,
+          //    createUser:res.createUser,
+          //    createTime:res.createTime,
+          //    classPath:res.classPath,
+          //  }
           this.showDataForm.createUser = res.createUser;
           this.showDataForm.createTime = res.createTime;
           this.showDataForm.classPath = res.classPath;
+          this.showDataForm.sampleNum = res.rowNumber;
+          this.showDataForm.featureNum = res.colNumber;
+          console.log(this.showDataForm)
         })
         .catch((error) => {
           console.log("错误", error);
@@ -854,8 +899,8 @@ export default {
           this.tableData = response.data;
           const fields = Object.keys(this.tableData[0]);
           this.fields = fields;
-          this.showDataForm.sampleNum = this.tableData.length;
-          this.showDataForm.featureNum = this.fields.length;
+          // this.showDataForm.sampleNum = this.tableData.length;
+          // this.showDataForm.featureNum = this.fields.length;
           this.table_loading = false;
         })
         .catch((error) => {
@@ -919,6 +964,15 @@ export default {
       this.nodeData.children.push(newChild);
       this.nodeData = {};
       this.cleanInput();
+    },
+        open4(msg) {
+      this.$message.error(msg);
+    },
+    open2(msg) {
+      this.$message({
+        message: msg,
+        type: "success",
+      });
     },
     remove(node, data) {
       const parent = node.parent;
@@ -1302,7 +1356,7 @@ h3 {
 .right_table {
   display: inline-block;
   height: 820px;
-  width: 82%;
+  width: 83%;
   position: absolute;
   /* border: none; */
   /* overflow-y: auto; */

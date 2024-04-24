@@ -2,9 +2,9 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import SideBar from '@/components/sideBar/index.vue'
 import dash from '@/views/dash/index.vue'
-import represent from "@/views/represent.vue";
+import represent from "@/views/represent/index.vue";
+// import represent from "@/views/represent.vue";
 import visualization from "@/views/visualization.vue";
-import dataManage from "@/views/dataManage2.vue";
 import introduce from "@/views/introduce/introduce.vue"
 import logIn from "@/views/User/Login.vue"
 import register from "@/views/User/register.vue"
@@ -30,9 +30,10 @@ import consistencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCo
 import singleOutcome from "@/views/stasticAnalyze/singleFactorAnalyze/outCome.vue"
 import userManage from "@/views/manageAll/userManage.vue"
 import inform from "@/views/manageAll/inform.vue"
-import dataManageManager from "@/views/manageAll/dataManager.vue"
+import dataManageManager from "@/views/manageAll/AdminDataManage.vue"
 import illnessManage from "@/views/manageAll/illnessManage.vue"
 import userCenter from "@/views/User/userCenter.vue"
+import representAlgo from "@/views/represent/algo.vue"
 Vue.use(VueRouter)
 
 const routes = [
@@ -67,6 +68,12 @@ const routes = [
       path: '/represent',
       name: 'represent',
       component: represent,
+      meta: { roles: ['1', '0'] },
+    },
+    {
+      path: '/representAlgo',
+      name: 'representAlgo',
+      component: representAlgo,
       meta: { roles: ['1', '0'] },
     }, {
       path: '/visualization',

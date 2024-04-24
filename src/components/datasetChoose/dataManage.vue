@@ -668,8 +668,8 @@ export default {
     this.$emit("send_data", "copd");
     // this.tableData = tableData;
     this.getCatgory();
-    this.getTableDescribe("1005");
-    this.getTableData("1005", "copd");
+    this.getTableDescribe("38");
+    this.getTableData("38", "copd");
   },
 
   methods: {
@@ -943,6 +943,7 @@ export default {
           // 获取表数据
           this.tableData = response.data;
           this.dataPred = true;
+
         })
         .catch((error) => {
           console.log(error);
@@ -951,6 +952,7 @@ export default {
           this.loadingTableData = false;
         });
     },
+
     changeData(data) {
       if (data.isLeafs == 1) {
         //获取描述信息
