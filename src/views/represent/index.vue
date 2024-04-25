@@ -6,6 +6,7 @@
         :tasktype="5"
         :active="active"
         ref="taskInfo"
+        :type="4"
         @send_taskInfo="getTaskInfo"
         :createTaskInfo="createTaskInfo"
       ></taskInfo>
@@ -73,17 +74,17 @@
 
       <br />
       <div class="stepbutton">
-        <el-button size="small" v-if="active != 1&&newTaskInfo.length==0" @click="stepBack(active)"
+        <el-button size="small" v-if="active != 1&&Object.keys(this.newTaskInfo).length === 0" @click="stepBack(active)"
           >上一步</el-button
         >
         <el-button
           size="small"
           type="primary"
-          v-if="active != 5&&newTaskInfo.length==0"
+          v-if="active != 5&&Object.keys(this.newTaskInfo).length === 0"
           @click="stepNext(active)"
           >下一步</el-button
         >
-         <el-button size="small" v-if="newTaskInfo.length!=0" @click="returnTask"
+         <el-button size="small" v-if="Object.keys(this.newTaskInfo).length != 0" @click="returnTask"
           >返回</el-button
         >
         <el-button

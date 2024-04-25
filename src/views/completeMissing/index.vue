@@ -4,6 +4,7 @@
       <taskInfo
         v-if="active == 1"
         :tasktype="4"
+        :type="4"
         :active="active"
         ref="taskInfo"
         @send_taskInfo="getTaskInfo"

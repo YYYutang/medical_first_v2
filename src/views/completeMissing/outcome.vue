@@ -2,14 +2,14 @@
   <div class="container">
     <div class="right_step">
       <div class="step">
-        <el-steps :active="active" align-center>
+        <el-steps :active="active" align-center v-if="Object.keys(this.taskInfoParam).length === 0">
           <el-step title="选择数据"></el-step>
           <el-step title="特征选择"></el-step>
           <el-step title="方法选择"></el-step>
           <el-step title="结果展示"></el-step>
         </el-steps>
       </div>
-      <div>
+      <div class="right_content">
         <div v-if="taskInfo!=null && taskInfo.principal!=null" style="margin-top:20px; margin-bottom: 0px;" class="center">
           <p style="margin-top:0px">
             <i class="el-icon-user"></i>创建人:
@@ -43,11 +43,27 @@
         </div>
       </div>
     </div>
+     <div class="stepbutton">
+          <el-button
+            size="small"
+            v-if="Object.keys(this.taskInfoParam).length != 0"
+            @click="returnTask"
+            >返回</el-button
+          >
+          <el-button
+            v-if="Object.keys(this.taskInfoParam).length != 0"
+            size="small"
+            type="primary"
+            @click="exportxlsx"
+            >导出</el-button
+          >
+
+        </div>
   </div>
 </template>
 <script>
 import { postRequest } from "@/utils/api";
-
+import * as XLSX from "xlsx";
 /*特征选择页面*/
 /**
  * 只需要判断两个参数 1、任务管理直接跳转查看结果 taskInfoParam  2、创建任务流程过来 createTaskInfo
@@ -59,7 +75,10 @@ export default ({
         return{
           taskInfo: null,  // 展示任务信息
           taskInfoParam: {},
-          tableData: []
+          tableData: [],
+             showOptions: false,
+                   filePath: "",
+      fileName: "",
         }
     },
     created(){
@@ -73,6 +92,50 @@ export default ({
     mounted(){
     },
     methods:{
+      exportxlsx(){
+        console.log(this.taskInfoParam)
+              let dataFillMethodVo = {
+        missCompleteMethod: this.taskInfoParam.missCompleteMethods,
+        tableName: this.taskInfoParam.label,
+      };
+      let allParam = {
+        dataFillMethodVo: dataFillMethodVo,
+        path: this.filePath,
+        fileName: this.fileName,
+      };
+      postRequest("/api/exportFile", allParam)
+        .then((response) => {
+          const csvData = response.data;
+          // 将CSV数据解析为二维数组
+          const csvArray = csvData.split("\n").map((row) => row.split(","));
+          // 创建Workbook
+          setTimeout(() => {
+            const workbook = XLSX.utils.book_new();
+            // 将数据填充到Worksheet中
+            const worksheet = XLSX.utils.aoa_to_sheet(csvArray);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+            // 将Workbook保存为Excel文件
+            XLSX.writeFile(workbook, `${ this.taskInfoParam.label}_export.xlsx`);
+
+            this.open2("数据导出成功");
+          }, 100); // 延迟执行100毫秒，可以根据需要调整延迟时间
+          this.open2();
+        })
+        .catch((err) => {
+          console.log("导出错误", err);
+          this.open4();
+        });
+      },
+        open2() {
+      this.$message({
+        message: "恭喜你，文件导出成功了哦",
+        type: "success",
+      });
+    },
+    open4() {
+      this.$message.error("出错了哦，导出文件出错了哦");
+    },
       fillData(){
         let dataFillMethodVo = {};
         console.log("taskInfoParam",this.taskInfoParam)
@@ -96,7 +159,11 @@ export default ({
         }).catch(error=>{
           console.log(error);
         })
-      }
+      },
+  
+       returnTask() {
+      this.$router.push("/taskManage");
+    },
     },
 
 })
@@ -106,6 +173,8 @@ export default ({
   display: flex;
   width: 100%;
   height: 100%;
+   flex-direction: column;
+  align-items: center; /* 垂直居中 */
   /* background-color: red; */
 }
 
@@ -147,7 +216,20 @@ export default ({
       display: flex;
     flex-direction: column;
     align-items: center;
-    width:100%;
+    width:auto;
 }
-
+.stepbutton {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  margin-top: 10px;
+}
+.right_content{
+  display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 </style>

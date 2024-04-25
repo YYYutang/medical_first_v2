@@ -717,7 +717,7 @@ export default {
   width: 100%;
   border-top: 1px solid black;
   margin-top: 20px;
-  height: 100vh;
+  height: 85vh;
 }
 .top {
   font-size: 20px;
@@ -849,7 +849,7 @@ export default {
   text-align: center;
 }
 .left_sidebar {
-  height: 80%;
+  height:85vh;
   width: 15%;
   padding: 5x;
   margin-top: 20px;
@@ -878,7 +878,7 @@ export default {
   margin-top: 0px;
   margin-left: 20px;
   width: 1300px;
-  height: 800px;
+
 }
 .selectClassSingle {
   margin-top: 10px;

@@ -42,6 +42,7 @@
             @click="stepNext(active)"
             >下一步</el-button
           >
+         
           <el-button v-if="active == 4" size="small" type="primary" @click="showOptions = true">导出</el-button>
           <!-- 使用 el-dialog 组件作为弹出框 -->
           <el-dialog
@@ -91,6 +92,9 @@ export default {
     this.newTaskInfo = this.$route.params;
   },
   methods: {
+       returnTask(){
+           this.$router.push( '/taskManage');
+      },
      getTaskInfo(data){
       this.createTaskInfo = data;
       this.createTaskInfo.tasktype="描述性分析"
@@ -228,7 +232,7 @@ export default {
 .des_datasetChoose {
   ::v-deep .right_table {
     width: 1350px;
-    height:620px;
+ 
   }
   ::v-deep .left_tree {
     height: 620px;

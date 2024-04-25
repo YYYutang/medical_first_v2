@@ -221,7 +221,7 @@ export default {
     },
     // 添加的方法
     getDataDiseases(){
-      getRequest(`/tableDescribe/selectDataDiseases`).then(res => {
+      getRequest(`api/tableDescribe/selectDataDiseases`).then(res => {
         if (res.code == 200) {
           console.log("selectDataDiseases", res.data);
           this.disOptions = res.data;
@@ -233,7 +233,7 @@ export default {
     },
     // 添加的方法
     getDataDiseases2(){
-      getRequest(`/tableDescribe/selectDataDiseases`).then(res => {
+      getRequest(`api/tableDescribe/selectDataDiseases`).then(res => {
         if (res.code == 200) {
           console.log("selectDataDiseases", res.data);
           this.disOptions1 = res.data;
@@ -449,3 +449,8 @@ export default {
 .user_input {
   width: 20%;
 }
+
+.user_search_btn {
+  margin-left: 1%;
+}
+</style>

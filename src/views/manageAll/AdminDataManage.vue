@@ -430,7 +430,7 @@ export default {
                     this.total = res.data.total;
                     this.adminDataManageList = res.data.list; 
                 }else{
-                    console.logt("res", res.data)
+                    console.log("res", res.data)
                 }
             })
         },

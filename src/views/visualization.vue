@@ -167,7 +167,7 @@
         <div
           id="chart"
           class="charts"
-          style="width: 700px; height: 600px"
+          style="width: 700px; height: 600px;margin-left: 100px;"
         ></div>
         <div
           id="barChart"
@@ -834,9 +834,7 @@ export default {
 //     overflow-y: hidden;
 // }
 .visual_datasetChoose {
-  ::v-deep .right_table {
-    height: 630px;
-  }
+
   ::v-deep .left_tree {
     height: 630px;
   }

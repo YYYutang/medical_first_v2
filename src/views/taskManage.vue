@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <div class="left_tree">
+    <!-- <div class="left_tree">
       <div class="tip_boarder">
         <span>点击病种筛选任务</span>
       </div>
@@ -37,7 +37,83 @@
           <el-button type="primary" @click="() => append()">确 定</el-button>
         </span>
       </el-dialog>
+    </div> -->
+    <div class="tree">
+      <div class="left_tree">
+        <div class="tipInfo">
+          <h3>任务所用数据集</h3>
+          <span class="statistic"> 一级病种: {{ diseaseNum }} 个 </span>
+          <span class="statistic"> 数据表: {{ datasetNum }} 个 </span>
+        </div>
+        <hr class="hr-dashed" />
+        <el-input placeholder="输入关键字进行过滤" v-model="filterText">
+        </el-input>
+        <div class="treeArea">
+          <el-tree
+            ref="tree"
+            :data="treeData"
+            :show-checkbox="false"
+            node-key="id"
+            default-expand-all
+            :expand-on-click-node="false"
+            :highlight-current="true"
+            @node-click="changeData"
+            :filter-node-method="filterNode"
+          >
+            <span class="custom-tree-node" slot-scope="{ node, data }">
+              <span class="left_span">
+                <i
+                  class="el-icon-document tree_icon"
+                  v-if="data.isLeafs == 1 && data.uid != loginUserID"
+                ></i>
+                <i
+                  class="el-icon-document tree_icon"
+                  v-if="data.isLeafs == 1 && data.uid == loginUserID"
+                  style="color: rgb(40, 207, 18)"
+                ></i>
+                <span
+                  v-if="data.catLevel == 2"
+                  style="font-weight: bold; font-size: 15px; color: #252525"
+                  >{{ node.label }}</span
+                >
+                <span
+                  v-else
+                  :class="{
+                    nodeLabel: node.label.length <= 15,
+                    'scrolling-nodeLabel': node.label.length > 15,
+                  }"
+                  >{{ node.label }}
+                  <span v-if="data.isLeafs == 1 && data.uid == loginUserID">
+                    （我）</span
+                  >
+                </span>
+              </span>
+            </span>
+          </el-tree>
+       <!-- <el-tree
+        ref="tree"
+        :data="treeData"
+        :show-checkbox="false"
+        node-key="id"
+        default-expand-all
+        :expand-on-click-node="false"
+        :check-on-click-node="true"
+        :highlight-current="true"
+        @node-click="changeData"
+      >
+        <span class="custom-tree-node" slot-scope="{ node, data }">
+          <span
+            v-if="data.catLevel == 1"
+            style="font-weight: bold; font-size: 15px; color: #252525"
+            >{{ node.label }}</span
+          >
+          <span v-else>{{ node.label }}</span>
+        </span>
+      </el-tree> -->
+        </div>
+      </div>
     </div>
+
     <div class="right">
       <!--==========================     头部按钮     ==============================================================-->
       <div id="top_buttons">
@@ -73,17 +149,23 @@
             </el-option>
           </el-select>
         </div>
-        <el-button @click="clearFilter" style="margin-right: 20px">清除</el-button>
+        <el-button @click="clearFilter" style="margin-right: 20px"
+          >清除</el-button
+        >
         <!-- <el-button size="medium" type="primary" @click="creatTask()"
           >新建任务</el-button
         > -->
         <el-dropdown @command="handleCommand">
-          <el-button  type="primary">
+          <el-button type="primary">
             新建任务<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-for="item in taskItem" :key="item.id" :command="item">
-                {{ item.name }}
+            <el-dropdown-item
+              v-for="item in taskItem"
+              :key="item.id"
+              :command="item"
+            >
+              {{ item.name }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -134,7 +216,11 @@
       <!-- <div class="cardGroupCloak" v-if="noTaskData">
         <span>暂无数据</span>
       </div> -->
-      <el-empty :image-size="200"  description="暂无相关任务" v-if="noTaskData"></el-empty>
+      <el-empty
+        :image-size="200"
+        description="暂无相关任务"
+        v-if="noTaskData"
+      ></el-empty>
       <div class="block" style="text-align: center; margin-top: 20px">
         <!---一页9条数据-->
         <el-pagination
@@ -214,19 +300,22 @@
 
 <script>
 import { getRequest } from "@/utils/api";
-
 import { filterTask, getTaskNumber } from "@/api/user";
-// import { state } from "@antv/g2plot/lib/adaptor/common";
-// import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
+import { getCategory } from "@/api/category";
+import { state } from "@antv/g2plot/lib/adaptor/common";
+import { mapGetters, mapMutations, mapState, mapActions } from "vuex";
 
 export default {
   computed: {
     // ...mapState(["taskList","treeData"]),
     // ...mapGetters(["taskLeaderList", "taskDiseaseList"]),
+    loginUserID() {
+      return sessionStorage.getItem("userid");
+    },
   },
   created() {
     this.getTaskAllList();
-    this.getTreeData();
+    this.getCatgory();
     this.filterTask(1);
   },
   data() {
@@ -243,43 +332,112 @@ export default {
       result: {},
       taskList: [],
       treeData: [],
+      treeData1: [],
+      treeData2: [],
+      treeData3: [],
       leaderList: [],
       typeList: [],
       dialogDiseaseVisible: false,
       diseaseName: "",
+      diseaseNum: 0,
+      datasetNum: 0,
       cardLoading: false,
-      noTaskData:false,
+      noTaskData: false,
       taskItem: [
-        { id: 1, name: '缺失值补齐' },
-        { id: 2, name: '描述性分析' },
-        { id: 3, name: '单因素分析' },
-        { id: 4, name: '一致性验证' },
-        { id: 5, name: '疾病特征表征' },
-        {id:6, name: '病人画像'}
-      ]
+        { id: 1, name: "缺失值补齐" },
+        { id: 2, name: "描述性分析" },
+        { id: 3, name: "单因素分析" },
+        { id: 4, name: "一致性验证" },
+        { id: 5, name: "疾病特征表征" },
+        { id: 6, name: "病人画像" },
+      ],
+      filterText: "",
     };
   },
+  watch: {
+    filterText(val) {
+      this.$refs.tree?.filter(val);
+    },
+  },
   methods: {
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.label.indexOf(value) !== -1;
+    },
     handleSelectChange() {
       this.filterTask();
     },
-     handleCommand(task) {
-      if(task.name==="缺失值补齐"){
-        this.$router.push({ name: 'completeMissing'});
-      } else if(task.name==="描述性分析"){
-        this.$router.push({ name: 'describeAnalyze'});
-      }else if(task.name==="一致性验证"){
-        this.$router.push({ name: 'consistencyAnalyze'});
-      }else if(task.name==="单因素分析"){
-        this.$router.push({ name: 'singleAnalyze'});
-      }else if(task.name==="疾病特征表征"){
-        this.$router.push({ name: 'represent'});
-      }else if(task.name==="病人画像")
-        this.$router.push({ name: 'visualization'});
+    // filterTree(data) {
+    //   if (data.length < 1) return;
+    //   console.log('filterTreedata',data)
+    //   return data.filter((item) => {
+    //     console.log('isleaf',item.isLeafs )
+    //     if (item.isLeafs !== 1) {
+
+    //       if (item.children && item.children.length > 0) {
+    //         item.children = filterTree(item.children); // 递归过滤子节点
+    //       }
+    //       return true; // 保留当前节点
+    //     }
+    //     return false; // 移除当前节点
+    //   });
+    // },
+
+    getCatgory() {
+      getRequest("/api/disease/all").then((response) => {
+        console.log(response);
+        this.treeData = response.data;
+        // 获取病种和数据集总数
+        this.diseaseNum = response.data[0].children.length;
+        getRequest("/api/getTableNumber").then((res) => {
+          if (res.code == 200) this.datasetNum = res.data;
+        });
+      });
+      // getCategory(`/api/category?uid=${this.loginUserID}`).then((response) => {
+      //   // 如果是多疾病任务，只能选择公共数据集
+      //     console.log('ingetCatgory',response.data.slice(0, 1))
+      //   // this.treeData = this.filterTree(response.data);
+      //   this.treeData1 = this.filterTree(response.data.slice(0, 1));
+      //   this.treeData2 = this.filterTree(response.data.slice(1, 2));
+      //   this.treeData3 = this.filterTree(response.data.slice(2, 3));
+      //   console.log('treeData1',this.treeData1)
+      //   // 获取病种和数据集总数
+      //   this.diseaseNum =
+      //     response.data[0].children.length + response.data[1].children.length;
+      //   getRequest("/api/getTableNumber").then((res) => {
+      //     if (res.code == 200) this.datasetNum = res.data;
+      //   });
+      //   if (
+      //     this.treeData1.length +
+      //       this.treeData2.length +
+      //       this.treeData3.length <
+      //     1
+      //   ) {
+      //     this.$message({
+      //       showClose: true,
+      //       type: "warning",
+      //       message: "暂无可用数据",
+      //     });
+      //   }
+      // });
+    },
+    handleCommand(task) {
+      if (task.name === "缺失值补齐") {
+        this.$router.push({ name: "completeMissing" });
+      } else if (task.name === "描述性分析") {
+        this.$router.push({ name: "describeAnalyze" });
+      } else if (task.name === "一致性验证") {
+        this.$router.push({ name: "consistencyAnalyze" });
+      } else if (task.name === "单因素分析") {
+        this.$router.push({ name: "singleAnalyze" });
+      } else if (task.name === "疾病特征表征") {
+        this.$router.push({ name: "represent" });
+      } else if (task.name === "病人画像")
+        this.$router.push({ name: "visualization" });
     },
     // createTask(task) {
     //   alert("sssds")
-  
+
     // },
     filterTask(newPage) {
       this.cardLoading = false;
@@ -289,9 +447,7 @@ export default {
         this.tasktype,
         this.leader
       ).then((response) => {
-  
         this.taskTotal = response.data;
-        
       });
       filterTask(
         "/Task/filterTaskBypage",
@@ -336,7 +492,6 @@ export default {
       }
 
       if (this.curTaskInfo.tasktype === "单因素分析") {
-        console.log("this.curTaskInfo.taskname", this.curTaskInfo);
         let features = this.curTaskInfo.feature.split(",");
         let taskInfo = {
           taskName: this.curTaskInfo.taskname,
@@ -427,12 +582,11 @@ export default {
         this.leader
       ).then((response) => {
         this.taskTotal = response.data;
-        if(this.taskTotal===0){
-          this.noTaskData=true
-          console.log('this.noTaskData',this.noTaskData)
-        }
-        else{
-         this.noTaskData=false
+        if (this.taskTotal === 0) {
+          this.noTaskData = true;
+          console.log("this.noTaskData", this.noTaskData);
+        } else {
+          this.noTaskData = false;
         }
       });
       filterTask(
@@ -461,7 +615,6 @@ export default {
       getRequest("/Task/all")
         .then((res) => {
           console.log("所有任务：", that.taskList);
-      
           for (let i = 0; i < res.data.length; i++) {
             this.typeList.push(res.data[i].tasktype);
           }
@@ -500,7 +653,6 @@ export default {
       //     this.$message.error("查看任务失败");
       //   }
       // });
-
     },
     handleDelete(row) {
       getRequest(`Task/delete/${row.id}`).then((res) => {
@@ -520,6 +672,7 @@ export default {
       this.filterTask();
     },
     changeData(node) {
+      console.log(node);
       this.disease = node.label;
       this.filterTask();
     },
@@ -529,20 +682,39 @@ export default {
 <style scoped>
 .main {
   display: flex;
-  width: 100%;
 }
 
 .left_tree {
   display: inline-block;
+  height: 820px;
   border-radius: 3px;
-  border-left: 1px solid #e6e6e6;
-  border-right: 1px solid #e6e6e6;
-  border-top: 1px solid #e6e6e6;
-  border-bottom: none;
+  border: 1px solid #e6e6e6;
+  overflow: auto;
+  /* width: 250px; */
+}
+.treeArea {
+  height: calc(820px - 93px); /* 93px是头部信息和按钮的高度 */
+  overflow: auto;
+}
+
+.tipInfo {
+  background-color: rgba(124, 124, 124, 0.1);
+  height: 50px;
+  text-align: center;
+}
+
+.tipInfo .statistic {
+  font-size: 13px;
+  color: #585858;
+}
+
+.hr-dashed {
+  border: 0;
+  border-top: 1px dashed #899bbb;
 }
 .right {
-  float: right;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .custom-tree-node {
@@ -552,6 +724,41 @@ export default {
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+  overflow: hidden;
+}
+
+.custom-tree-node .left_span {
+  width: 15em;
+  overflow: hidden;
+}
+
+.nodeLabel,
+.scrolling-nodeLabel {
+  display: inline-block;
+  white-space: nowrap; /* 禁止文本换行 */
+  box-sizing: border-box; /* 边框和内填充的宽度也包含在width内 */
+}
+
+.scrolling-nodeLabel:hover {
+  position: relative;
+  overflow: hidden;
+  vertical-align: text-bottom;
+  animation: scrollText 3s linear infinite; /* 动画持续时间和循环方式 */
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0px);
+  }
+  12% {
+    transform: translateX(0px);
+  }
+  75% {
+    transform: translateX(calc(-100% + 15em));
+  }
+  100% {
+    transform: translateX(calc(-100% + 15em));
+  }
 }
 
 #top_buttons {
@@ -576,6 +783,11 @@ export default {
 }
 .featureTitle {
   font-weight: 800;
+}
+
+.hr-dashed {
+  border: 0;
+  border-top: 1px dashed #899bbb;
 }
 .cardGroup {
   width: 100%;
@@ -619,6 +831,11 @@ export default {
   margin-top: 10px;
   margin-bottom: 10px;
 }
+.treeArea {
+  height: calc(820px - 93px); /* 93px是头部信息和按钮的高度 */
+  overflow: auto;
+}
+
 .tip_boarder {
   width: auto;
   height: 50px;

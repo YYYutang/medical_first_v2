@@ -63,7 +63,7 @@ import { getRequest } from "@/utils/api";
 export default {
   name: "TaskInfo",
   mixins: [resetForm, vuex_mixin],
-  props: ['active','createTaskInfo', 'tasktype'],
+  props: ['active','createTaskInfo', 'tasktype','type'],
   watch: {},
   computed: {},
   data() {
@@ -118,7 +118,7 @@ export default {
   },
   
   mounted(){
-    console.log("taskType:",this.tasktype)
+    console.log("type:",this.type)
     if(this.createTaskInfo!=null && this.createTaskInfo.taskName!=null) {
       console.log("开始复制",this.createTaskInfo)
       this.taskInfoForm = this.createTaskInfo

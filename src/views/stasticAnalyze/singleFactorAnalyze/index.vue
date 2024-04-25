@@ -223,10 +223,7 @@ export default {
   align-items: center; /* 垂直居中 */
 }
 .single_datasetChoose {
-  ::v-deep .right_table {
-    width: 1350px;
-    height: 620px;
-  }
+
   ::v-deep .left_tree {
     width: 240px;
     height: 620px;

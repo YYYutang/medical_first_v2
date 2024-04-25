@@ -187,10 +187,10 @@ export default {
   margin-top: 10px;
 }
 .con_datasetChoose {
-  ::v-deep .right_table {
-    width: 1350px;
-    height:620px;
-  }
+  // ::v-deep .right_table {
+  //   width: 1350px;
+  //   height:620px;
+  // }
   ::v-deep .left_tree {
     height: 620px;
   }

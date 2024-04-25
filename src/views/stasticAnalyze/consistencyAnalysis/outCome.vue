@@ -1,8 +1,8 @@
 <template>
   <div class="container">
     <div class="right_step">
-      <div class="step">
-        <el-steps :active="active" align-center>
+      <div class="step" >
+        <el-steps :active="active" align-center  v-if="Object.keys(this.taskInfoParam).length === 0">
           <el-step title="数据筛选"></el-step>
           <el-step title="特征选择"></el-step>
           <el-step title="结果展示"></el-step>
@@ -138,6 +138,31 @@
         </div> -->
       </div>
     </div>
+     <div class="stepbutton">
+          <el-button
+            size="small"
+            v-if="Object.keys(this.taskInfoParam).length != 0"
+            @click="returnTask"
+            >返回</el-button
+          >
+          <el-button
+            v-if="Object.keys(this.taskInfoParam).length != 0"
+            size="small"
+            type="primary"
+            @click="showOptions = true"
+            >导出</el-button
+          >
+          <!-- 使用 el-dialog 组件作为弹出框 -->
+          <el-dialog
+            title="选项"
+            :visible.sync="showOptions"
+            width="30%"
+            :close-on-click-modal="false"
+          >
+            <el-button @click="exportContent">导出为图片</el-button>
+            <el-button @click="downloadPDF">导出为pdf</el-button>
+          </el-dialog>
+        </div>
   </div>
 </template>
 
@@ -145,12 +170,15 @@
 import { defineComponent } from 'vue';
 import { postRequest, getRequest } from '@/utils/api';
 import { singleFactorAnalyze } from "@/api/user"
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 export default defineComponent({
   name: 'outcome2',
   props: ['active', 'label', 'checkedFeats','newTaskInfo','createTaskInfo'],
   data() {
     return {
          allData: [],
+         showOptions: false,
          tableData1: [
             {
                 method: 'ICC1:one-way random-effects model',
@@ -198,6 +226,9 @@ export default defineComponent({
         type: 'warning'
       });
     },
+        returnTask() {
+      this.$router.push("/taskManage");
+    },
     getAllData(){
         let tableName = null;
         let featureName = null;
@@ -218,6 +249,46 @@ export default defineComponent({
             
         })
     },
+        async exportContent() {
+      try {
+        const divToCapture =
+          document.querySelector(".right_step");
+        const canvas = await html2canvas(divToCapture);
+        const imageUrl = canvas.toDataURL();
+        const link = document.createElement("a");
+        link.href = imageUrl;
+        link.download = "image.png";
+        link.click();
+        this.showOptions = false;
+      } catch (error) {
+        console.error("Error capturing image:", error);
+      }
+    },
+    async downloadPDF() {
+      try {
+        const divToCapture =
+         document.querySelector(".right_step");
+        const canvas = await html2canvas(divToCapture);
+
+        // 创建PDF对象
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgData = canvas.toDataURL("image/png");
+
+        // 设置PDF页尺寸
+        const imgWidth = 210; // A4尺寸，单位mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // 将Canvas图像添加到PDF
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+
+        // 下载PDF
+        pdf.save("content.pdf");
+
+        this.showOptions = false;
+      } catch (error) {
+        console.error("Error capturing image:", error);
+      }
+    },
   }
 });
 </script>
@@ -227,8 +298,15 @@ export default defineComponent({
   display: flex;
   width: 100%;
   height: auto;
+  flex-direction: column;
+  align-items: center;
 }
-
+.stepbutton {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  margin-top: 10px;
+}
 .right_step {
   display: flex;
   width: 100%;
