@@ -67,7 +67,7 @@
                     </template>
                 </el-table-column>
             </el-table>
-
+<div class="pagination">
             <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
                 :current-page="this.params.page" 
                 :page-sizes="[6, 9, 12, 15, 24]" 
@@ -76,7 +76,7 @@
                 :total="this.total"
                 style="margin-top: 2%; margin-left: 3%;">
             </el-pagination>
-
+</div>
         </el-card>
 
         
@@ -766,6 +766,10 @@ export default {
     .grid-content {
     border-radius: 4px;
     min-height: 36px;
+    }
+    .pagination{
+          display: flex;
+  justify-content: center; 
     }
     .row-bg {
     padding: 10px 0;

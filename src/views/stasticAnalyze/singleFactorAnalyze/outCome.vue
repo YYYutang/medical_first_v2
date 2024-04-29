@@ -259,7 +259,7 @@ export default defineComponent({
       // 指定图表的配置项和数据
       const option = {
          title: {
-            text: '分组1', // 设置标题文本
+            text: this.tableData[0].variable, // 设置标题文本
             left: 'center', // 标题水平居中
             top: 20, // 标题距离顶部的距离
            },
@@ -308,7 +308,7 @@ export default defineComponent({
       // 指定图表的配置项和数据
       const option = {
         title: {
-            text: '分组2', // 设置标题文本
+            text: this.tableData[1].variable, // 设置标题文本
             left: 'center', // 标题水平居中
             top: 20, // 标题距离顶部的距离
         },

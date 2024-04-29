@@ -1,6 +1,6 @@
 <template>
   <div class="container" ref="outcomeRef">
-    <div class="right_step">
+    <div class="right_step"   >
       <div class="step">
         <el-steps :active="active" align-center  v-if="Object.keys(this.taskInfoParam).length === 0">
           <el-step title="数据筛选"></el-step>
@@ -157,6 +157,7 @@ export default {
       discrete: true,
       tableData: [],
       showOptions: false,
+ 
       pieData: [
         { value: 1048, name: "男" },
         { value: 735, name: "女" },
@@ -200,6 +201,7 @@ export default {
       this.$router.push("/taskManage");
     },
     requestFormData() {
+   
       let featureName = null;
       let label = null;
       if (
@@ -303,6 +305,7 @@ export default {
             this.initBinChart();
           });
           console.log("binData", binDataArray);
+      
         }
       });
     },

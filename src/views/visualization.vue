@@ -8,12 +8,30 @@
     <el-container id="maintest">
       <div id="step" v-show="showStep">
         <el-steps :active="active" align-center>
+          <el-step title="任务信息"></el-step>
           <el-step title="选择数据集"></el-step>
           <el-step title="选择一条数据"></el-step>
         </el-steps>
       </div>
 
       <div id="stepcontain" v-show="showStep">
+        <taskInfo
+          v-show="taskInfoForm.isShow"
+          :tasktype="6"
+          :active="active"
+          ref="taskInfo"
+          :type="5"
+          @send_taskInfo="getTaskInfo"
+          :createTaskInfo="createTaskInfo"
+        ></taskInfo>
+        <div
+          style="margin-left: 50%; margin-top: 10px"
+          v-show="taskInfoForm.isShow"
+        >
+          <el-button type="primary" size="small" @click="submitForm(active)"
+            >下一步</el-button
+          >
+        </div>
         <datasetChoose
           :showDataManageStep="(showDataManageStep = false)"
           @send_data="getTableName"
@@ -24,6 +42,9 @@
           style="margin-left: 50%; margin-top: 10px"
           v-show="dataSelectForm.isShow"
         >
+          <el-button type="primary" size="small" @click="stepBack(active)"
+            >上一步</el-button
+          >
           <el-button type="primary" size="small" @click="submitForm(active)"
             >下一步</el-button
           >
@@ -167,7 +188,7 @@
         <div
           id="chart"
           class="charts"
-          style="width: 700px; height: 600px;margin-left: 100px;"
+          style="width: 700px; height: 600px; margin-left: 100px"
         ></div>
         <div
           id="barChart"
@@ -176,8 +197,11 @@
         ></div>
       </div>
       <div class="button1" v-if="showButton">
-        <el-button type="primary" size="small" @click="stepBack(active)"
+        <el-button type="primary" size="small" @click="stepBack(active)" v-if="Object.keys(taskInfoParm)==0"
           >上一步</el-button
+        >
+         <el-button type="primary" size="small" @click="returnTask" v-else
+          >返回</el-button
         >
         <el-button type="primary" size="small" @click="exportData"
           >导 出</el-button
@@ -193,10 +217,11 @@ import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import * as echarts from "echarts";
 import html2canvas from "html2canvas";
 import server from "@/utils/request";
-
+import taskInfo from "@/components/TaskInfo.vue";
 export default {
   components: {
     datasetChoose,
+    taskInfo,
   },
   data() {
     return {
@@ -217,7 +242,7 @@ export default {
       healthDataLow: [3.2, 3.2, 50, 100],
       healthDataHigh: [7.1, 7.0, 90, 170],
       patientData: [],
-      formArray: ["dataSelectForm", "oneSelectForm", "outcome"],
+      formArray: ["taskInfoForm", "dataSelectForm", "oneSelectForm", "outcome"],
       active: 0,
       currentRow: null,
       tableData: [],
@@ -253,10 +278,21 @@ export default {
       value2: [],
       head1: true,
       head2: false,
-
+      createTaskInfo: null,
+      taskInfoForm: {
+        isShow: true,
+        formData: {
+          selectedData: "",
+        },
+        rules: {
+          selectedData: [
+            { required: true, message: "请选择数据表", trigger: "blur" },
+          ],
+        },
+      },
       //数据选择-----------------------------------------------------------------------------------------------
       dataSelectForm: {
-        isShow: true,
+        isShow: false,
         formData: {
           selectedData: "",
         },
@@ -322,9 +358,9 @@ export default {
     ) {
       // 判断是否是直接从任务管理跳转过来
       this.is_select = true;
-      this.showButton = true;
+      this.showButton = false;
       this.selectedRow = {};
-      this.submitForm(1);
+      this.submitForm(2);
     } else {
       this.getAllData();
     }
@@ -344,6 +380,7 @@ export default {
       }
     },
     getTableName(tableName) {
+      console.log("gettablename", tableName);
       this.dataSelectForm.formData.selectedData = tableName;
     },
     onSubmitDM() {
@@ -585,40 +622,50 @@ export default {
         type: "warning",
       });
     },
+    getTaskInfo(data) {
+      this.createTaskInfo = data;
+      this.createTaskInfo.tasktype = "特征表征";
+    },
+      returnTask(){
+           this.$router.push( '/taskManage');
+      },
     submitForm(stepIndex) {
+      console.log("stepIndex", stepIndex);
+      if (stepIndex == 1 && !this.dataSelectForm.formData.selectedData) {
+        this.open3("请选择一个数据表！");
+        return;
+      }
       if (
-        (stepIndex == 1 && this.is_select == false) ||
-        (stepIndex == 1 && this.selectedRow == null)
+        (stepIndex == 2 && this.is_select == false) ||
+        (stepIndex == 2 && this.selectedRow == null)
       ) {
         this.open3("请选择一个病人！");
         return;
       }
-      let formName = this.formArray[stepIndex];
-      if (stepIndex < 1) {
+      if (stepIndex < 2) {
+        let formName = this.formArray[stepIndex];
         this[formName].isShow = false;
-        this.active++;
-        let nextFormName = this.formArray[++stepIndex];
+        let nextFormName = this.formArray[++this.active];
         this[nextFormName].isShow = true;
-        if (this.active == 1) {
-          let tableName = this.dataSelectForm.formData.selectedData;
-          this.dataLoading = true;
-          getRequest(
-            "/feature/getInfoByTableName?tableName=" + tableName + "&page=" + 1
-          )
-            .then((response) => {
-              this.dataColumn = Object.keys(response.data[0]);
-              this.allPage = response.total * 10;
-              this.tableData = response.data;
-              this.dataPre = true;
-            })
-            .finally(() => {
-              this.dataLoading = false;
-            });
-        }
-      } else if (stepIndex == 1) {
+      }
+      if (stepIndex == 1) {
+        let tableName = this.dataSelectForm.formData.selectedData;
+        this.dataLoading = true;
+        getRequest(
+          "/feature/getInfoByTableName?tableName=" + tableName + "&page=" + 1
+        )
+          .then((response) => {
+            this.dataColumn = Object.keys(response.data[0]);
+            this.allPage = response.total * 10;
+            this.tableData = response.data;
+            this.dataPre = true;
+          })
+          .finally(() => {
+            this.dataLoading = false;
+          });
+      } else if (stepIndex == 2) {
         let tableName = this.dataSelectForm.formData.selectedData;
         let select = this.oneSelectForm.formData.selectedData;
-
         if (
           this.taskInfoParm != null &&
           this.taskInfoParm.label != null &&
@@ -834,7 +881,6 @@ export default {
 //     overflow-y: hidden;
 // }
 .visual_datasetChoose {
-
   ::v-deep .left_tree {
     height: 630px;
   }

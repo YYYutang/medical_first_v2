@@ -261,6 +261,12 @@ export default {
       },
       deep: true,
     },
+     dataChoose: {
+      handler(newVal) {
+        this.dealdata();
+      },
+      deep: true,
+    },
   },
   created() {
     this.taskInfoParam = this.$route.params; // 任务管理直接查看结果的参数

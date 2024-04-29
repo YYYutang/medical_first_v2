@@ -2,7 +2,7 @@
 
   <div id="mainBox">
     <div class="step">
-      <el-steps :active="1" align-center>
+      <el-steps :active="1" align-center v-if="tasktype!=6">
         <el-step title="任务信息"></el-step>
         <el-step title="选择数据"></el-step>
         <el-step title="特征选择"></el-step>
@@ -63,7 +63,7 @@ import { getRequest } from "@/utils/api";
 export default {
   name: "TaskInfo",
   mixins: [resetForm, vuex_mixin],
-  props: ['active','createTaskInfo', 'tasktype','type'],
+  props: ['active','createTaskInfo', 'tasktype','type',],
   watch: {},
   computed: {},
   data() {
@@ -114,7 +114,14 @@ export default {
       this.taskInfoForm.taskName = this.username + "_特征表征_" + this.getDatatime()
       this.taskInfoForm.principal = this.username
     });
+    
   }
+    else if(this.tasktype == 6){
+    this.getUserName().then(() => {
+      this.taskInfoForm.taskName = this.username + "_病人画像_" + this.getDatatime()
+      this.taskInfoForm.principal = this.username
+    });
+    }
   },
   
   mounted(){

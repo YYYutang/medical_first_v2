@@ -107,7 +107,7 @@
     </div>
     <div class="bottomBigDiv">
       <div class="left">
-        <el-card style="height:500px">
+        <el-card style="height: 500px">
           <div slot="header" class="clearfix">
             <span class="lineStyle">▍</span><span>病种数据统计</span>
           </div>
@@ -135,17 +135,29 @@
           <div slot="header" class="clearfix">
             <span class="lineStyle">▍</span><span>各类指标缺失情况</span>
           </div>
+          <!-- <div class="selectOptions">
+ 
+            <el-select v-model="value" placeholder="请选择表" size="mini" style="width:150px">
+              <el-option
+                v-for="item in tableOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+    
+            <el-select v-model="value" placeholder="请选择数据类型" size="mini" style="width:150px">
+              <el-option
+                v-for="item in typeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </div> -->
           <div id="indicators" style="width: 500px; height: 400px"></div>
-          <!-- <el-table :data="tableData2" stripe style="width: 100%" height="400">
-            <el-table-column prop="tableName" label="数据表" width="100">
-            </el-table-column>
-            <el-table-column prop="tableOrigin" label="数据来源" width="180">
-            </el-table-column>
-            <el-table-column prop="tableSize" label="存储大小">
-            </el-table-column>
-            <el-table-column prop="tableDate" label="创建时间">
-            </el-table-column>
-          </el-table> -->
         </el-card>
       </div>
       <div class="right">
@@ -167,6 +179,8 @@ export default {
   name: "index",
   data() {
     return {
+      tableOptions: [],
+      typeOptions:[],
       mychart: {},
       mychart2: {},
       tableData2: [],
@@ -190,12 +204,12 @@ export default {
           label: "生理学指标",
           value: 1,
         },
-          {
+        {
           label: "社会学指标",
           value: 2,
         },
       ],
-      selectTypeValue:'人口学指标',
+      selectTypeValue: "人口学指标",
       quickEntry: [
         {
           title: "数据管理",
@@ -229,26 +243,26 @@ export default {
         },
       ],
       diseaseData: [
-        {
-          name: "胃癌",
-          num: 0,
-        },
-        {
-          name: "糖尿病",
-          num: 0,
-        },
-        {
-          name: "肺癌",
-          num: 0,
-        },
-        {
-          name: "乳腺癌",
-          num: 0,
-        },
-        {
-          name: "高血压",
-          num: 0,
-        },
+        // {
+        //   name: "胃癌",
+        //   num: 0,
+        // },
+        // {
+        //   name: "糖尿病",
+        //   num: 0,
+        // },
+        // {
+        //   name: "肺癌",
+        //   num: 0,
+        // },
+        // {
+        //   name: "乳腺癌",
+        //   num: 0,
+        // },
+        // {
+        //   name: "高血压",
+        //   num: 0,
+        // },
       ],
     };
   },
@@ -256,6 +270,19 @@ export default {
     quickLink(index) {
       this.$router.replace(this.quickEntry[index].router);
     },
+        init(){
+            getRequest(`/api/sysManage/getLevel2Label`).then(res => {
+                if (res.code == 200) {
+                  this.tableOptions=res.data.map((item)=>({
+                    label:item.label,
+                    value:item.id,
+                  }));
+                    // console.log("ret data", res.data);
+                    this.disOptions.firstSelect=res.data;
+                    // console.log(res.data);
+                }
+            })            
+        },
     chart1() {
       var chartDom = document.getElementById("increase");
       this.mychart = this.$echarts.init(chartDom);
@@ -289,7 +316,6 @@ export default {
       option && this.mychart.setOption(option);
     },
     getIndicatorsFromBackEnd(types, tableName) {
-
       getIndicators("/api/getIndicators", types, tableName)
         .then((response) => {
           this.labelData = response.data.map((item) => item.label);
@@ -357,7 +383,7 @@ export default {
       this.mychart2 = this.$echarts.init(chartDom);
       let option2 = {
         title: {
-          text: this.selectTableName+'表的'+this.selectTypeValue+'字段',
+          text: this.selectTableName + "表的" + this.selectTypeValue + "字段",
           left: 10,
         },
 
@@ -407,6 +433,7 @@ export default {
   },
   mounted() {
     this.getStatis();
+    this.init();
     this.getAllData();
     this.getIncrease();
     this.getStaticDisease();
@@ -507,5 +534,11 @@ export default {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+}
+.selectOptions{
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 5px;
 }
 </style>

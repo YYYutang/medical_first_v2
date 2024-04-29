@@ -13,23 +13,23 @@
        <el-form-item label="创建时间:">
          <el-input  v-model="form.createTime" disabled></el-input>
        </el-form-item>
-       <el-form-item label="密保问题1:" prop="answer_1">
+       <el-form-item label="密保问题1:" prop="answer1">
          <el-input v-model="form.question1" disabled></el-input>
        </el-form-item>
-       <el-form-item label="密保答案1:" prop="answer_1">
-         <el-input v-model="form.answer_1" ></el-input>
+       <el-form-item label="密保答案1:" prop="answer1">
+         <el-input v-model="form.answer1" ></el-input>
        </el-form-item>
-       <el-form-item label="密保问题2:" prop="answer_1">
+       <el-form-item label="密保问题2:" prop="answer2">
          <el-input v-model="form.question2" disabled></el-input>
        </el-form-item>
-       <el-form-item label="密保答案2:" prop="answer_2">
-         <el-input v-model="form.answer_2"></el-input>
+       <el-form-item label="密保答案2:" prop="answer2">
+         <el-input v-model="form.answer2"></el-input>
        </el-form-item>
-       <el-form-item label="密保问题3:" prop="answer_1">
+       <el-form-item label="密保问题3:" prop="answer3">
          <el-input v-model="form.question3" disabled></el-input>
        </el-form-item>
-       <el-form-item label="密保答案3:" prop="answer_3">
-         <el-input v-model="form.answer_3"></el-input>
+       <el-form-item label="密保答案3:" prop="answer3">
+         <el-input v-model="form.answer3"></el-input>
        </el-form-item>
        <el-form-item v-if="form.role === '普通用户'" label="剩余上传文件容量:">
          <el-input  v-model="form.uploadSize" disabled></el-input>
@@ -56,15 +56,15 @@ export default {
         username:'',
         role:'',
         createTime:'',
-        answer_1:'',
-        answer_2:'',
-        answer_3:'',
+        answer1:'',
+        answer2:'',
+        answer3:'',
         question1:'',
         question2:'',
         question3:'',
         uploadSize:'',
-        uid: sessionStorage.getItem("uid")
-            ? sessionStorage.getItem("uid")
+        uid: sessionStorage.getItem("userid")
+            ? sessionStorage.getItem("userid")
             : "",
       },
       rules:{
@@ -72,15 +72,15 @@ export default {
           { required: true },
           { min: 2, max: 8, message: '长度在 2 到 8 个字符', trigger: 'blur' }
         ],
-        answer_1:[
+        answer1:[
           { required: true },
           {min:1, max:20, message: '长度在 1到 20 个字符', trigger: 'blur'}
         ],
-        answer_2:[
+        answer2:[
           { required: true },
           {min:1, max:20, message: '长度在 1到 20 个字符', trigger: 'blur'}
         ],
-        answer_3:[
+        answer3:[
           { required: true },
           {min:1, max:20, message: '长度在 1到 20 个字符', trigger: 'blur'}
         ]
@@ -128,12 +128,12 @@ export default {
           const inputDateTime  = data.createTime
           const datePart = inputDateTime.split("T")[0];
           this.form.createTime = datePart
-          this.form.question1 = data.answer_1.split(":")[0]
-          this.form.question2 = data.answer_2.split(":")[0]
-          this.form.question3 = data.answer_3.split(":")[0]
-          this.form.answer_1 = data.answer_1.split(":")[1]
-          this.form.answer_2 = data.answer_2.split(":")[1]
-          this.form.answer_3 = data.answer_3.split(":")[1]
+          this.form.question1 = data.answer1.split(":")[0]
+          this.form.question2 = data.answer2.split(":")[0]
+          this.form.question3 = data.answer3.split(":")[0]
+          this.form.answer1 = data.answer1.split(":")[1]
+          this.form.answer2 = data.answer2.split(":")[1]
+          this.form.answer3 = data.answer3.split(":")[1]
           this.form.uploadSize = data.uploadSize
           let test =  `${this.form.question1}:${this.form.answer_1 }`;
           console.log(test)
@@ -155,11 +155,11 @@ export default {
     submitForm(){
       const form = {
         username:'',
-        answer_1:'',
-        answer_2:'',
-        answer_3:'',
-        uid: sessionStorage.getItem("uid")
-            ? sessionStorage.getItem("uid")
+        answer1:'',
+        answer2:'',
+        answer3:'',
+        uid: sessionStorage.getItem("userid")
+            ? sessionStorage.getItem("userid")
             : "",
       }
       if(this.form.role === '管理员'){
@@ -168,17 +168,17 @@ export default {
         this.form.role = 1
       }
       form.username = this.form.username
-      form.answer_1 =`${this.form.question1}:${this.form.answer_1 }`
-      form.answer_2 = `${this.form.question2}:${this.form.answer_2 }`
-      form.answer_3 = `${this.form.question3}:${this.form.answer_3 }`
+      form.answer1 =`${this.form.question1}:${this.form.answer1 }`
+      form.answer2 = `${this.form.question2}:${this.form.answer2 }`
+      form.answer3 = `${this.form.question3}:${this.form.answer3 }`
       postRequest('/user/updateUser',form).then(res => {
         if(res.code === 200){
-          window.sessionStorage.setItem("user", this.form.username);
+          window.sessionStorage.setItem("username", this.form.username);
           this.getUserDetail()
           this.$message.success("修改成功")
-          setTimeout(function() {
-            location.reload();
-          }, 100);
+          // setTimeout(function() {
+          //   location.reload();
+          // }, 100);
         }else {
           this.$message.error("修改失败")
         }

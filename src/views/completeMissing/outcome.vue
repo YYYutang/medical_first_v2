@@ -28,7 +28,7 @@
            <h2><br><br>结果数据预览<br><br></h2>
         </div>
         <div class="message">
-            <span class="blue" style="color: gray">下表中蓝色显示的数据为原始数据，</span>
+            <span class="blue" style="color: gray">下表中黑色显示的数据为原始数据，</span>
             <span class="red"  style="color: gray">红色显示的数据为插补数据</span>
         </div>
         <div class="fillDataShow">
@@ -84,7 +84,6 @@ export default ({
     created(){
         // 加载任务管理传递的参数
       this.taskInfoParam = this.$route.params // 任务管理直接查看结果的参数
-      console.log("任务管理过来的传递信息：",this.taskInfoParam)
       this.taskInfo = this.createTaskInfo;
       if(this.taskInfo == null && (this.taskInfoParam!=null && this.taskInfoParam.taskInfo!=null)) this.taskInfo = this.taskInfoParam.taskInfo; //
       this.fillData();

@@ -285,7 +285,10 @@
           <span class="belongType">{{ showFeatureDataForm.classPath }}</span>
         </div>
       </div>
-      <div class="addDataClass" style="margin-top: 20px">
+      <div class="addDataClass" style="margin-top: 20px"          v-loading="add_table_loading"
+            element-loading-text="数据量较大，拼命加载中"
+            element-loading-spinner="el-icon-loading"
+            element-loading-background="rgba(0, 0, 0, 0.05)">
         <div class="addDataTitle">
           <i class="el-icon-connection"></i>&nbsp;&nbsp;特征选择
         </div>
@@ -434,11 +437,13 @@
           </button>
         </div>
         <!-- 显示筛选出来的表数据 -->
+  
         <el-table
           :data="addTableData"
           stripe
           style="width: 100%"
           max-height="450"
+         
           v-show="showAddTableData"
           :header-cell-style="{ background: '#eee', color: '#606266' }"
         >
@@ -815,6 +820,7 @@ export default {
       dialogDataVisible: false,
       characterVisible: false,
       showAddTableData: false,
+      add_table_loading:false,
       characterId: 1,
       showDataForm: {
         tableName: "",
@@ -923,6 +929,33 @@ export default {
 
   created() {
     this.checkAddTaleName = this.debounce(() => {
+      getRequest("/api/DataTable/inspection", {
+        newname: this.addDataForm.dataName,
+      }).then((res) => {
+        console.log(res);
+        // 上一次重复了这一次不重复就要提醒一下
+        if (!this.dialogForm.isOnly && res.data) {
+          this.$message({
+            showClose: true,
+            message: "表名可用",
+            type: "success",
+          });
+        }
+        if (typeof res.data === "boolean") {
+          this.dialogForm.isOnly = res;
+        }
+        if (!res.data) {
+          this.$message({
+            showClose: true,
+            message: "数据表重名，请重新填写",
+            type: "warning",
+          });
+          return false;
+        }
+        return true;
+      });
+    }, 200);
+     this.checkTableName = this.debounce(() => {
       getRequest("/api/DataTable/inspection", {
         newname: this.addDataForm.dataName,
       }).then((res) => {
@@ -1421,7 +1454,14 @@ export default {
         },
       };
       this.$axios(this.options).then((res) => {
+        this.open3('创建成功！')
         this.getCatgory();
+      });
+    },
+       open3(msg) {
+      this.$message({
+        message: msg,
+        type: "success",
       });
     },
     putToAddDataForm() {
@@ -1466,6 +1506,7 @@ export default {
           "Content-Type": "application/json",
         },
       };
+      this.add_table_loading=true
       console.log("请求参数：" + JSON.stringify(filterConditions));
       this.$axios(this.options)
         .then((res) => {
@@ -1473,10 +1514,12 @@ export default {
           console.log("数据:");
           console.log(this.addTableData);
           this.showAddTableData = true;
+          this.add_table_loading=false
         })
         .catch((error) => {
           this.$message.error("获取数据失败");
           console.log("获取数据失败" + error);
+          this.add_table_loading=false
         });
       let s = JSON.stringify(this.addDataForm.characterList, null, 2);
       console.log("this.addDataForm:");

@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import SideBar from '@/components/sideBar/index.vue'
 import dash from '@/views/dash/index.vue'
 import represent from "@/views/represent/index.vue";
-// import represent from "@/views/represent.vue";
+ import updatePassword from "@/views/User/updatePassword.vue";
 import visualization from "@/views/visualization.vue";
 import introduce from "@/views/introduce/introduce.vue"
 import logIn from "@/views/User/Login.vue"
@@ -25,7 +25,6 @@ import taskManage from "@/views/taskManage.vue"
 import taskInfo from "@/components/TaskInfo.vue"
 import consistencyAnalyze from "@/views/stasticAnalyze/consistencyAnalysis/index.vue"
 import singleAnalyze from "@/views/stasticAnalyze/singleFactorAnalyze/index.vue"
-
 import consistencyOutcome from "@/views/stasticAnalyze/consistencyAnalysis/outCome.vue"
 import singleOutcome from "@/views/stasticAnalyze/singleFactorAnalyze/outCome.vue"
 import userManage from "@/views/manageAll/userManage.vue"
@@ -85,6 +84,12 @@ const routes = [
       path: '/dataManagePublic',
       name: 'dataManagePublic',
       component: dataManagePublic,
+      meta: { roles: ['1', '0'] },
+    },
+    {
+      path: '/updatePassword',
+      name: 'updatePassword',
+      component: updatePassword,
       meta: { roles: ['1', '0'] },
     },
     {

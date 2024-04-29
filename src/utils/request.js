@@ -4,7 +4,7 @@ import router from '../router'
 
 const server = axios.create({
   // 过期时间
-  timeout: 20000,
+  timeout: 50000,
   // withCredentials: true,
   // baseURL: 'http:10.16.80.16:8080',
   headers: {

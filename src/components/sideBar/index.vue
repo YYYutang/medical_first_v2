@@ -32,6 +32,9 @@
               <el-dropdown-item @click.native="goToProfile"
                 >个人中心</el-dropdown-item
               >
+              <el-dropdown-item @click.native="goToUpdatePsw"
+                >修改密码</el-dropdown-item
+              >
               <!-- 可以添加更多的下拉选项 -->
             </el-dropdown-menu>
           </el-dropdown>
@@ -82,7 +85,7 @@
             </template>
             <div class="menu-footer">
               <el-menu-item index="/introduce"> 软件介绍</el-menu-item>
-              <el-menu-item> 操作手册</el-menu-item>
+              <el-menu-item @click="downloadManual"> 操作手册</el-menu-item>
             </div>
           </el-menu>
         </el-aside>
@@ -220,8 +223,11 @@ export default {
     this.setMenuHighlight();
   },
   methods: {
-    goToProfile(){
-      this.$router.push('/userCenter'); // 假设你的路由中有个人中心的配置
+    goToProfile() {
+      this.$router.push("/userCenter"); // 假设你的路由中有个人中心的配置
+    },
+    goToUpdatePsw() {
+      this.$router.push("/updatePassword"); // 假设你的路由中有个人中心的配置
     },
     handleSelect(key) {
       if (key == 2) {
@@ -231,6 +237,14 @@ export default {
           }
         });
       }
+    },
+    downloadManual() {
+      const link = document.createElement("a");
+      link.href = "/static/使用说明书.pdf";
+      link.download = "人群队列数据特征表征软件使用说明书.pdf"; // 可以设置下载文件的名称
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     },
     handleOpen(key, keyPath) {
       console.log(key, keyPath);

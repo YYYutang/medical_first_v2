@@ -27,7 +27,10 @@
         >
         </el-tree>
       </div>
-      <div class="right">
+      <div class="right"  v-loading="add_character_loading"
+            element-loading-text="数据量较大，拼命加载中"
+            element-loading-spinner="el-icon-loading"
+            element-loading-background="rgba(0, 0, 0, 0.05)">
         <div class="info">
           <el-alert
             title="特征下方进度条为特征完备度"
@@ -393,6 +396,7 @@ export default {
         },
       ],
       groupFeature: {},
+      add_character_loading:false,
       observeFeaure: {},
       allFeatures: [],
       // curentAnalyzeStep: 1,
@@ -673,16 +677,20 @@ export default {
       if (types === "") {
         this.featureData = [];
       } else {
+        this.add_character_loading=true;
         console.log('tableName', this.tableName)
         getIndicators("/api/getIndicators", types, this.tableName)
           .then((response) => {
+            if(response.data){
             this.featureData = response.data;
             console.log("特征信息位：", this.featureData);
-
             // 给父组件传递参数
             this.$emit("send_indicators", this.featureData);
+            }
+              this.add_character_loading=false;
           })
-          .catch((error) => {});
+          .catch((error) => {  this.add_character_loading=false;})
+        
       }
     },
     handleCheck(data, node) {
@@ -698,6 +706,7 @@ export default {
       this.getIndicatorsFromBackEnd(this.selectedNode.join(","));
     },
     getIndicatorCategory() {
+      
       getRequest("/api/indicatorCategory").then((response) => {
         this.treeData = response.data;
       });

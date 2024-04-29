@@ -528,7 +528,7 @@ export default {
         .then((response) => {
           // 获取表数据
           this.filerInfoData = response.data;
-          console.log("数据长度" + response.data.length);
+      
         })
         .catch((error) => {
           console.log(error);

@@ -5,12 +5,14 @@
       <el-button style="margin-left: 20px" type="primary" @click="load">查询</el-button>
       <el-button @click="clean" >清空条件</el-button>
     </div>
-    <div>
+    <div   v-loading="table_loading"
+            element-loading-text="数据量较大，拼命加载中"
+            element-loading-spinner="el-icon-loading"
+            element-loading-background="rgba(0, 0, 0, 0.05)">
       <el-table
           :header-cell-style="{ backgroundColor: '#e8e5e5', color: 'black', fontWeight: 'bold'}"
           :data="tableData"
           stripe
-          height="1000"
       >
           style="width: 100%">
         <el-table-column
@@ -60,7 +62,8 @@ export  default {
       pageNum:1,
       pageSize:10,
       total: 0,
-      username:""
+      username:"",
+      table_loading:false,
     }
   },
   created() {
@@ -68,10 +71,12 @@ export  default {
   },
   methods:{
     load(){
+      this.table_loading = true;
       getRequest(`userlog/getLogByPage?pageNum=${this.pageNum}&pageSize=${this.pageSize}&username=${this.username}`)
           .then(res =>{
-            this.tableData = res.data.records
+            this.tableData = res.data.list
             this.total = res.data.total
+            this.table_loading = false;
           })
     },
     handleCurrentChange(pageNum){
