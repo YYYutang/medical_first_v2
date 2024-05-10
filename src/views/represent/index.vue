@@ -441,8 +441,11 @@ export default {
 }
 .stepbutton {
   display: flex;
+  width:100%;
+  background: rgb(255, 255, 255);
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
-  margin-top: 10px;
+   position: fixed;
+      bottom: 23px;
 }
 </style>

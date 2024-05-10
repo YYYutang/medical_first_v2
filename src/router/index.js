@@ -5,7 +5,8 @@ import dash from '@/views/dash/index.vue'
 import represent from "@/views/represent/index.vue";
  import updatePassword from "@/views/User/updatePassword.vue";
 import visualization from "@/views/visualization.vue";
-import introduce from "@/views/introduce/introduce.vue"
+import introduce from "@/views/introduce/index.vue"
+import operateInroduce from "@/views/operateInroduce/index.vue"
 import logIn from "@/views/User/Login.vue"
 import register from "@/views/User/register.vue"
 import forget from "@/views/User/forget.vue"
@@ -20,7 +21,7 @@ import stasticAnalyze from "@/views/stasticAnalyze/index.vue"
 import describeAnalyze from "@/views/stasticAnalyze/describeAnalyze/index.vue"
 import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue"
 import columnManage2 from "@/views/tableManage.vue"
-import dataManagePublic from "@/views/dataManageNormal.vue"
+import dataManagePublic from "@/views/dataManage.vue"
 import taskManage from "@/views/taskManage.vue"
 import taskInfo from "@/components/TaskInfo.vue"
 import consistencyAnalyze from "@/views/stasticAnalyze/consistencyAnalysis/index.vue"
@@ -33,6 +34,7 @@ import dataManageManager from "@/views/manageAll/AdminDataManage.vue"
 import illnessManage from "@/views/manageAll/illnessManage.vue"
 import userCenter from "@/views/User/userCenter.vue"
 import representAlgo from "@/views/represent/algo.vue"
+import test from "@/components/test.vue"
 Vue.use(VueRouter)
 
 const routes = [
@@ -40,6 +42,12 @@ const routes = [
     path: '/',
     name: 'logIn',
     component: logIn
+  },
+  {
+    path: '/test',
+    name: 'test',
+    component: test,
+    meta: { roles: ['1', '0'] }
   },
   {
     path: '/register',
@@ -84,6 +92,12 @@ const routes = [
       path: '/dataManagePublic',
       name: 'dataManagePublic',
       component: dataManagePublic,
+      meta: { roles: ['1', '0'] },
+    },
+    {
+      path: '/operateInroduce',
+      name: 'operateInroduce',
+      component: operateInroduce,
       meta: { roles: ['1', '0'] },
     },
     {

@@ -24,10 +24,7 @@
           @send_taskInfo="getTaskInfo"
           :createTaskInfo="createTaskInfo"
         ></taskInfo>
-        <div
-          style="margin-left: 50%; margin-top: 10px"
-          v-show="taskInfoForm.isShow"
-        >
+        <div class="button1" v-show="taskInfoForm.isShow">
           <el-button type="primary" size="small" @click="submitForm(active)"
             >下一步</el-button
           >
@@ -38,10 +35,7 @@
           v-show="dataSelectForm.isShow"
           class="visual_datasetChoose"
         ></datasetChoose>
-        <div
-          style="margin-left: 50%; margin-top: 10px"
-          v-show="dataSelectForm.isShow"
-        >
+        <div class="button1" v-show="dataSelectForm.isShow">
           <el-button type="primary" size="small" @click="stepBack(active)"
             >上一步</el-button
           >
@@ -98,15 +92,6 @@
                       :class="{ 'row-selected': row === selectedRow }"
                       class="truncate-text"
                     >
-                      <!-- :style="
-                        row === selectedRow
-                          ? {
-                              backgroundColor: '#002766',
-                              color: '#fff',
-                              fontWeight: 'bold',
-                            }
-                          : {}
-                      " -->
                       {{ row[item] }}
                     </div>
                   </template>
@@ -127,11 +112,15 @@
           </el-form-item>
 
           <br />
-          <div style="margin-left: 45%">
-            <el-button size="small" @click="stepBack(active)">上一步</el-button>
-            <el-button type="primary" size="small" @click="submitForm(active)"
-              >完成</el-button
-            >
+          <div class="button1">
+            <div class="flexButton">
+              <el-button size="small" @click="stepBack(active)"
+                >上一步</el-button
+              >
+              <el-button type="primary" size="small" @click="submitForm(active)"
+                >完成</el-button
+              >
+            </div>
           </div>
         </el-form>
       </div>
@@ -197,10 +186,14 @@
         ></div>
       </div>
       <div class="button1" v-if="showButton">
-        <el-button type="primary" size="small" @click="stepBack(active)" v-if="Object.keys(taskInfoParm)==0"
+        <el-button
+          type="primary"
+          size="small"
+          @click="stepBack(active)"
+          v-if="Object.keys(taskInfoParm) == 0"
           >上一步</el-button
         >
-         <el-button type="primary" size="small" @click="returnTask" v-else
+        <el-button type="primary" size="small" @click="returnTask" v-else
           >返回</el-button
         >
         <el-button type="primary" size="small" @click="exportData"
@@ -626,9 +619,9 @@ export default {
       this.createTaskInfo = data;
       this.createTaskInfo.tasktype = "特征表征";
     },
-      returnTask(){
-           this.$router.push( '/taskManage');
-      },
+    returnTask() {
+      this.$router.push("/taskManage");
+    },
     submitForm(stepIndex) {
       console.log("stepIndex", stepIndex);
       if (stepIndex == 1 && !this.dataSelectForm.formData.selectedData) {
@@ -889,6 +882,10 @@ export default {
   display: flex;
   justify-content: center;
   margin-top: 10px;
+  width: 100%;
+  background: rgb(255, 255, 255);
+  position: fixed;
+  bottom: 23px;
 }
 /deep/ .el-table__body tr.current-row > td.el-table__cell {
   background-color: #157df0;

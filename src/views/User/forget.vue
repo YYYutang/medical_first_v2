@@ -468,6 +468,12 @@ img.png {
   width: 100%;
   height: 150px;
 }
+.cooperation .text-photo1 .el-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
 .cooperation .text-coop {
   margin-left: 20px;
   text-align: left;

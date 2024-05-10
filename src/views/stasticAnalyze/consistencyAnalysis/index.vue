@@ -185,6 +185,10 @@ export default {
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
   margin-top: 10px;
+     position: fixed;
+    bottom: 23px;
+    width:100%;
+  background: rgb(255, 255, 255);
 }
 .con_datasetChoose {
   // ::v-deep .right_table {

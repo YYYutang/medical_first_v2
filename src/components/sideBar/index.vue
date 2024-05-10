@@ -85,7 +85,7 @@
             </template>
             <div class="menu-footer">
               <el-menu-item index="/introduce"> 软件介绍</el-menu-item>
-              <el-menu-item @click="downloadManual"> 操作手册</el-menu-item>
+              <el-menu-item index="/operateInroduce"> 操作手册</el-menu-item>
             </div>
           </el-menu>
         </el-aside>

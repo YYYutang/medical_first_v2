@@ -221,6 +221,10 @@ export default {
   display: flex;
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
+     position: fixed;
+     bottom: 23px;
+    width:100%;
+  background: rgb(255, 255, 255);
 }
 .single_datasetChoose {
 

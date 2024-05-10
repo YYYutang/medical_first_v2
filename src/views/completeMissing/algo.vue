@@ -27,6 +27,7 @@
               <el-option label="前向填充" value="前向填充"></el-option>
               <el-option label="均数替换" value="均数替换"></el-option>
               <el-option label="众数填充" value="众数填充"></el-option>
+              <el-option label="聚类填充" value="聚类填充"></el-option>
               <el-option label="回归分析替换" value="回归分析替换"></el-option>
               <el-option label="热卡填充" value="热卡填充"></el-option>
               <el-option label="中位数替换" value="中位数替换"></el-option>

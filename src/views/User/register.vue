@@ -498,7 +498,12 @@ img.png {
   align-items: center;
   flex-direction: column;
 }
-
+.cooperation .text-photo1 .el-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
 .mainRight h1 {
   display: block;
   color: white;

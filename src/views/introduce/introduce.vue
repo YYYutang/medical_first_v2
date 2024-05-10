@@ -29,32 +29,13 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 <script>
-export default {
-  setup() {},
-  methods: {
-    linktoDash() {
-      this.$router.push("/dash");
-    },
-    linktoDataManage() {
-      this.$router.push("/dataManagePublic");
-    },
-    linktoReperesent() {
-      this.$router.push("/represent");
-    },
-    linktoVisualization() {
-      this.$router.push("/visualization");
-    },
-    linktoComplete() {
-      this.$router.push("/completeMissing");
-    },
-    linktoStatis() {
-      this.$router.push("/stasticAnalyze");
-    },
-  },
-};
+   
+    import { getRequest, postRequest } from "@/api/user";
+   
 </script>
 <style scoped>
 .container {

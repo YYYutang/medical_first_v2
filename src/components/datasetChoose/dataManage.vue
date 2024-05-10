@@ -2,7 +2,7 @@
   <div>
     <div class="step" v-show="showDataManageStep">
       <el-steps :active="active" align-center>
-          <el-step title="任务信息"></el-step>
+        <el-step title="任务信息"></el-step>
         <el-step title="选择数据"></el-step>
         <el-step title="特征选择"></el-step>
         <el-step title="方法选择" v-if="type == 4"></el-step>
@@ -186,12 +186,13 @@
               <el-table
                 :data="tableData"
                 stripe
+                ref="fullWidthTable"
                 class="custom-table"
                 max-height="550"
                 :fit="false"
                 v-if="tableData.length > 0"
                 :header-cell-style="{ background: '#eee', color: '#606266' }"
-                ref="scrollTable"
+                :style="{ width: '100%' }"
               >
                 <el-table-column
                   v-for="(value, key) in tableData[0]"
@@ -239,16 +240,15 @@ export default {
         this.$refs.listWrap.style.height = "550px";
       }
     },
-  },
-  computed: {
-    colWidth() {
-      let arr = Object.keys(this.tableData[0]);
-      if (arr.length <= 15) {
-        return 90;
-      } else {
-        return 65;
+    tableData(newVal, oldVal) {
+      if (newVal.length > 0) {
+        this.$nextTick(() => {
+          this.calculateColumnWidth();
+        });
       }
     },
+  },
+  computed: {
     length() {
       return this.tableData.length || 0;
     },
@@ -282,6 +282,7 @@ export default {
       datasetNum: 0,
       table_loading: false,
       tempNode: {},
+      colWidth: 90,
     };
   },
 
@@ -291,9 +292,23 @@ export default {
   },
   mounted() {
     this.$refs.listWrap.style.height = "550px"; // 设置可视区域的高度
-    console.log('this.type',this.type)
+    this.calculateColumnWidth();
   },
   methods: {
+    calculateColumnWidth() {
+      let arr = Object.keys(this.tableData[0]);
+      if (arr.length >=15) {
+        this.colWidth = 90;
+      } else {
+        const tableWidth = this.$refs.fullWidthTable.$el.clientWidth;
+        console.log("tableWidth", tableWidth);
+        const numberOfColumns = Object.keys(this.tableData[0]).length;
+        const width = Math.floor(tableWidth / numberOfColumns);
+        this.colWidth = width;
+         
+      } // 假设 colWidth 是一个响应式数据
+      this.table_loading = false;
+    },
     init() {
       if (this.m_node_data) {
         var node = JSON.parse(this.m_node_data);
@@ -338,11 +353,10 @@ export default {
         .then((response) => {
           if (response.data != null) {
             // let res = JSON.parse(response.data);
-            this.showDataForm.createUser = response.data .createUser;
-            this.showDataForm.createTime = response.data .createTime;
-            this.showDataForm.classPath = response.data .classPath;
-            this.showDataForm.tablename = response.data .tableName;
-
+            this.showDataForm.createUser = response.data.createUser;
+            this.showDataForm.createTime = response.data.createTime;
+            this.showDataForm.classPath = response.data.classPath;
+            this.showDataForm.tablename = response.data.tableName;
           }
         })
         .catch((error) => {
@@ -358,7 +372,8 @@ export default {
           const fields = Object.keys(this.tableData[0]);
           this.showDataForm.sampleNum = this.tableData.length;
           this.showDataForm.featureNum = fields.length;
-          this.table_loading = false;
+           this.calculateColumnWidth();
+         
         })
         .catch((error) => {
           console.log(error);
@@ -592,5 +607,14 @@ h3 {
 
 .describe_content span {
   margin: 10px;
+}
+.el-table {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.el-table-column {
+  flex: 1; /* 每列平均分配空间 */
 }
 </style>

@@ -24,7 +24,7 @@
                 >上一步</el-button
               >
             </div>
-             <div class="button1" v-if="returnShow">
+            <div class="button1" v-if="returnShow">
               <el-button
                 size="small"
                 @click="returnTask()"
@@ -43,7 +43,7 @@
               :columnName="columnSelectForm.formData.selectedData"
               :chartDatay="chartDatay"
             ></newData>
-           <div class="button1" v-if="originalShow">
+            <div class="button1" v-if="originalShow">
               <el-button
                 size="small"
                 @click="stepBack(active)"
@@ -51,7 +51,7 @@
                 >上一步</el-button
               >
             </div>
-             <div class="button1" v-if="returnShow">
+            <div class="button1" v-if="returnShow">
               <el-button
                 size="small"
                 @click="returnTask()"
@@ -260,7 +260,7 @@ export default {
   },
   data() {
     return {
-      taskInfoParam:'',
+      taskInfoParam: "",
       dataPre: false,
       activeName: "first",
       head1: true,
@@ -382,9 +382,9 @@ export default {
       dataChoose: {},
       // dataNew: [],
       statisData: [],
-      loading:false,
-      originalShow:false,
-      returnShow:false
+      loading: false,
+      originalShow: false,
+      returnShow: false,
     };
   },
   created() {
@@ -415,8 +415,8 @@ export default {
     getTableName(tableName) {
       this.dataSelectForm.formData.selectedData = tableName;
     },
-    returnTask(){
- this.$router.push( '/taskManage');
+    returnTask() {
+      this.$router.push("/taskManage");
     },
     async getFirstPageData(tableName) {
       const response = await getRequest(
@@ -509,8 +509,7 @@ export default {
           this.head2 = !this.head2;
           this.showStep = !this.showStep;
         }
-        this.oldShow=true
-        
+        this.oldShow = true;
       } catch (error) {
         console.log(error);
         this.active--;
@@ -536,11 +535,10 @@ export default {
           this[formName].isShow = false;
           this[nextFormName].isShow = true;
           let tableName = this.dataSelectForm.formData.selectedData;
-         
+
           this.getAllfilled(tableName);
           this.getFirstPageData(tableName);
           this.getStasticData(tableName);
-        
         }
         if (this.active == 2) {
           const page = 1;
@@ -563,7 +561,7 @@ export default {
         }
       } else if (stepIndex == 2) {
         let params = {};
-    
+
         if (Object.keys(this.taskInfoParam).length === 0) {
           params = {
             tableName: this.dataSelectForm.formData.selectedData, //模型选择的数据表表名
@@ -571,8 +569,10 @@ export default {
             // modelAlgo: this.algoForm.formData.algoName, //模型选择的算法名
             aiName: "pca",
           };
-           await this.getAllfilled(this.dataSelectForm.formData.selectedData);
-          await this.getFirstPageData(this.dataSelectForm.formData.selectedData);
+          await this.getAllfilled(this.dataSelectForm.formData.selectedData);
+          await this.getFirstPageData(
+            this.dataSelectForm.formData.selectedData
+          );
           await this.getStasticData(this.dataSelectForm.formData.selectedData);
           await this.getDataChoose(
             1,
@@ -580,21 +580,22 @@ export default {
             this.columnSelectForm.formData.selectedData
           );
           await this.getOutcome(params);
-          this.showStep=false
-          this.originalShow=true
-          this.returnShow=false
+          this.showStep = false;
+          this.originalShow = true;
+          this.returnShow = false;
         } else {
-    
           this.head1 = false;
           params = {
             tableName: this.taskInfoParam.tableName, //模型选择的数据表表名
             runParams: this.taskInfoParam.runParams.split(","), //模型选择的属性列（数组）
             aiName: this.taskInfoParam.aiName,
           };
-          this.dataSelectForm.formData.selectedData= this.taskInfoParam.tableName
-          this.columnSelectForm.formData.selectedData=this.taskInfoParam.runParams.split(",")
-          this.loading=true
-         await this.getAllfilled(this.taskInfoParam.tableName);
+          this.dataSelectForm.formData.selectedData =
+            this.taskInfoParam.tableName;
+          this.columnSelectForm.formData.selectedData =
+            this.taskInfoParam.runParams.split(",");
+          this.loading = true;
+          await this.getAllfilled(this.taskInfoParam.tableName);
           await this.getFirstPageData(this.taskInfoParam.tableName);
           await this.getStasticData(this.taskInfoParam.tableName);
           await this.getDataChoose(
@@ -603,23 +604,21 @@ export default {
             params.runParams
           );
           await this.getOutcome(params);
-           this.returnShow=true
-           this.originalShow=false
-          this.loading=false
+          this.returnShow = true;
+          this.originalShow = false;
+          this.loading = false;
         }
-
       }
       if (this.activeName == "first") {
-        console.log('in')
+        console.log("in");
         this.oldShow = true;
-        this.newShow=false;
-        console.log(' this.oldShow', this.originalShow)
+        this.newShow = false;
+        console.log(" this.oldShow", this.originalShow);
       }
       if (this.activeName == "second") {
         this.newShow = true;
-        this.oldShow=false;
+        this.oldShow = false;
       }
-    
     },
     resetForm(stepIndex) {
       let formName = this.formArray[stepIndex];
@@ -631,12 +630,12 @@ export default {
           this.dataInOptions = [];
         }
         let formName = this.formArray[stepIndex];
-        console.log('FORMNAME',formName)
+        console.log("FORMNAME", formName);
         if (formName == "outcome") {
           this.newShow = false;
           this.oldShow = false;
-             this.returnShow=false
-           this.originalShow=false
+          this.returnShow = false;
+          this.originalShow = false;
           this.head1 = !this.head1;
           this.head2 = !this.head2;
           this.showStep = !this.showStep;
