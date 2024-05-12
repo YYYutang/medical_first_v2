@@ -2,8 +2,26 @@
   <div>
     <el-container>
       <div class="outcontainer">
-        <taskInfo v-if="active==1" :active="active" ref="taskInfo" @send_taskInfo = "getTaskInfo" :createTaskInfo="createTaskInfo" :tasktype="1"></taskInfo>
-        <datasetChoose
+        <taskInfo
+          v-if="active == 1"
+          :active="active"
+          ref="taskInfo"
+          @send_taskInfo="getTaskInfo"
+          :createTaskInfo="createTaskInfo"
+          :tasktype="1"
+        ></taskInfo>
+        <!-- <datasetChoose
+          v-if="active == 2"
+          :active="active"
+          :type="3"
+          class="des_datasetChoose"
+          @send_data="handleDataFromChild"
+          @sendTableIdData="handleTableIdFromChild"
+          :tableId="tableId"
+          :tableName="label"
+          :showDataManageStep="(showDataManageStep = true)"
+        ></datasetChoose> -->
+              <datasetChoose
           v-if="active == 2"
           :active="active"
           :type="3"
@@ -20,7 +38,10 @@
           :curentAnalyzeStep="1"
           @send_feat="getCheackedFeats"
           :describeAna="true"
-           @sendTreeNode="getSelectTreeNode" :selectTreeNode="selectTreeNode" @sendFeatueData="getFeatureData" :featureDataFromParent="featureDataFromParent"
+          @sendTreeNode="getSelectTreeNode"
+          :selectTreeNode="selectTreeNode"
+          @sendFeatueData="getFeatureData"
+          :featureDataFromParent="featureDataFromParent"
         ></characterChoose>
         <describeOutcome
           v-if="active == 4"
@@ -32,7 +53,7 @@
           :createTaskInfo="createTaskInfo"
         ></describeOutcome>
         <div class="stepbutton">
-          <el-button size="small" v-if="active!=1" @click="stepBack(active)"
+          <el-button size="small" v-if="active != 1" @click="stepBack(active)"
             >上一步</el-button
           >
           <el-button
@@ -42,8 +63,14 @@
             @click="stepNext(active)"
             >下一步</el-button
           >
-         
-          <el-button v-if="active == 4" size="small" type="primary" @click="showOptions = true">导出</el-button>
+
+          <el-button
+            v-if="active == 4"
+            size="small"
+            type="primary"
+            @click="showOptions = true"
+            >导出</el-button
+          >
           <!-- 使用 el-dialog 组件作为弹出框 -->
           <el-dialog
             title="选项"
@@ -65,7 +92,7 @@ import datasetChoose from "@/components/datasetChoose/dataManage.vue";
 import describeOutcome from "@/views/stasticAnalyze/describeAnalyze/outcome.vue";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import taskInfo from "@/components/TaskInfo.vue"
+import taskInfo from "@/components/TaskInfo.vue";
 /*描述性统计分析页面*/
 export default {
   name: "outcome",
@@ -74,43 +101,44 @@ export default {
     characterChoose,
     datasetChoose,
     describeOutcome,
-    taskInfo
+    taskInfo,
   },
   data() {
     return {
-      newTaskInfo: null, 
+      newTaskInfo: null,
       featureDataFromParent: [],
       selectTreeNode: [],
       label: "",
       active: 1,
       checkedFeats: [],
       createTaskInfo: null,
-      showOptions: false
+      showOptions: false,
+      tableId: 1,
     };
   },
-  created(){
+  created() {
     this.newTaskInfo = this.$route.params;
   },
   methods: {
-       returnTask(){
-           this.$router.push( '/taskManage');
-      },
-     getTaskInfo(data){
+    returnTask() {
+      this.$router.push("/taskManage");
+    },
+    getTaskInfo(data) {
       this.createTaskInfo = data;
-      this.createTaskInfo.tasktype="描述性分析"
-      console.log("获取到任务信息",this.createTaskInfo)
+      this.createTaskInfo.tasktype = "描述性分析";
+      console.log("获取到任务信息", this.createTaskInfo);
     },
     open3(msg) {
-        this.$message({
-          message: msg,
-          type: 'warning'
-        });
+      this.$message({
+        message: msg,
+        type: "warning",
+      });
     },
-     getFeatureData(data){
+    getFeatureData(data) {
       this.featureDataFromParent = data;
     },
-    getSelectTreeNode(data){
-      console.log("选中的树节点：",data)
+    getSelectTreeNode(data) {
+      console.log("选中的树节点：", data);
       this.selectTreeNode = data;
     },
     getCheackedFeats(data) {
@@ -122,29 +150,39 @@ export default {
       console.log("收到参数:", label);
       this.label = label;
     },
+    handleTableIdFromChild(id) {
+      this.tableId = id;
+    },
     stepBack(active) {
       this.active--;
-      if(active === 3) {
+      if (active === 3) {
         // 将 this.selectTreeNode 传递给子组件 characterChoose
         this.$refs.characterChoose.selectTreeNode = this.selectTreeNode;
-        this.$refs.characterChoose.featureDataFromParent = this.featureDataFromParent;
+        this.$refs.characterChoose.featureDataFromParent =
+          this.featureDataFromParent;
       }
     },
     stepNext(active) {
-      if(active == 1){
+      if (active == 1) {
         this.$refs.taskInfo.extStep(); // 假设子组件有一个名为 nextStep 的方法
-        if (this.createTaskInfo.taskName.length < 1 || this.createTaskInfo.principal.length < 1) {
+        if (
+          this.createTaskInfo.taskName.length < 1 ||
+          this.createTaskInfo.principal.length < 1
+        ) {
           this.$message("请填写任务名称和负责人");
           return;
         }
       }
-      if(this.active == 3 && (this.checkedFeats==null || this.checkedFeats.length==0)){
-        this.open3("请选择需要分析的指标！")
+      if (
+        this.active == 3 &&
+        (this.checkedFeats == null || this.checkedFeats.length == 0)
+      ) {
+        this.open3("请选择需要分析的指标！");
         return;
-      }else if(this.active == 3 && (this.checkedFeats[0].missRate>30)){
-        this.open3("数据异常，无法分析！")
+      } else if (this.active == 3 && this.checkedFeats[0].missRate > 30) {
+        this.open3("数据异常，无法分析！");
         return;
-      }else{
+      } else {
         this.active++;
       }
     },
@@ -158,7 +196,7 @@ export default {
         link.href = imageUrl;
         link.download = "image.png";
         link.click();
-        this.showOptions = false
+        this.showOptions = false;
       } catch (error) {
         console.error("Error capturing image:", error);
       }
@@ -183,30 +221,38 @@ export default {
     // },
     async downloadPDF() {
       try {
-          const divToCapture = this.$refs.childComponentRef.$el.querySelector(".outcome");
-          const canvas = await html2canvas(divToCapture);
+        const divToCapture =
+          this.$refs.childComponentRef.$el.querySelector(".outcome");
+        const canvas = await html2canvas(divToCapture);
 
-          // 创建PDF对象
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const imgData = canvas.toDataURL('image/png');
+        // 创建PDF对象
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgData = canvas.toDataURL("image/png");
 
-          // 设置PDF页尺寸
-          const imgWidth = 210; // A4尺寸，单位mm
-          const imgHeight = canvas.height * imgWidth / canvas.width;
+        // 设置PDF页尺寸
+        const imgWidth = 210; // A4尺寸，单位mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-          // 将Canvas图像添加到PDF
-          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        // 将Canvas图像添加到PDF
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
 
-          // 下载PDF
-          pdf.save("content.pdf");
-          
-          this.showOptions = false;
+        // 下载PDF
+        pdf.save("content.pdf");
+
+        this.showOptions = false;
       } catch (error) {
-          console.error("Error capturing image:", error);
+        console.error("Error capturing image:", error);
       }
-    }
+    },
   },
   mounted() {},
+  watch: {
+    "label"(oldVal,newVal) {
+      console.log('oldlabel',oldVal)
+      console.log('newVal',newVal)
+      this.featureDataFromParent=[]
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
@@ -216,6 +262,7 @@ export default {
   height: 100%;
   flex-direction: column;
   overflow-x: hidden;
+  padding-bottom: 40px;
   /* align-items: center; */
 }
 .stepcontainer {
@@ -228,15 +275,15 @@ export default {
   display: flex;
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
-     position: fixed;
-     bottom: 23px;
-    width:100%;
+  position: fixed;
+  bottom: 23px;
+  width: 90%;
   background: rgb(255, 255, 255);
+  z-index: 1;
 }
 .des_datasetChoose {
   ::v-deep .right_table {
     width: 1350px;
- 
   }
   ::v-deep .left_tree {
     height: 620px;

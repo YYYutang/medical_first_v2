@@ -133,21 +133,24 @@
       <div class="mid">
         <el-card>
           <div slot="header" class="clearfix">
-            <span class="lineStyle">▍</span><span>各类指标缺失情况</span>
+            <span class="lineStyle">▍</span><span>各类指标完备率</span>
           </div>
-          <!-- <div class="selectOptions">
- 
-            <el-select v-model="value" placeholder="请选择表" size="mini" style="width:150px">
-              <el-option
-                v-for="item in tableOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
-    
-            <el-select v-model="value" placeholder="请选择数据类型" size="mini" style="width:150px">
+          <div class="selectOptions">
+            选择表:
+            <el-cascader
+              size="mini"
+              clearable
+              v-model="selectTableName"
+              :options="tableOptions"
+            ></el-cascader>
+            选择类型:
+            <el-select
+              class="selector"
+              v-model="selectTypeValue"
+              placeholder="请选择数据类型"
+              size="mini"
+              style="width: 150px"
+            >
               <el-option
                 v-for="item in typeOptions"
                 :key="item.value"
@@ -156,7 +159,19 @@
               >
               </el-option>
             </el-select>
-          </div> -->
+            <el-tooltip
+              effect="dark"
+              content="该选项没有数据"
+              placement="bottom"
+              v-if="showWarning"
+            >
+              <i
+                class="el-icon-warning-outline"
+                style="padding: 8px"
+                v-if="showWarning"
+              ></i>
+            </el-tooltip>
+          </div>
           <div id="indicators" style="width: 500px; height: 400px"></div>
         </el-card>
       </div>
@@ -180,22 +195,7 @@ export default {
   data() {
     return {
       tableOptions: [],
-      typeOptions:[],
-      mychart: {},
-      mychart2: {},
-      tableData2: [],
-      dataAllNum: 2,
-      insAllNum: 0,
-      missingAll: 0,
-      effectiveall: 0,
-      line: null,
-      patientNum: 200,
-      xdata: [],
-      ydata: [],
-      labelData: [],
-      missingData: [],
-      selectTableName: "copd",
-      selectType: [
+      typeOptions: [
         {
           label: "人口学指标",
           value: 0,
@@ -208,8 +208,27 @@ export default {
           label: "社会学指标",
           value: 2,
         },
+        {
+          label: "其他",
+          value: 3,
+        },
       ],
-      selectTypeValue: "人口学指标",
+      mychart: {},
+      mychart2: {},
+      tableData2: [],
+      showWarning: false,
+      dataAllNum: 2,
+      insAllNum: 0,
+      missingAll: 0,
+      effectiveall: 0,
+      line: null,
+      patientNum: 200,
+      xdata: [],
+      ydata: [],
+      labelData: [],
+      missingData: [],
+      selectTableName: "冠心病纳排",
+      selectTypeValue: 3,
       quickEntry: [
         {
           title: "数据管理",
@@ -242,47 +261,65 @@ export default {
           router: "/visualization",
         },
       ],
-      diseaseData: [
-        // {
-        //   name: "胃癌",
-        //   num: 0,
-        // },
-        // {
-        //   name: "糖尿病",
-        //   num: 0,
-        // },
-        // {
-        //   name: "肺癌",
-        //   num: 0,
-        // },
-        // {
-        //   name: "乳腺癌",
-        //   num: 0,
-        // },
-        // {
-        //   name: "高血压",
-        //   num: 0,
-        // },
-      ],
+      diseaseData: [],
     };
   },
+  computed: {
+    selectedLabel() {
+      // 使用 find() 方法查找数组中符合条件的第一个元素
+      const selectedOption = this.typeOptions.find(
+        (option) => option.value === this.selectTypeValue
+      );
+      // 如果找到相应的选项，则返回其 label；如果没有找到，则返回 undefined 或一个默认值
+      return selectedOption ? selectedOption.label : "未找到";
+    },
+    selectedTableNameConverted() {
+      if (Array.isArray(this.selectTableName)) {
+        const lastValue = this.selectTableName[this.selectTableName.length - 1];
+        return this.findLabelByValue(this.tableOptions, lastValue);
+      } else {
+        return "冠心病纳排";
+      }
+    },
+  },
   methods: {
+    findLabelByValue(data, value) {
+      for (let item of data) {
+        if (item.value === value) {
+          return item.label;
+        }
+        if (item.children && item.children.length) {
+          let foundLabel = this.findLabelByValue(item.children, value);
+          if (foundLabel) {
+            return foundLabel;
+          }
+        }
+      }
+      return null;
+    },
     quickLink(index) {
       this.$router.replace(this.quickEntry[index].router);
     },
-        init(){
-            getRequest(`/api/sysManage/getLevel2Label`).then(res => {
-                if (res.code == 200) {
-                  this.tableOptions=res.data.map((item)=>({
-                    label:item.label,
-                    value:item.id,
-                  }));
-                    // console.log("ret data", res.data);
-                    this.disOptions.firstSelect=res.data;
-                    // console.log(res.data);
-                }
-            })            
-        },
+    init() {
+      getRequest(`/api/sysManage/selectDiseasesTableInfo`).then((res) => {
+        if (res.code == 200) {
+          this.tableOptions = res.data;
+        } else {
+          console.log("res", res.data);
+        }
+      });
+    },
+    triggerRequest() {
+      console.log(this.selectTableName, "selectTableName");
+      if (this.selectTableName !== "" && this.selectTypeValue !== null) {
+        this.getIndicatorsFromBackEnd(
+          this.selectedLabel,
+          this.selectedTableNameConverted
+        );
+        // 这里可以放置你的 HTTP 请求逻辑
+        // 例如: axios.post('/api/endpoint', { selector1: this.selector1, selector2: this.selector2 })
+      }
+    },
     chart1() {
       var chartDom = document.getElementById("increase");
       this.mychart = this.$echarts.init(chartDom);
@@ -318,10 +355,13 @@ export default {
     getIndicatorsFromBackEnd(types, tableName) {
       getIndicators("/api/getIndicators", types, tableName)
         .then((response) => {
-          this.labelData = response.data.map((item) => item.label);
-          console.log(" this.labelData ", this.labelData);
-          this.missingData = response.data.map((item) => item.missRate);
-          this.drawIndicators();
+          if (response.data) {
+            this.labelData = response.data.map((item) => item.label);
+            this.missingData = response.data.map((item) => item.missRate);
+              this.showWarning = false;
+          } else {
+            this.showWarning = true;
+          }
         })
         .catch((error) => {});
     },
@@ -378,13 +418,18 @@ export default {
         this.diseaseData = response.data;
       });
     },
+
     drawIndicators() {
       var chartDom = document.getElementById("indicators");
       this.mychart2 = this.$echarts.init(chartDom);
       let option2 = {
         title: {
-          text: this.selectTableName + "表的" + this.selectTypeValue + "字段",
-          left: 10,
+          text:
+            this.selectedTableNameConverted +
+            "表的" +
+            this.selectedLabel +
+            "字段",
+          left: "center",
         },
 
         tooltip: {
@@ -437,7 +482,18 @@ export default {
     this.getAllData();
     this.getIncrease();
     this.getStaticDisease();
-    this.getIndicatorsFromBackEnd("人口学指标", "copd");
+    this.getIndicatorsFromBackEnd("其他", "冠心病纳排");
+  },
+  watch: {
+    selectTableName(oldVal, newVal) {
+      this.triggerRequest();
+    },
+    selectTypeValue(oldVal, newVal) {
+      this.triggerRequest();
+    },
+    missingData(oldVal, newVal) {
+      this.drawIndicators();
+    },
   },
 };
 </script>
@@ -535,10 +591,13 @@ export default {
   justify-content: space-evenly;
   align-items: center;
 }
-.selectOptions{
+.selectOptions {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 5px;
+}
+.selector {
+  height: 30px;
 }
 </style>

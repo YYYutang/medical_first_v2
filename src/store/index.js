@@ -8,6 +8,9 @@ export default new Vuex.Store({
     toolBar : true,
     allTableData:[],
     allColumnData:[],
+    selectedNode:[],
+    selectedColumns:[],
+    selectedAlgo:'',
   },
   getters: {
     getAllTableData(state){
@@ -16,9 +19,12 @@ export default new Vuex.Store({
     },
     getAllColumnData(state){
       state.allTableData=storage.get("allColumnData");
-      console.log(this.allColumnData)
       return state.allColumnData;
-    }
+    },
+    getSelectedNode(state){
+      state.selectedNode=storage.get("selectedNode");
+      return state.selectedNode;
+    },
   },
   mutations: {
     changeToolBar(state) {

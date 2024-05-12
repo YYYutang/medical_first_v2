@@ -23,7 +23,7 @@
         :step="1"
         :label="label"
         :type="4"
-        :curentAnalyzeStep="1"
+        :curentAnalyzeStep="0"
         @send_feat="getCheackedFeats"
         @sendTreeNode="getSelectTreeNode"
         :selectTreeNode="selectTreeNode"
@@ -313,6 +313,7 @@ export default {
   width: 100%;
   height: 100%;
   flex-direction: column;
+   padding-bottom: 50px;
 }
 
 .stepcontainer {
@@ -327,7 +328,7 @@ export default {
   margin-top: 10px;
   position: fixed;
   bottom: 23px;
-  width: 100%;
+  width: 90%;
   background: rgb(255, 255, 255);
 }
 </style>

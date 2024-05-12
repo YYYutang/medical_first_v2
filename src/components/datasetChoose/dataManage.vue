@@ -223,6 +223,7 @@ import { getRequest } from "@/api/user";
 export default {
   name: "DataSelect",
   mixins: [vuex_mixin],
+  // props: ["active", "type", "showDataManageStep", "tableId", "tableName"],
   props: ["active", "type", "showDataManageStep"],
   watch: {
     filterText(val) {
@@ -283,12 +284,20 @@ export default {
       table_loading: false,
       tempNode: {},
       colWidth: 90,
+      selectedId: 0,
     };
   },
 
   created() {
     this.init();
     this.getCatgory();
+    // console.log("已选择的数据表", this.tableData);
+    // console.log("已选择的数据表id", this.selectedId);
+    // console.log("已选择的数据表id", this.tableId);
+    // if (this.tableId && this.tableName) {
+    //      this.getTableData(this.tableId , this.tableName);
+    //      console.log('tableData',this.treeData)
+    // }
   },
   mounted() {
     this.$refs.listWrap.style.height = "550px"; // 设置可视区域的高度
@@ -297,7 +306,7 @@ export default {
   methods: {
     calculateColumnWidth() {
       let arr = Object.keys(this.tableData[0]);
-      if (arr.length >=15) {
+      if (arr.length >= 15) {
         this.colWidth = 90;
       } else {
         const tableWidth = this.$refs.fullWidthTable.$el.clientWidth;
@@ -305,7 +314,6 @@ export default {
         const numberOfColumns = Object.keys(this.tableData[0]).length;
         const width = Math.floor(tableWidth / numberOfColumns);
         this.colWidth = width;
-         
       } // 假设 colWidth 是一个响应式数据
       this.table_loading = false;
     },
@@ -342,8 +350,11 @@ export default {
         this.tableData = [];
         //获取描述信息
         let that = this;
+        this.selectedId = data.id;
+        this.$emit("sendTableIdData", this.selectedId);
         that.getTableDescribe(data.id);
         //获取数据信息
+
         that.getTableData(data.id, data.label);
         this.$emit("send_data", data.label);
       }
@@ -372,8 +383,7 @@ export default {
           const fields = Object.keys(this.tableData[0]);
           this.showDataForm.sampleNum = this.tableData.length;
           this.showDataForm.featureNum = fields.length;
-           this.calculateColumnWidth();
-         
+          this.calculateColumnWidth();
         })
         .catch((error) => {
           console.log(error);

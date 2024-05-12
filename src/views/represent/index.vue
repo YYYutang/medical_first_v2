@@ -74,17 +74,23 @@
 
       <br />
       <div class="stepbutton">
-        <el-button size="small" v-if="active != 1&&Object.keys(this.newTaskInfo).length === 0" @click="stepBack(active)"
+        <el-button
+          size="small"
+          v-if="active != 1 && Object.keys(this.newTaskInfo).length === 0"
+          @click="stepBack(active)"
           >上一步</el-button
         >
         <el-button
           size="small"
           type="primary"
-          v-if="active != 5&&Object.keys(this.newTaskInfo).length === 0"
+          v-if="active != 5 && Object.keys(this.newTaskInfo).length === 0"
           @click="stepNext(active)"
           >下一步</el-button
         >
-         <el-button size="small" v-if="Object.keys(this.newTaskInfo).length != 0" @click="returnTask"
+        <el-button
+          size="small"
+          v-if="Object.keys(this.newTaskInfo).length != 0"
+          @click="returnTask"
           >返回</el-button
         >
         <el-button
@@ -98,7 +104,8 @@
           title="选项"
           :visible.sync="showOptions"
           width="30%"
-          :close-on-click-modal="false"
+          :close-on-click-modal="true"
+          :modal-append-to-body="false"
         >
           <el-button @click="exportContent">导出为图片</el-button>
           <el-button @click="downloadPDF">导出为pdf</el-button>
@@ -168,14 +175,14 @@ export default {
     this.newTaskInfo = this.$route.params;
     console.log("新建任务参数：", this.newTaskInfo);
     if (Object.keys(this.newTaskInfo).length !== 0) {
-        this.active=4
+      this.active = 4;
       this.stepNext(4);
     }
   },
   methods: {
-      returnTask(){
-           this.$router.push( '/taskManage');
-      },
+    returnTask() {
+      this.$router.push("/taskManage");
+    },
     getTaskInfo(data) {
       this.createTaskInfo = data;
       this.createTaskInfo.tasktype = "特征表征";
@@ -261,7 +268,7 @@ export default {
         return;
       } else {
         this.active++;
-        console.log(this.active)
+        console.log(this.active);
         if (Object.keys(this.newTaskInfo).length === 0) {
           this.columnSelect = this.checkedFeats;
           console.log(" this.columnSelect", this.columnSelect);
@@ -284,7 +291,7 @@ export default {
           this.loading = true;
           const params = {
             tableName: this.newTaskInfo.tableName, //模型选择的数据表表名
-            runParams: this.newTaskInfo.runParams.split(','), //模型选择的属性列（数组）
+            runParams: this.newTaskInfo.runParams.split(","), //模型选择的属性列（数组）
             aiName: "pca",
           };
           await this.getAllfilled(params.tableName);
@@ -441,11 +448,11 @@ export default {
 }
 .stepbutton {
   display: flex;
-  width:100%;
+  width: 90%;
   background: rgb(255, 255, 255);
   justify-content: center; /* 水平居中 */
   align-items: center; /* 垂直居中 */
-   position: fixed;
-      bottom: 23px;
+  position: fixed;
+  bottom: 23px;
 }
 </style>

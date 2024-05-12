@@ -967,6 +967,7 @@ export default {
     },
 
     getEditDataById(id, tableName, tableStatus) {
+  
       this.oldTableName = tableName;
       this.is_cancel = tableStatus;
       getRequest(`/api/sysManage/selectDataById`, {
@@ -986,13 +987,13 @@ export default {
     checkInfos(usernames) {
       // 确保 usernames 是字符串
       if (typeof usernames !== "string") {
-        // console.error("usernames is not a string:", usernames);
+        //console.error("usernames is not a string:", usernames);
         return "";
       }
       if (usernames == null || usernames.trim().length === 0) {
         return "";
       }
-      console.log("usernames", usernames);
+     
       let infos = usernames.split(",");
       return infos.length;
     },
@@ -1058,7 +1059,7 @@ export default {
         }
       });
     },
-   confirmUsenames(type) {
+    confirmUsenames(type) {
       if (this.multipleSelection.length < 1) {
         // 自定义状态码
         this.$message({
@@ -1090,7 +1091,6 @@ export default {
       });
       this.multipleLoding = false;
     },
-
     toggleSelection(rows) {
       if (rows) {
         rows.forEach((row) => {
@@ -1201,6 +1201,6 @@ export default {
 }
 .el-pagination {
   display: flex;
-  justify-content: center;
+  justify-content: right;
 }
 </style>

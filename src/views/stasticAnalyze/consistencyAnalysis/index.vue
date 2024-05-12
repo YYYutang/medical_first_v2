@@ -173,6 +173,7 @@ export default {
   width: 100%;
   height: 100%;
   flex-direction: column;
+   padding-bottom: 40px;
   /* align-items: center; */
 }
 .stepcontainer {
@@ -187,8 +188,9 @@ export default {
   margin-top: 10px;
      position: fixed;
     bottom: 23px;
-    width:100%;
+    width:90%;
   background: rgb(255, 255, 255);
+      z-index: 1;
 }
 .con_datasetChoose {
   // ::v-deep .right_table {

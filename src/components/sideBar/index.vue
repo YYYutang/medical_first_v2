@@ -120,6 +120,12 @@ export default {
           roles: ["0", "1"],
           icon: "el-icon-menu",
         },
+                {
+          name: "数据管理",
+          path: "/dataManagePublic",
+          roles: ["0", "1"],
+          icon: "el-icon-s-tools",
+        },
         {
           name: "任务管理",
           path: "/taskManage",
@@ -158,12 +164,7 @@ export default {
             },
           ],
         },
-        {
-          name: "数据管理",
-          path: "/dataManagePublic",
-          roles: ["0", "1"],
-          icon: "el-icon-s-tools",
-        },
+
         {
           name: "系统管理",
           path: "/manage",

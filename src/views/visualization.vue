@@ -55,7 +55,22 @@
           element-loading-text="数据量较大，正在努力加载中..."
         >
           <el-form-item prop="selectedData">
-            <h3>请选择一个病人：</h3>
+            <div class="selectTitle">
+              <h3>提示：请选择一个病人</h3>
+              <div>
+                <el-input
+                  placeholder="请输入要检索的病人信息"
+                  v-model="searchPatient"
+                  class="patitentInput"
+                >
+                </el-input>
+                <el-button
+                  slot="append"
+                  icon="el-icon-search"
+                  @click="searchPatientInfo"
+                ></el-button>
+              </div>
+            </div>
             <div class="table" v-if="dataPre">
               <el-table
                 :data="tableData"
@@ -72,12 +87,9 @@
                   padding: '0px',
                 }"
                 :header-cell-style="{
-                  background: '#58AAFF',
-                  color: '#fff',
-                  lineHeight: '12px',
-                  padding: '0px',
-                  height: '34px',
-                  textAlign: 'center',
+                  backgroundColor: '#e8e5e5',
+                  color: 'black',
+                  fontWeight: 'bold',
                 }"
               >
                 <el-table-column
@@ -86,6 +98,7 @@
                   :label="item"
                   :prop="item"
                   width="150"
+                  sortable
                 >
                   <template slot-scope="{ row }">
                     <div
@@ -150,7 +163,7 @@
             class="patientDescription"
             title="病人信息"
             :column="3"
-            :size="size"
+        
           >
             <el-descriptions-item label="姓名">{{
               this.selectedRow?.name || "无"
@@ -269,6 +282,7 @@ export default {
       ],
       value1: [],
       value2: [],
+      searchPatient: "",
       head1: true,
       head2: false,
       createTaskInfo: null,
@@ -322,6 +336,8 @@ export default {
         },
       },
       dataLoading: false,
+      patientAllData: [],
+      totalAll:0,
     };
   },
   // created() {
@@ -644,13 +660,16 @@ export default {
       if (stepIndex == 1) {
         let tableName = this.dataSelectForm.formData.selectedData;
         this.dataLoading = true;
+
         getRequest(
           "/feature/getInfoByTableName?tableName=" + tableName + "&page=" + 1
         )
           .then((response) => {
             this.dataColumn = Object.keys(response.data[0]);
             this.allPage = response.total * 10;
+            this.totalAll=response.total * 10;
             this.tableData = response.data;
+            this.patientAllData = response.data;
             this.dataPre = true;
           })
           .finally(() => {
@@ -802,20 +821,65 @@ export default {
     },
     handleCurrentClick(val) {
       this.currentPage = val;
+      if (this.searchPatient != "") {
+        getRequest(
+          "/api/getDiseasesInfo?tableName=" +
+            this.dataSelectForm.formData.selectedData +
+            "&value=" +
+            this.searchPatient +
+            "&page=" +
+            val
+        ).then((res) => {
+          this.tableData = res.data;
+        });
+      } else {
+        getRequest(
+          "/feature/getInfoByTableName?tableName=" +
+            this.dataSelectForm.formData.selectedData +
+            "&page=" +
+            val
+        ).then((response) => {
+          this.tableData = response.data;
+        });
+      }
+    },
+    searchPatientInfo() {
       getRequest(
-        "/feature/getInfoByTableName?tableName=" +
+        "/api/getDiseasesInfo?tableName=" +
           this.dataSelectForm.formData.selectedData +
+          "&value=" +
+          this.searchPatient +
           "&page=" +
-          val
-      ).then((response) => {
-        this.tableData = response.data;
+          1
+      ).then((res) => {
+        console.log(res)
+        this.tableData = res.data.data;
+        this.allPage = res.data.total;
+    
       });
+    },
+  },
+  watch: {
+    searchPatient(newVal, oldVal) {
+      if (newVal === "") {
+        this.tableData = this.patientAllData;
+        this.allPage=this.totalAll
+      }
     },
   },
 };
 </script>
 
 <style lang="less" scoped>
+.selectTitle {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  line-height: 40px;
+}
+.patitentInput {
+  width: 200px;
+}
 .el-form {
   /deep/.el-form-item__content {
     line-height: 20px;
@@ -833,6 +897,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-bottom: 40px;
   // height: 100%;
 }
 #step {
@@ -882,10 +947,11 @@ export default {
   display: flex;
   justify-content: center;
   margin-top: 10px;
-  width: 100%;
+  width: 90%;
   background: rgb(255, 255, 255);
   position: fixed;
   bottom: 23px;
+      z-index: 1;
 }
 /deep/ .el-table__body tr.current-row > td.el-table__cell {
   background-color: #157df0;

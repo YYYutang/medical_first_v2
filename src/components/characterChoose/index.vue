@@ -27,10 +27,13 @@
         >
         </el-tree>
       </div>
-      <div class="right"  v-loading="add_character_loading"
-            element-loading-text="数据量较大，拼命加载中"
-            element-loading-spinner="el-icon-loading"
-            element-loading-background="rgba(0, 0, 0, 0.05)">
+      <div
+        class="right"
+        v-loading="add_character_loading"
+        element-loading-text="数据量较大，拼命加载中"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(0, 0, 0, 0.05)"
+      >
         <div class="info">
           <el-alert
             title="特征下方进度条为特征完备度"
@@ -40,7 +43,7 @@
           >
           </el-alert>
         </div>
-        <br /><br v-if="curentAnalyzeStep == 1" />
+        <br /><br v-if="curentAnalyzeStep == 0" />
         <h2 style="text-align: center" v-if="step == 1">
           选择需要缺失值补齐的特征
         </h2>
@@ -51,14 +54,99 @@
         >
           选择一个需要描述性分析的特征
         </h2>
-           <h2
+        <h2
           style="text-align: center; margin-top: -15px"
           v-if="step == 3"
           class="top"
         >
           选择任意个需要表征的特征
         </h2>
-        <!--缺失值补齐 描述性分析的 特征选择-->
+        <div class="selectClass" v-if="curentAnalyzeStep == 0">
+          <!-- <h4>连续数字类型特征</h4> -->
+          <p><strong>连续数字类型特征</strong></p>
+          <div class="contain1">
+            <div
+              class="block"
+              v-for="feat in featureData"
+              :key="feat.id"
+              v-if="feat.featureDataType == 1 && feat.missRate != 100"
+            >
+              <el-checkbox
+                v-model="feat.cheack"
+                @change="handleCheckboxChange(feat)"
+                class="checkbox-font-size"
+                ><span
+                  style="font-family: 宋体, SimSun, serif; font-size: 14px"
+                  >{{ feat.label }}</span
+                >
+                <el-tooltip
+                  effect="dark"
+                  content="完备率过低不建议补齐"
+                  placement="bottom"
+                  v-if="feat.missRate > 60"
+                >
+                  <i
+                    class="el-icon-warning-outline"
+                    v-if="feat.missRate > 60"
+                  ></i> </el-tooltip
+              ></el-checkbox>
+              <!-- <el-progress :percentage="feat.missRate" :stroke-width=8 style="width: 120px;" class="custom-progress" :color="getProgressColor(feat.missRate)"></el-progress> -->
+              <el-progress
+                :percentage="Math.round(100 - feat.missRate)"
+                :format="format"
+                :color="getProgressStatus(feat.missRate)"
+                style="width: 100px"
+              ></el-progress>
+            </div>
+            <div
+              class="block invisible"
+              v-for="n in (6 - (countVisibleFeatures(1) % 6)) % 6"
+              :key="n.id"
+            ></div>
+          </div>
+          <!-- <h4>离散数字类型特征</h4> -->
+          <p><strong>离散数字类型特征</strong></p>
+          <div class="contain2">
+            <div
+              class="block"
+              v-for="feat in featureData"
+              :key="feat.id"
+              v-if="feat.featureDataType == 2 && feat.missRate != 100"
+            >
+              <el-checkbox
+                v-model="feat.cheack"
+                @change="handleCheckboxChange(feat)"
+                class="checkbox-font-size"
+                ><span
+                  style="font-family: 宋体, SimSun, serif; font-size: 14px"
+                  >{{ feat.label }}</span
+                >
+                <el-tooltip
+                  effect="dark"
+                  content="完备率过低不建议补齐"
+                  placement="bottom"
+                  v-if="feat.missRate > 60"
+                  ><i
+                    class="el-icon-warning-outline"
+                    v-if="feat.missRate > 60"
+                  ></i> </el-tooltip
+              ></el-checkbox>
+              <!-- <el-progress :percentage="feat.missRate" :stroke-width=8 style="width: 120px;" class="custom-progress" :color="getProgressColor(feat.missRate)"></el-progress> -->
+              <el-progress
+                :percentage="Math.round(100 - feat.missRate)"
+                :format="format"
+                :color="getProgressStatus(feat.missRate)"
+                style="width: 100px"
+              ></el-progress>
+            </div>
+            <div
+              class="block invisible"
+              v-for="n in (6 - (countVisibleFeatures(2) % 6)) % 6"
+              :key="n.id"
+            ></div>
+          </div>
+        </div>
+        <!--描述性分析的 特征选择-->
         <div class="selectClass" v-if="curentAnalyzeStep == 1">
           <!-- <h4>文本离散类型特征</h4> -->
           <p><strong>文本离散类型特征</strong></p>
@@ -279,7 +367,6 @@
             <strong>选择多个特征进行表征</strong>
           </p>
           <div class="selectClass" v-if="curentAnalyzeStep == 4">
-
             <!-- <h4>连续数字类型特征</h4> -->
             <p><strong>连续数字类型特征</strong></p>
             <div class="contain1">
@@ -395,8 +482,9 @@ export default {
           label: "非疾病标准特征",
         },
       ],
+
       groupFeature: {},
-      add_character_loading:false,
+      add_character_loading: false,
       observeFeaure: {},
       allFeatures: [],
       // curentAnalyzeStep: 1,
@@ -677,20 +765,21 @@ export default {
       if (types === "") {
         this.featureData = [];
       } else {
-        this.add_character_loading=true;
-        console.log('tableName', this.tableName)
+        this.add_character_loading = true;
+
         getIndicators("/api/getIndicators", types, this.tableName)
           .then((response) => {
-            if(response.data){
-            this.featureData = response.data;
-            console.log("特征信息位：", this.featureData);
-            // 给父组件传递参数
-            this.$emit("send_indicators", this.featureData);
+            if (response.data) {
+              this.featureData = response.data;
+              console.log("特征信息位：", this.featureData);
+              // 给父组件传递参数
+              this.$emit("send_indicators", this.featureData);
             }
-              this.add_character_loading=false;
+            this.add_character_loading = false;
           })
-          .catch((error) => {  this.add_character_loading=false;})
-        
+          .catch((error) => {
+            this.add_character_loading = false;
+          });
       }
     },
     handleCheck(data, node) {
@@ -700,19 +789,21 @@ export default {
         this.selectedNode.push(node.checkedNodes[i].label);
         this.defaultCheckedKeys.push(node.checkedNodes[i].id);
       }
-
+      console.log("selectedNodehandle", this.selectedNode);
       // 将选中的树节点传递给父节点
       this.$emit("sendTreeNode", this.defaultCheckedKeys);
       this.getIndicatorsFromBackEnd(this.selectedNode.join(","));
     },
     getIndicatorCategory() {
-      
       getRequest("/api/indicatorCategory").then((response) => {
         this.treeData = response.data;
       });
     },
   },
-  mounted() {},
+  mounted() {
+    console.log("selectedNode", this.selectedNode);
+    //  this.getIndicatorsFromBackEnd(this.selectedNode.join(","));
+  },
 };
 </script>
 <style lang="less">
@@ -726,7 +817,6 @@ export default {
   width: 100%;
   border-top: 1px solid black;
   margin-top: 20px;
-  height: 85vh;
 }
 .top {
   font-size: 20px;
@@ -858,7 +948,7 @@ export default {
   text-align: center;
 }
 .left_sidebar {
-  height:85vh;
+  height: 85vh;
   width: 15%;
   padding: 5x;
   margin-top: 20px;
@@ -887,7 +977,6 @@ export default {
   margin-top: 0px;
   margin-left: 20px;
   width: 1300px;
-
 }
 .selectClassSingle {
   margin-top: 10px;

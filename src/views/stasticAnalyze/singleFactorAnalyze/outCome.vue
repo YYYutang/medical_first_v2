@@ -102,7 +102,8 @@
             title="选项"
             :visible.sync="showOptions"
             width="30%"
-            :close-on-click-modal="false"
+            :close-on-click-modal="true"
+            :modal-append-to-body="false"
           >
             <el-button @click="exportContent">导出为图片</el-button>
             <el-button @click="downloadPDF">导出为pdf</el-button>
