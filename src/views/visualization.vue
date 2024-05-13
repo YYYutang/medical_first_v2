@@ -163,7 +163,6 @@
             class="patientDescription"
             title="病人信息"
             :column="3"
-        
           >
             <el-descriptions-item label="姓名">{{
               this.selectedRow?.name || "无"
@@ -337,7 +336,7 @@ export default {
       },
       dataLoading: false,
       patientAllData: [],
-      totalAll:0,
+      totalAll: 0,
     };
   },
   // created() {
@@ -553,6 +552,7 @@ export default {
           axisPointer: {
             type: "shadow",
           },
+       
           formatter: function (params) {
             var tar = params[0];
             var tar1 = params[1];
@@ -667,7 +667,7 @@ export default {
           .then((response) => {
             this.dataColumn = Object.keys(response.data[0]);
             this.allPage = response.total * 10;
-            this.totalAll=response.total * 10;
+            this.totalAll = response.total * 10;
             this.tableData = response.data;
             this.patientAllData = response.data;
             this.dataPre = true;
@@ -852,10 +852,9 @@ export default {
           "&page=" +
           1
       ).then((res) => {
-        console.log(res)
+        console.log(res);
         this.tableData = res.data.data;
         this.allPage = res.data.total;
-    
       });
     },
   },
@@ -863,7 +862,7 @@ export default {
     searchPatient(newVal, oldVal) {
       if (newVal === "") {
         this.tableData = this.patientAllData;
-        this.allPage=this.totalAll
+        this.allPage = this.totalAll;
       }
     },
   },
@@ -951,7 +950,7 @@ export default {
   background: rgb(255, 255, 255);
   position: fixed;
   bottom: 23px;
-      z-index: 1;
+  z-index: 1;
 }
 /deep/ .el-table__body tr.current-row > td.el-table__cell {
   background-color: #157df0;

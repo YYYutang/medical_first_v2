@@ -247,10 +247,10 @@ export default {
   },
   mounted() {},
   watch: {
-    "label"(oldVal,newVal) {
-      console.log('oldlabel',oldVal)
-      console.log('newVal',newVal)
+    "label"(newVal,oldVal) {
+      console.log('labelChanged')
       this.featureDataFromParent=[]
+      // this.getSelectTreeNode=[]
     },
   },
 };
