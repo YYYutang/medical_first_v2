@@ -578,12 +578,13 @@ export default {
           containLabel: true,
         },
         xAxis: {
-          type: "value",
-          boundaryGap: [0, 0.01],
-        },
-        yAxis: {
           type: "category",
           data: this.baryData,
+          
+        },
+        yAxis: {
+         type: "value",
+          boundaryGap: [0, 0.01],
         },
         series: [
           {
@@ -621,7 +622,27 @@ export default {
             data: this.healthDataHigh,
           },
         ],
-
+         dataZoom: [
+        {
+          show: true,
+          start: 0,
+          end: 40
+        },
+        {
+          type: 'inside',
+          start: 0,
+          end: 50
+        },
+        {
+          show: true,
+          yAxisIndex: 0,
+          filterMode: 'empty',
+          width: 30,
+          height: '80%',
+          showDataShadow: false,
+          left: '93%'
+        }
+      ],
       };
       option && myChart.setOption(option);
       barOption && barChart.setOption(barOption);
