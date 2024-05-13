@@ -621,6 +621,7 @@ export default {
             data: this.healthDataHigh,
           },
         ],
+
       };
       option && myChart.setOption(option);
       barOption && barChart.setOption(barOption);
